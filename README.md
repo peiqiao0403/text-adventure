@@ -41,7 +41,7 @@ Combat in the game is turn-based with timing-based elements for attacks and spel
 
 1.  **Combat Flow**
     -   Combat begins when encountering a monster
-    -   Players take turns making actions
+    -   Take turns making actions
     -   Each action has specific effects and requirements
     -   Combat continues until either side is defeated
 2.  **Player Actions**
@@ -75,7 +75,7 @@ The game features a comprehensive armor system with multiple slots and tiers:
 
 ### Market System
 
-The market (located in room 1-17) allows players to:
+The market (located in room 1-17) allows you to:
 
 -   Buy items and equipment
 -   Sell unwanted gear
@@ -130,4 +130,4 @@ Two types of enemies:
     -   Gold drop: 100-150
     -   Item drop chance: 100%
 
-This documentation covers all major aspects of the game. Players can use the help system during gameplay for additional details about specific mechanics or commands.
+This documentation covers all major aspects of the game. Please use the help system during gameplay for additional details about specific mechanics or commands.
