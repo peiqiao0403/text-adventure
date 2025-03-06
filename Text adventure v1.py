@@ -432,14 +432,14 @@ defeated_bosses = set()
 def show_market_items():
     # print_slow top border
     print_slow("""┌──────────────────────┬────────────┬────────────────────────┐
-| Item Name            │ Price      │ Description            |
+│ Item Name            │ Price      │ Description            │
 ├──────────────────────┼────────────┼────────────────────────┤
-| health potion        │    30 gold │ Restores 30 health     |
-| mana potion          │    30 gold │ Restores 30 mana       |
-| leather helmet       │    50 gold │ Basic head protection  |
-| leather chestplate   │    70 gold │ Basic chest protection |
-| leather pants        │    60 gold │ Basic leg protection   |
-| leather boots        │    40 gold │ Basic foot protection  |
+│ health potion        │    30 gold │ Restores 30 health     │
+│ mana potion          │    30 gold │ Restores 30 mana       │
+│ leather helmet       │    50 gold │ Basic head protection  │
+│ leather chestplate   │    70 gold │ Basic chest protection │
+│ leather pants        │    60 gold │ Basic leg protection   │
+│ leather boots        │    40 gold │ Basic foot protection  │
 └──────────────────────┴────────────┴────────────────────────┘""")
     print_slow("---------------------------")
     
