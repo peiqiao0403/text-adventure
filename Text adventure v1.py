@@ -4,7 +4,8 @@ import math
 import time
 from threading import Thread
 
-
+GREEN = "\033[38;2;0;255;0m"
+RESET = "\033[38;2;0;255;0m"
 class static_slider(Thread):
     def __init__(self, delay: int):
         """A class which runs a visual slider and return a number up to 29. 
@@ -30,13 +31,13 @@ class static_slider(Thread):
             if self.kill: break
         self.result = x
 
-def run_slider(scale: int, offset: int, delay = 0.03):
+def run_slider(scale: int, offset: int, delay = 0.02):
     """Returns a percentage for scaling numbers.
     Scale is the difference in between 2 spots.
     Offset is a number added to the result to raise the maximum & minimum percent."""
     main = static_slider(delay)
     main.start()
-    input("Press Enter to stop the slider!")
+    input(GREEN + "Press Enter to stop the slider!" + RESET)
     main.kill = True
     time.sleep(delay + 0.01)
     print()
@@ -49,10 +50,20 @@ ARMOR_TIERS = {
     'chainmail': {'defense': 10, 'weight': 2},
     'iron': {'defense': 15, 'weight': 3}
 }
-
+def print_slow(text):
+    # ANSI escape sequence for RGB color (0,255,0 is green)
+    GREEN_COLOR = "\033[38;2;0;255;0m"
+    RESET_COLOR = "\033[0m"  # Reset color back to default
+    
+    for char in text:
+        sys.stdout.write(GREEN_COLOR + char + RESET_COLOR)
+        sys.stdout.flush()
+        time.sleep(0.00065)
+    print()  # Add newline at end
+    print()  # Add newline at end
 def showStart():
-    print('''\nRPG Game\n=========\nCommands:\ngo [direction]\nget [item]\nuse [item]''')
-    print('---------------------------')
+    print_slow('''\nText Adventure\n=========\nCommands:\ngo [direction]\nget [item]\nuse [item]''')
+    print_slow('---------------------------')
 MARKET_ITEMS = {
     'health potion': {'price': 30, 'description': 'Restores 30 health'},
     'mana potion': {'price': 30, 'description': 'Restores 30 mana'},
@@ -113,14 +124,14 @@ class HelpSystem:
             page = "help"
         if page in self.pages:
             self.current_page = page
-            print(f"\n=== Help System ({self.current_page}) ===")
-            print(self.pages[self.current_page])
-            print("\nAvailable Pages:")
+            print_slow(f"\n=== Help System ({self.current_page}) ===")
+            print_slow(self.pages[self.current_page])
+            print_slow("\nAvailable Pages:")
             for p in self.pages.keys():
                 status = "*" if p == self.current_page else " "
-                print(f"- [{status}] {p}")
-            print("- Type 'help <page>' to view a different page")
-            print("=============================")
+                print_slow(f"- [{status}] {p}")
+            print_slow("- Type 'help <page>' to view a different page")
+            print_slow("=============================")
 
 def clear_lines(number):
     sys.stdout.write("\033[2J\033[H")
@@ -132,7 +143,7 @@ def clear_lines(number):
 
 def showInstructions():
     """Only shown when help isn't used"""
-    print('''\nRPG Game\n=========\nType 'help' for detailed game information\n---------------------------''')
+    print_slow('''\nText Hero\n=========\nType 'help' for detailed game information\n---------------------------''')
 
 def showHelp(page=None):
     """Global function to interface with the HelpSystem class"""
@@ -154,28 +165,28 @@ def showAvailableDirections(room):
     return "\n".join(directions)
 
 def showStatus():
-    print('You are in the ' + currentRoom)
-    print('Available directions:')
-    print(showAvailableDirections(rooms[currentRoom]))
-    print('Health:', player["health"])
-    print('Armor:', player["armor"])
-    print('Mana:', player["mana"])
-    print('Gold:', player["gold"])
-    print('Class:', player["class"])
-    print('Equipped Armor:')
+    print_slow('You are in the ' + currentRoom)
+    print_slow('Available directions:')
+    print_slow(showAvailableDirections(rooms[currentRoom]))
+    print_slow(f'Health: {player["health"]}')
+    print_slow(f'Armor: {player["armor"]}')
+    print_slow(f'Mana: {player["mana"]}')
+    print_slow(f'Gold: {player["gold"]}')
+    print_slow(f'Class: {player["class"]}')
+    print_slow('Equipped Armor:')
     for slot, item in player_equipment.items():
         if item:
-            print(f'- {slot}: {item}')
-    print_list('Inventory', inventory)
+            print_slow(f'- {slot}: {item}')
+    print_slow_list('Inventory', inventory)
     if "item" in rooms[currentRoom]:
         if rooms[currentRoom]['item'] == 'monster':
-            print("A fearsome monster awaits you!")
+            print_slow("A fearsome monster awaits you!")
         else:
-            print('You see a ' + rooms[currentRoom]['item'])
-    print("---------------------------")
+            print_slow('You see a ' + rooms[currentRoom]['item'])
+    print_slow("---------------------------")
 
-def print_list(tag, items):
-    print(f"{tag}: {', '.join(map(str, items))}")
+def print_slow_list(tag, items):
+    print_slow(f"{tag}: {', '.join(map(str, items))}")
 
 def equip_armor(item_type, slot):
     """Equip armor in specified slot"""
@@ -323,9 +334,17 @@ rooms = {
 
 # Game setup
 clear_lines(100)
-print("Welcome to the RPG Game!")
-print("To start, choose a class: Warrior, Mage, Rogue, Healer, Ranger")
-chosen_class = input("> ").capitalize()
+print_slow(r"""
+ _____         _      _   _
+|_   _|____  _| |_   | | | | ___ _ __ ___
+  | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
+  | |  __/>  <| |_   |  _  |  __/ | | (_) |
+  |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/
+""")
+
+print_slow("Welcome to the Text Hero!")
+print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Ranger")
+chosen_class = input(GREEN + "> " + RESET).capitalize()
 clear_lines(100)
 if chosen_class not in classes:
     chosen_class = "Warrior"
@@ -369,8 +388,8 @@ defeated_bosses = set()
 
 
 def show_market_items():
-    # Print top border
-    print("""┌──────────────────────┬────────────┬────────────────────────┐
+    # print_slow top border
+    print_slow("""┌──────────────────────┬────────────┬────────────────────────┐
 | Item Name            │ Price      │ Description            |
 ├──────────────────────┼────────────┼────────────────────────┤
 | health potion        │    30 gold │ Restores 30 health     |
@@ -380,7 +399,7 @@ def show_market_items():
 | leather pants        │    60 gold │ Basic leg protection   |
 | leather boots        │    40 gold │ Basic foot protection  |
 └──────────────────────┴────────────┴────────────────────────┘""")
-    print("---------------------------")
+    print_slow("---------------------------")
     
 
 
@@ -426,29 +445,29 @@ while True:
             "attack_max": enemy_type['attack_max']
         }
         last_turn_log = ""  # Initialize empty log for the first turn.
-        print("A fearsome monster appears!")
+        print_slow("A fearsome monster appears!")
         turn = 1
         # Combat loop
 
         while enemy["health"] > 0 and player["health"] > 0:
-            print("---------------------------")
-            print(f"Enemy Health: {enemy['health']}")
-            print("---------------------------")
-            print(f"Your Health: {player['health']}")
-            print(f"Your Mana: {player['mana']}")
-            print(f"Your Armour: {player['armor']}")
+            print_slow("---------------------------")
+            print_slow(f"Enemy Health: {enemy['health']}")
+            print_slow("---------------------------")
+            print_slow(f"Your Health: {player['health']}")
+            print_slow(f"Your Mana: {player['mana']}")
+            print_slow(f"Your Armour: {player['armor']}")
 
             # Display inventory
-            print("\nInventory:")
+            print_slow("\nInventory:")
             if inventory:
                 for i, item in enumerate(inventory, 1):
-                    print(f"{i}. {item}")
+                    print_slow(f"{i}. {item}")
             else:
-                print("Empty")
+                print_slow("Empty")
             
-            print("---------------------------")
-            print("Choose an action: fight, defend, cast [spell], use [item]")
-            action = input("> ").lower().split()
+            print_slow("---------------------------")
+            print_slow("Choose an action: fight, defend, cast [spell], use [item]")
+            action = input(GREEN + "> " + RESET).lower().split()
             clear_lines(100)  # Clear the screen for the new combat turn
             turn += 1
             valid_action = False
@@ -456,8 +475,8 @@ while True:
             
             if action[0] == "fight":
                 valid_action = True
-                print("Time your attack! The closer to the green center, the more damage you deal!")
-                accuracy_percent = run_slider(5, 35)  # Scale of 5, minimum 50%
+                print(GREEN + "Time your attack! The closer to the green center, the more damage you deal!" + RESET)
+                accuracy_percent = run_slider(7.5, 35)
                 base_damage = player["attack"]
                 attack_damage = int(base_damage * (accuracy_percent / 100))
                 turn_log += f"You attack with {accuracy_percent}% accuracy for {attack_damage} damage!\n"
@@ -465,7 +484,6 @@ while True:
             
             elif action[0] == "defend":
                 valid_action = True
-                print("Time your defense! Better timing means more protection!")
                 defense_percent = random.randint(40, 140)
                 plus_armour = round((10 * defense_percent) / 100)
                 mana_regen = round((20 * defense_percent) / 100)
@@ -477,7 +495,6 @@ while True:
                 valid_action = True
                 spell_name = " ".join(action[1:])  # Join all remaining words into spell name
                 if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
-                    print(f"Time your spell casting! Better timing means more effective {spell_name}!")
                     spell_percent = random.randint(40,140)
                     
                     if spell_name == "fireball":
@@ -531,10 +548,10 @@ while True:
                         tier = random.choice(['leather', 'chainmail', 'iron'])
                         dropped_item = f"{tier} {slot}"
                         inventory.append(dropped_item)
-                        print(f"\nThe monster dropped {dropped_item}!")
-                    print(turn_log)
-                    print(f"You defeated the monster and earned {gold_dropped} gold!")
-                    print("---------------------------")
+                        print_slow(f"\nThe monster dropped {dropped_item}!")
+                    print_slow(turn_log)
+                    print_slow(f"You defeated the monster and earned {gold_dropped} gold!")
+                    print_slow("---------------------------")
 
                     del rooms[currentRoom]["item"]
                     break
@@ -545,19 +562,19 @@ while True:
             turn_log += f"The monster attacks you for {enemy_attack} damage!\n"
             if player["health"] <= 0:
                 turn_log += "You died! Game over.\n"
-                print(turn_log)
+                print_slow(turn_log)
                 exit()
             last_turn_log = turn_log
-            print(turn_log)
+            print_slow(turn_log)
             continue
     # Show current status
     if currentRoom == '1-17':
-        print('Shop')
-        print("---------------------------")
+        print_slow('Shop')
+        print_slow("---------------------------")
         show_market_items()
     showStatus()
 
-    move = input('> ').lower().split()
+    move = input(GREEN + "> " + RESET).lower().split()
     clear_lines(100)
     # Handle help command
     if move[0] == 'help':
@@ -572,17 +589,17 @@ while True:
         if direction in rooms[currentRoom]:
             currentRoom = rooms[currentRoom][direction]
         else:
-            print(f"Error: You can't go that way: {direction}")
+            print_slow(f"Error: You can't go that way: {direction}")
         continue
     # Handle item pickup
     elif move[0] == 'get':
         item_name = " ".join(move[1:])
         if "item" in rooms[currentRoom] and item_name == rooms[currentRoom]['item']:
             inventory.append(item_name)
-            print(item_name + ' got!')
+            print_slow(item_name + ' got!')
             del rooms[currentRoom]['item']
         else:
-            print("Can't get " + item_name + "!")
+            print_slow("Can't get " + item_name + "!")
         continue
     # Handle item usage
     elif move[0] == 'use':
@@ -591,27 +608,27 @@ while True:
             if item_name == "health potion":
                 player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
                 inventory.remove("health potion")
-                print("You used a health potion and restored 30 health!")
+                print_slow("You used a health potion and restored 30 health!")
             elif item_name == "mana potion":
                 player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                 inventory.remove("mana potion")
-                print("You used a mana potion and restored 30 mana!")
+                print_slow("You used a mana potion and restored 30 mana!")
             elif item_name in ARMOR_SLOTS:
                 # Handle armor equipping
                 slot = item_name.split(' ')[1]
                 item_type = item_name.split(' ')[0]
                 result = equip_armor(slot, item_type)
-                print(result)
+                print_slow(result)
             else:
-                print("You can't use that item!")
+                print_slow("You can't use that item!")
         else:
-            print("You don't have that item!")
+            print_slow("You don't have that item!")
         continue
     # Handle armor removal
     elif move[0] == 'remove':
         slot = " ".join(move[1:])
         result = remove_armor(slot)
-        print(result)
+        print_slow(result)
         continue
     # Handle armor equipping
     elif move[0] == 'equip':
@@ -619,20 +636,20 @@ while True:
             slot = move[1]
             item_type = move[2]
             result = equip_armor(slot, item_type)
-            print(result)
+            print_slow(result)
         else:
-            print("Usage: equip [slot] [type]")
+            print_slow("Usage: equip [slot] [type]")
         continue
     elif move[0] == 'buy' and currentRoom == '1-17':
         item_name = " ".join(move[1:])
         result = buy_item(item_name)
-        print(result)
+        print_slow(result)
         continue
     elif move[0] == 'sell' and currentRoom == '1-17':
         item_name = " ".join(move[1:])
         result = sell_item(item_name)
-        print(result)
+        print_slow(result)
         continue
     # Handle invalid commands
     else:
-        print("Invalid command!")
+        print_slow("Invalid command!")
