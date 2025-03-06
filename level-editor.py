@@ -1,32 +1,33 @@
-# Preset rooms dictionary with one-way connections
 rooms = {
     '1-1': {
-        'east': '1-2',
-        'west': '1-16'
+        "east": '1-2',
+        "item": "health potion"
     },
     '1-2': {
         'north': '1-3',
-        'west': '1-1'
+        'west': '1-1',
+        "item": "monster"
     },
     '1-3': {
         'west': '1-4',
         'south': '1-2',
-        'item': 'monster'
+        'item': 'iron helmet'
     },
     '1-4': {
         'east': '1-3',
         'west': '1-15',
         'north': '1-5',
-        "item":"armor"
+        'item': 'chainmail boots'
     },
     '1-5': {
         'south': '1-4',
-        'west': '1-6'
+        'west': '1-6',
+        'item': 'monster'
     },
     '1-6': {
         'west': '1-7',
         'east': '1-5',
-        "item":"mana potion"
+        "item": "mana potion"
     },
     '1-7': {
         'east': '1-6',
@@ -44,44 +45,46 @@ rooms = {
         'west': '1-10',
         'south': '1-13',
         'east': '1-8',
-        "item":"key"
-
+        "item": "key"
     },
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        "item":"sword"
+        "item": "sword"
     },
     '1-11': {
         'north': '1-10',
-        "item":"armor"
+        "item": "leather helmet"
     },
     '1-12': {
-        'south': '1-11'
+        'south': '1-11',
+        'item': 'monster'
     },
     '1-13': {
-        'south': '1-16',
+        'east': '1-16',
         'north': '1-9',
-        "item":"mana potion"
+        "item": "mana potion"
     },
     '1-14': {
         'north': '1-8',
-        "item":"armor"
+        "south": "1-16",
+        "item": "leather chestplate"
     },
     '1-15': {
         'east': '1-4',
         'north': '1-7',
-        "item":"health potion"
+        "item": "health potion"
     },
     '1-16': {
         'east': '1-1',
-        'west': '1-17',
-        'north': '1-13',
+        'north': '1-14',
+        'south': '1-17',
+        'west': '1-13',
         'item': 'monster'
     },
     '1-17': {
         'west': '1-18',
-        'east': '1-16'
+        'north': '1-16'
     },
     '1-18': {
         'west': '1-19',
