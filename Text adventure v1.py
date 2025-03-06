@@ -5,7 +5,11 @@ import time
 from threading import Thread
 
 GREEN = "\033[38;2;0;255;0m"
-RESET = "\033[38;2;0;255;0m"
+ITEM_COLOR = "\033[38;2;255;255;0m"  # Yellow
+RESET = "\033[38;2;0;255;0m"  # Reset color back to default
+BLUE = "\033[38;2;0;255;255m"         # Information, navigation
+RED = "\033[38;2;255;0;0m"          # Damage, danger
+COMBAT_COLOR = "\033[38;2;255;175;66m"  # Combat, action
 class static_slider(Thread):
     def __init__(self, delay: int):
         """A class which runs a visual slider and return a number up to 29. 
@@ -37,7 +41,7 @@ def run_slider(scale: int, offset: int, delay = 0.02):
     Offset is a number added to the result to raise the maximum & minimum percent."""
     main = static_slider(delay)
     main.start()
-    input(GREEN + "Press Enter to stop the slider!" + RESET)
+    input(GREEN + "Press Enter to stop the slider!")
     main.kill = True
     time.sleep(delay + 0.01)
     print()
@@ -53,13 +57,50 @@ ARMOR_TIERS = {
 def print_slow(text):
     # ANSI escape sequence for RGB color (0,255,0 is green)
     GREEN_COLOR = "\033[38;2;0;255;0m"
+    YELLOW_COLOR = "\033[38;2;255;255;0m"
     RESET_COLOR = "\033[0m"  # Reset color back to default
     
-    for char in text:
-        sys.stdout.write(GREEN_COLOR + char + RESET_COLOR)
-        sys.stdout.flush()
-        time.sleep(0.00065)
-    print()  # Add newline at end
+    # Split text into parts that are either ANSI sequences or regular text
+    parts = []
+    current_part = ""
+    i = 0
+    
+    while i < len(text):
+        # Check if we're at the start of an ANSI sequence
+        if text[i:i+2] == "\033[":
+            # If we have regular text before this sequence, add it
+            if current_part:
+                parts.append(current_part)
+                current_part = ""
+            
+            # Find the end of the ANSI sequence
+            j = text.find("m", i)
+            if j != -1:
+                parts.append(text[i:j+1])
+                i = j + 1
+                continue
+        
+        # Add the current character to the regular text part
+        current_part += text[i]
+        i += 1
+    
+    # Add any remaining regular text
+    if current_part:
+        parts.append(current_part)
+    
+    # Print each part slowly, but keep ANSI sequences together
+    for part in parts:
+        if part.startswith("\033["):
+            # ANSI sequence - print all at once
+            sys.stdout.write(part)
+            sys.stdout.flush()
+        else:
+            # Regular text - print character by character with proper color
+            for char in part:
+                sys.stdout.write(char)  # Write the character first
+                sys.stdout.flush()
+                time.sleep(0.00065)
+    
     print()  # Add newline at end
 def showStart():
     print_slow('''\nText Adventure\n=========\nCommands:\ngo [direction]\nget [item]\nuse [item]''')
@@ -155,38 +196,38 @@ def showAvailableDirections(room):
     """Show all available directions for the current room with destination room numbers."""
     directions = []
     if 'north' in room:
-        directions.append(f"  north: {room['north']}")
+        directions.append(f"  north: {BLUE}{room['north']}{RESET}")
     if 'south' in room:
-        directions.append(f"  south: {room['south']}")
+        directions.append(f"  south: {BLUE}{room['south']}{RESET}")
     if 'east' in room:
-        directions.append(f"  east: {room['east']}")
+        directions.append(f"  east: {BLUE}{room['east']}{RESET}")
     if 'west' in room:
-        directions.append(f"  west: {room['west']}")
+        directions.append(f"  west: {BLUE}{room['west']}{RESET}")
     return "\n".join(directions)
 
 def showStatus():
-    print_slow('You are in the ' + currentRoom)
+    print_slow('You are in the ' + BLUE+currentRoom+RESET)
     print_slow('Available directions:')
     print_slow(showAvailableDirections(rooms[currentRoom]))
     print_slow(f'Health: {player["health"]}')
     print_slow(f'Armor: {player["armor"]}')
     print_slow(f'Mana: {player["mana"]}')
     print_slow(f'Gold: {player["gold"]}')
-    print_slow(f'Class: {player["class"]}')
+    print_slow(f'Class: {BLUE}{player["class"]}{RESET}')
     print_slow('Equipped Armor:')
     for slot, item in player_equipment.items():
         if item:
-            print_slow(f'- {slot}: {item}')
+            print_slow(f'- {slot}: {ITEM_COLOR}{item}{RESET}')
     print_slow_list('Inventory', inventory)
     if "item" in rooms[currentRoom]:
         if rooms[currentRoom]['item'] == 'monster':
             print_slow("A fearsome monster awaits you!")
         else:
-            print_slow('You see a ' + rooms[currentRoom]['item'])
+            print_slow(f"{GREEN}You see a{RESET} {ITEM_COLOR}{rooms[currentRoom]['item']}{RESET}")
     print_slow("---------------------------")
 
 def print_slow_list(tag, items):
-    print_slow(f"{tag}: {', '.join(map(str, items))}")
+    print_slow(f"{tag}: {ITEM_COLOR}{', '.join(map(str, items))}{RESET}")
 
 def equip_armor(item_type, slot):
     """Equip armor in specified slot"""
@@ -334,6 +375,7 @@ rooms = {
 
 # Game setup
 clear_lines(100)
+print(GREEN)
 print_slow(r"""
  _____         _      _   _
 |_   _|____  _| |_   | | | | ___ _ __ ___
@@ -344,7 +386,7 @@ print_slow(r"""
 
 print_slow("Welcome to the Text Hero!")
 print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Ranger")
-chosen_class = input(GREEN + "> " + RESET).capitalize()
+chosen_class = input(GREEN + "> ").capitalize()
 clear_lines(100)
 if chosen_class not in classes:
     chosen_class = "Warrior"
@@ -467,73 +509,75 @@ while True:
             
             print_slow("---------------------------")
             print_slow("Choose an action: fight, defend, cast [spell], use [item]")
-            action = input(GREEN + "> " + RESET).lower().split()
+            action = input(GREEN + "> ").lower().split()
             clear_lines(100)  # Clear the screen for the new combat turn
             turn += 1
             valid_action = False
             turn_log = ""  # Log for this turn
-            
-            if action[0] == "fight":
-                valid_action = True
-                print(GREEN + "Time your attack! The closer to the green center, the more damage you deal!" + RESET)
-                accuracy_percent = run_slider(7.5, 35)
-                base_damage = player["attack"]
-                attack_damage = int(base_damage * (accuracy_percent / 100))
-                turn_log += f"You attack with {accuracy_percent}% accuracy for {attack_damage} damage!\n"
-                enemy["health"] -= attack_damage
-            
-            elif action[0] == "defend":
-                valid_action = True
-                defense_percent = random.randint(40, 140)
-                plus_armour = round((10 * defense_percent) / 100)
-                mana_regen = round((20 * defense_percent) / 100)
-                player["armor"] += plus_armour
-                player["mana"] += mana_regen
-                turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armour} armor and {mana_regen} mana!\n"
-            
-            elif action[0] == "cast" and len(action) > 1:
-                valid_action = True
-                spell_name = " ".join(action[1:])  # Join all remaining words into spell name
-                if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
-                    spell_percent = random.randint(40,140)
-                    
-                    if spell_name == "fireball":
-                        base_damage = player["spells"][spell_name][0]
-                        damage = int(base_damage * (spell_percent / 100))
-                        turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for {damage} damage!\n"
-                    elif spell_name == "shadow strike":
-                        base_damage = player["spells"][spell_name][0]
-                        damage = int(base_damage * (spell_percent / 100))
-                        turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for {damage} damage!\n"
-                    elif spell_name == "slash":
-                        base_damage = player["spells"][spell_name][0]
-                        damage = int(base_damage * (spell_percent / 100))
-                        turn_log += f"You swing your weapon with {spell_percent}% precision for {damage} damage!\n"
-                    elif spell_name == "circle heal":
-                        base_healing = player["spells"][spell_name][0]
-                        healing_amount = int(base_healing * (spell_percent / 100))
-                        player["health"] = min(player["health"] + healing_amount,
-                                            classes[player["class"]]["health"])
-                        turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                    elif spell_name == "bleeding arrow":
-                        base_damage = player["spells"][spell_name][0]
-                        damage = int(base_damage * (spell_percent / 100))
-                        turn_log += f"You shoot an arrow with {spell_percent}% accuracy for {damage} damage!\n"
-                    
-                    enemy["health"] -= damage
-                    player["mana"] -= player["spells"][spell_name][1]
-                else:
-                    turn_log += "Not enough mana or invalid spell!\n"
-            elif action[0] == "use" and len(action) > 1:
-                valid_action = True
-                item_name = " ".join(action[1:])
-                item_result = use_item_during_combat(item_name)
-                if item_result:
-                    turn_log += item_result + "\n"
-                else:
-                    turn_log += "Invalid action!\n"
-            
+            if len(action) > 0:
+                if action[0] == "fight":
+                    valid_action = True
+                    print(GREEN + "Time your attack! The closer to the green center, the more damage you deal!")
+                    accuracy_percent = run_slider(7.5, 35)
+                    base_damage = player["attack"]
+                    attack_damage = int(base_damage * (accuracy_percent / 100))
+                    turn_log += f"{GREEN}You attack with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{RESET}\n"
+                    enemy["health"] -= attack_damage
 
+                elif action[0] == "defend":
+                    valid_action = True
+                    defense_percent = random.randint(40, 140)
+                    plus_armour = round((10 * defense_percent) / 100)
+                    mana_regen = round((20 * defense_percent) / 100)
+                    player["armor"] += plus_armour
+                    player["mana"] += mana_regen
+                    turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armour} armor and {mana_regen} mana!\n"
+
+                elif action[0] == "cast" and len(action) > 1:
+                    valid_action = True
+                    spell_name = " ".join(action[1:])  # Join all remaining words into spell name
+                    if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
+                        spell_percent = random.randint(40,140)
+
+                        if spell_name == "fireball":
+                            base_damage = player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET}!\n"
+                        elif spell_name == "shadow strike":
+                            base_damage = player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                        elif spell_name == "slash":
+                            base_damage = player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            turn_log += f"You swing your weapon with {spell_percent}% precision for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                        elif spell_name == "circle heal":
+                            base_healing = player["spells"][spell_name][0]
+                            healing_amount = int(base_healing * (spell_percent / 100))
+                            player["health"] = min(player["health"] + healing_amount,
+                                                classes[player["class"]]["health"])
+                            turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                        elif spell_name == "bleeding arrow":
+                            base_damage = player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            turn_log += f"You shoot an arrow with {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+
+                        enemy["health"] -= damage
+                        player["mana"] -= player["spells"][spell_name][1]
+                    else:
+                        turn_log += "Not enough mana or invalid spell!\n"
+                elif action[0] == "use" and len(action) > 1:
+                    valid_action = True
+                    item_name = " ".join(action[1:])
+                    item_result = use_item_during_combat(item_name)
+                    if item_result:
+                        turn_log += item_result + "\n"
+                    else:
+                        turn_log += "Invalid action!\n"
+
+            else:
+                turn_log += "Invalid action!\n"
+                continue
             if valid_action:
                 if enemy["health"] <= 0:
                     clear_lines(100)
@@ -548,9 +592,9 @@ while True:
                         tier = random.choice(['leather', 'chainmail', 'iron'])
                         dropped_item = f"{tier} {slot}"
                         inventory.append(dropped_item)
-                        print_slow(f"\nThe monster dropped {dropped_item}!")
+                        print_slow(f"\n{RESET}The monster dropped {dropped_item}!")
                     print_slow(turn_log)
-                    print_slow(f"You defeated the monster and earned {gold_dropped} gold!")
+                    print_slow(f"You defeated the monster and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
                     print_slow("---------------------------")
 
                     del rooms[currentRoom]["item"]
@@ -559,7 +603,7 @@ while True:
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) *
                                    (1 - player["armor"] / 100))
             player["health"] -= enemy_attack
-            turn_log += f"The monster attacks you for {enemy_attack} damage!\n"
+            turn_log += f"The monster attacks you for{RED} {enemy_attack} damage!{RESET}\n"
             if player["health"] <= 0:
                 turn_log += "You died! Game over.\n"
                 print_slow(turn_log)
@@ -574,82 +618,85 @@ while True:
         show_market_items()
     showStatus()
 
-    move = input(GREEN + "> " + RESET).lower().split()
+    move = input(GREEN + "> ").lower().split()
     clear_lines(100)
+    if len(move) > 0:
     # Handle help command
-    if move[0] == 'help':
-        if len(move) > 1:
-            showHelp(' '.join(move[1:]))
-        else:
-            showHelp()
-        continue
-    # Handle movement
-    elif move[0] == 'go':
-        direction = move[1]
-        if direction in rooms[currentRoom]:
-            currentRoom = rooms[currentRoom][direction]
-        else:
-            print_slow(f"Error: You can't go that way: {direction}")
-        continue
-    # Handle item pickup
-    elif move[0] == 'get':
-        item_name = " ".join(move[1:])
-        if "item" in rooms[currentRoom] and item_name == rooms[currentRoom]['item']:
-            inventory.append(item_name)
-            print_slow(item_name + ' got!')
-            del rooms[currentRoom]['item']
-        else:
-            print_slow("Can't get " + item_name + "!")
-        continue
-    # Handle item usage
-    elif move[0] == 'use':
-        item_name = " ".join(move[1:])
-        if item_name in inventory:
-            if item_name == "health potion":
-                player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
-                inventory.remove("health potion")
-                print_slow("You used a health potion and restored 30 health!")
-            elif item_name == "mana potion":
-                player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
-                inventory.remove("mana potion")
-                print_slow("You used a mana potion and restored 30 mana!")
-            elif item_name in ARMOR_SLOTS:
-                # Handle armor equipping
-                slot = item_name.split(' ')[1]
-                item_type = item_name.split(' ')[0]
+        if move[0] == 'help':
+            if len(move) > 1:
+                showHelp(' '.join(move[1:]))
+            else:
+                showHelp()
+            continue
+        # Handle movement
+        elif move[0] == 'go':
+            direction = move[1]
+            if direction in rooms[currentRoom]:
+                currentRoom = rooms[currentRoom][direction]
+            else:
+                print_slow(f"Error: You can't go that way: {direction}")
+            continue
+        # Handle item pickup
+        elif move[0] == 'get':
+            item_name = " ".join(move[1:])
+            if "item" in rooms[currentRoom] and item_name == rooms[currentRoom]['item']:
+                inventory.append(item_name)
+                print_slow(item_name + ' got!')
+                del rooms[currentRoom]['item']
+            else:
+                print_slow("Can't get " + item_name + "!")
+            continue
+        # Handle item usage
+        elif move[0] == 'use':
+            item_name = " ".join(move[1:])
+            if item_name in inventory:
+                if item_name == "health potion":
+                    player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
+                    inventory.remove("health potion")
+                    print_slow("You used a health potion and restored 30 health!")
+                elif item_name == "mana potion":
+                    player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
+                    inventory.remove("mana potion")
+                    print_slow("You used a mana potion and restored 30 mana!")
+                elif item_name in ARMOR_SLOTS:
+                    # Handle armor equipping
+                    slot = item_name.split(' ')[1]
+                    item_type = item_name.split(' ')[0]
+                    result = equip_armor(slot, item_type)
+                    print_slow(result)
+                else:
+                    print_slow("You can't use that item!")
+            else:
+                print_slow("You don't have that item!")
+            continue
+        # Handle armor removal
+        elif move[0] == 'remove':
+            slot = " ".join(move[1:])
+            result = remove_armor(slot)
+            print_slow(result)
+            continue
+        # Handle armor equipping
+        elif move[0] == 'equip':
+            if len(move) >= 3:
+                slot = move[1]
+                item_type = move[2]
                 result = equip_armor(slot, item_type)
                 print_slow(result)
             else:
-                print_slow("You can't use that item!")
-        else:
-            print_slow("You don't have that item!")
-        continue
-    # Handle armor removal
-    elif move[0] == 'remove':
-        slot = " ".join(move[1:])
-        result = remove_armor(slot)
-        print_slow(result)
-        continue
-    # Handle armor equipping
-    elif move[0] == 'equip':
-        if len(move) >= 3:
-            slot = move[1]
-            item_type = move[2]
-            result = equip_armor(slot, item_type)
+                print_slow("Usage: equip [slot] [type]")
+            continue
+        elif move[0] == 'buy' and currentRoom == '1-17':
+            item_name = " ".join(move[1:])
+            result = buy_item(item_name)
             print_slow(result)
+            continue
+        elif move[0] == 'sell' and currentRoom == '1-17':
+            item_name = " ".join(move[1:])
+            result = sell_item(item_name)
+            print_slow(result)
+            continue
+        # Handle invalid commands
         else:
-            print_slow("Usage: equip [slot] [type]")
-        continue
-    elif move[0] == 'buy' and currentRoom == '1-17':
-        item_name = " ".join(move[1:])
-        result = buy_item(item_name)
-        print_slow(result)
-        continue
-    elif move[0] == 'sell' and currentRoom == '1-17':
-        item_name = " ".join(move[1:])
-        result = sell_item(item_name)
-        print_slow(result)
-        continue
-    # Handle invalid commands
+            print_slow("Invalid command!")
     else:
         print_slow("Invalid command!")
