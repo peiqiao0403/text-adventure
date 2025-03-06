@@ -76,7 +76,6 @@ rooms = {
         "item": "health potion"
     },
     '1-16': {
-        'east': '1-1',
         'north': '1-14',
         'south': '1-17',
         'west': '1-13',
