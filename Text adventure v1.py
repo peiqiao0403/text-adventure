@@ -9,7 +9,7 @@ ITEM_COLOR = "\033[38;2;255;255;0m"  # Yellow
 RESET = "\033[38;2;0;255;0m"  # Reset color back to default
 BLUE = "\033[38;2;0;255;255m"         # Information, navigation
 RED = "\033[38;2;255;0;0m"          # Damage, danger
-COMBAT_COLOR = "\033[38;2;255;175;66m"  # Combat, action
+COMBAT_COLOR = "\033[38;2;255;100;50m"  # Combat, action
 class static_slider(Thread):
     def __init__(self, delay: int):
         """A class which runs a visual slider and return a number up to 29. 
@@ -432,14 +432,14 @@ defeated_bosses = set()
 def show_market_items():
     # print_slow top border
     print_slow("""┌──────────────────────┬────────────┬────────────────────────┐
-│ Item Name            │ Price      │ Description            │
+| Item Name            │ Price      │ Description            |
 ├──────────────────────┼────────────┼────────────────────────┤
-│ health potion        │    30 gold │ Restores 30 health     │
-│ mana potion          │    30 gold │ Restores 30 mana       │
-│ leather helmet       │    50 gold │ Basic head protection  │
-│ leather chestplate   │    70 gold │ Basic chest protection │
-│ leather pants        │    60 gold │ Basic leg protection   │
-│ leather boots        │    40 gold │ Basic foot protection  │
+| health potion        │    30 gold │ Restores 30 health     |
+| mana potion          │    30 gold │ Restores 30 mana       |
+| leather helmet       │    50 gold │ Basic head protection  |
+| leather chestplate   │    70 gold │ Basic chest protection |
+| leather pants        │    60 gold │ Basic leg protection   |
+| leather boots        │    40 gold │ Basic foot protection  |
 └──────────────────────┴────────────┴────────────────────────┘""")
     print_slow("---------------------------")
     
@@ -490,7 +490,7 @@ while True:
         print_slow("A fearsome monster appears!")
         turn = 1
         # Combat loop
-
+        original_armor = player["armor"]
         while enemy["health"] > 0 and player["health"] > 0:
             print_slow("---------------------------")
             print_slow(f"Enemy Health: {enemy['health']}")
@@ -596,7 +596,7 @@ while True:
                     print_slow(turn_log)
                     print_slow(f"You defeated the monster and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
                     print_slow("---------------------------")
-
+                    player["armor"] = original_armor
                     del rooms[currentRoom]["item"]
                     break
             # Monster's turn to attack
