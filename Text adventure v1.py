@@ -54,11 +54,15 @@ ARMOR_TIERS = {
     'chainmail': {'defense': 10, 'weight': 2},
     'iron': {'defense': 15, 'weight': 3}
 }
+
+# Add sword tiers
+SWORD_TIERS = {
+    'wooden': {'damage': 5},
+    'iron': {'damage': 10},
+    'steel': {'damage': 15},
+    'mythril': {'damage': 30}
+}
 def print_slow(text):
-    # ANSI escape sequence for RGB color (0,255,0 is green)
-    GREEN_COLOR = "\033[38;2;0;255;0m"
-    YELLOW_COLOR = "\033[38;2;255;255;0m"
-    RESET_COLOR = "\033[0m"  # Reset color back to default
     
     # Split text into parts that are either ANSI sequences or regular text
     parts = []
@@ -230,43 +234,72 @@ def print_slow_list(tag, items):
     print_slow(f"{tag}: {ITEM_COLOR}{', '.join(map(str, items))}{RESET}")
 
 def equip_armor(item_type, slot):
-    """Equip armor in specified slot"""
+    """Equip armor or sword in specified slot"""
     global player_equipment
-    if slot not in ARMOR_SLOTS:
-        return "Invalid armor slot!"
-    # Check if item exists in inventory
+    if slot not in ARMOR_SLOTS and slot != 'sword':
+        return "Invalid equipment slot!"
+
+    # Handle sword equipping
+    if slot == 'sword':
+        item_name = f"{item_type} sword"
+        if item_name not in inventory:
+            return f"You don't have {item_name}!"
+        
+        # Remove old sword's damage bonus if one is equipped
+        if player_equipment['sword']:
+            old_tier = player_equipment['sword'].split(' ')[0]
+            player['attack'] -= SWORD_TIERS[old_tier]['damage']
+        
+        # Equip new sword
+        player_equipment['sword'] = item_name
+        inventory.remove(item_name)
+        damage_bonus = SWORD_TIERS[item_type]['damage']
+        player['attack'] += damage_bonus
+        return f"Equipped {item_name} (+{damage_bonus} attack)"
+
+    # Handle armor equipping (existing code)
     item_name = f"{item_type} {slot}"
     if item_name not in inventory:
         return f"You don't have {item_type} {slot}!"
-    # Check if slot is empty or same tier
     current_item = player_equipment[slot]
     if current_item:
         old_tier = current_item.split(' ')[0]
         if old_tier != item_type:
             return f"You must remove {old_tier} {slot} first!"
-    # Equip the armor
     player_equipment[slot] = item_name
     inventory.remove(item_name)
     defense_bonus = ARMOR_TIERS[item_type]['defense']
     player["armor"] += defense_bonus
     return f"Equipped {item_type} {slot} (+{defense_bonus} defense)"
 
+
 def remove_armor(slot):
-    """Remove armor from specified slot"""
+    """Remove armor or sword from specified slot"""
     global player_equipment
-    if slot not in ARMOR_SLOTS:
-        return "Invalid armor slot!"
+    if slot not in ARMOR_SLOTS and slot != 'sword':
+        return "Invalid equipment slot!"
+
     current_item = player_equipment[slot]
     if not current_item:
-        return f"No armor equipped in {slot} slot!"
-    # Remove defense bonus
+        return f"No equipment in {slot} slot!"
+
+    # Handle sword removal
+    if slot == 'sword':
+        item_type = current_item.split(' ')[0]
+        damage_bonus = SWORD_TIERS[item_type]['damage']
+        player['attack'] -= damage_bonus
+        inventory.append(current_item)
+        player_equipment[slot] = None
+        return f"Removed {current_item} (-{damage_bonus} attack)"
+
+    # Handle armor removal (existing code)
     item_type = current_item.split(' ')[0]
     defense_bonus = ARMOR_TIERS[item_type]['defense']
     player["armor"] -= defense_bonus
-    # Return item to inventory
     inventory.append(current_item)
     player_equipment[slot] = None
     return f"Removed {current_item} (-{defense_bonus} defense)"
+
 
 # Room layout with armor items
 rooms = {
@@ -282,7 +315,7 @@ rooms = {
     '1-3': {
         'west': '1-4',
         'south': '1-2',
-        'item': 'iron helmet'
+        'item': 'iron sword'
     },
     '1-4': {
         'east': '1-3',
@@ -395,11 +428,11 @@ def use_item_during_combat(item):
         if item == "health potion" and item in inventory:
             player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
             inventory.remove("health potion")
-            return f"Used health potion! Restored 30 health!"
+            return "Used health potion! Restored 30 health!"
         elif item == "mana potion" and item in inventory:
             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
             inventory.remove("mana potion")
-            return f"Used mana potion! Restored 30 mana!"
+            return "Used mana potion! Restored 30 mana!"
         else:
             return f"Cannot use {item} during combat!"
     except Exception as e:
@@ -414,12 +447,12 @@ player = {
     "gold": 0  # Starting gold
 }
 
-# Initialize player's equipped armor
 player_equipment = {
     'helmet': None,
     'chestplate': None,
     'pants': None,
-    'boots': None
+    'boots': None,
+    'sword': None  # Add sword slot
 }
 
 # Initialize inventory
@@ -600,8 +633,7 @@ while True:
                     del rooms[currentRoom]["item"]
                     break
             # Monster's turn to attack
-            enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) *
-                                   (1 - player["armor"] / 100))
+            enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
             player["health"] -= enemy_attack
             turn_log += f"The monster attacks you for{RED} {enemy_attack} damage!{RESET}\n"
             if player["health"] <= 0:
