@@ -146,10 +146,10 @@ MONSTER_TYPES = {
         'name': 'Count Dracula',
         'health': 250,
         'attack_min': 35,
-        'attack_max': 50,
-        'gold_drop_range': (1000, 1500),
+        'attack_max': 45,
+        'gold_drop_range': (500, 1000),
         'item_drop_chance': 1,
-        'lifesteal_range': (1, 5)  # Percentage range for lifesteal
+        'lifesteal_range': (5, 10)  # Percentage range for lifesteal
     }
 }
 
@@ -217,6 +217,10 @@ def showAvailableDirections(room):
         directions.append(f"  east: {BLUE}{room['east']}{RESET}")
     if 'west' in room:
         directions.append(f"  west: {BLUE}{room['west']}{RESET}")
+    if 'down' in room:
+        directions.append(f"  down: {BLUE}{room['down']}{RESET}")
+    if 'up' in room:
+        directions.append(f"  up: {BLUE}{room['up']}{RESET}")
     return "\n".join(directions)
 
 def showStatus():
@@ -310,7 +314,6 @@ def remove_armor(slot):
     player_equipment[slot] = None
     return f"Removed {current_item} (-{defense_bonus} defense)"
 
-
 # Room layout with armor items
 rooms = {
     '1-1': {
@@ -325,7 +328,7 @@ rooms = {
     '1-3': {
         'west': '1-4',
         'south': '1-2',
-        'item': 'iron sword'
+        'item': 'wooden sword'
     },
     '1-4': {
         'east': '1-3',
@@ -364,6 +367,7 @@ rooms = {
     '1-10': {
         'south': '1-11',
         'east': '1-9',
+        # 'down': 'dungeon-1',  # Add connection to dungeon
         "item": "monster"
     },
     '1-11': {
@@ -411,10 +415,61 @@ rooms = {
     },
     '1-20': {
         'east': '1-19'
+    },
+    'dungeon-1': {
+        'up': '1-10',  # Connection back to main area
+        'east': 'dungeon-2',
+        'item': 'monster'
+    },
+    'dungeon-2': {
+        'west': 'dungeon-1',
+        'south': 'dungeon-3',
+        'item': 'iron sword'
+    },
+    'dungeon-3': {
+        'north': 'dungeon-2',
+        'item': 'monster'
     }
 }
 
-
+# Add to the global variables section
+BLACKSMITH_RECIPES = {
+    'bleeding key': {
+        'materials': {'key fragment': 3},
+        'price': 0,
+        'description': 'Opens the dungeon entrance'
+    },
+    'iron sword': {
+        'materials': {},
+        'price': 200,
+        'description': '+10 attack damage'
+    },
+    'steel sword': {
+        'materials': {},
+        'price': 300,
+        'description': '+15 attack damage'
+    },
+    'iron helmet': {
+        'materials': {},
+        'price': 150,
+        'description': '+15 defense'
+    },
+    'iron chestplate': {
+        'materials': {},
+        'price': 200,
+        'description': '+15 defense'
+    },
+    'iron pants': {
+        'materials': {},
+        'price': 180,
+        'description': '+15 defense'
+    },
+    'iron boots': {
+        'materials': {},
+        'price': 120,
+        'description': '+15 defense'
+    }
+}
 
 # Game setup
 clear_lines(100)
@@ -454,7 +509,8 @@ player = {
     "class": chosen_class,
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
-    "gold": 0  # Starting gold
+    "gold": 0,  # Starting gold
+    "key_fragment_chance": 0.3  # Starting chance for key fragments
 }
 
 player_equipment = {
@@ -513,6 +569,48 @@ def sell_item(item_name):
         return f"Sold {item_name} for {sell_price} gold!"
     return "You can't sell that item here!"
 
+def show_blacksmith_items():
+    print_slow("""
+┌──────────────────────┬───────────────────┬────────────────────────┐
+| Item Name            │ Price             │ Description            |
+├──────────────────────┼───────────────────┼────────────────────────┤
+| bleeding key         │   3 key fragments │ Opens dungeon entrance |
+| iron sword           │          100 gold │ +10 attack damage      |
+| steel sword          │          200 gold │ +15 attack damage      |
+| iron helmet          │          100 gold │ +15 defense            |
+| iron chestplate      │          150 gold │ +15 defense            |
+| iron pants           │          130 gold │ +15 defense            |
+| iron boots           │           80 gold │ +15 defense            |
+└──────────────────────┴───────────────────┴────────────────────────┘""")
+    print_slow("---------------------------")
+
+def forge_item(item_name):
+    """Handle crafting items at the blacksmith"""
+    if item_name not in BLACKSMITH_RECIPES:
+        return "That item isn't available to forge!"
+    
+    recipe = BLACKSMITH_RECIPES[item_name]
+    price = recipe['price']
+    
+    # Check if player has enough gold
+    if player['gold'] < price:
+        return f"You don't have enough gold! (Need {price} gold)"
+    
+    # Check if player has required materials
+    for material, amount in recipe['materials'].items():
+        count = inventory.count(material)
+        if count < amount:
+            return f"You need {amount} {material}(s)! (Have {count})"
+    
+    # Remove materials and gold, add forged item
+    for material, amount in recipe['materials'].items():
+        for _ in range(amount):
+            inventory.remove(material)
+    
+    player['gold'] -= price
+    inventory.append(item_name)
+    return f"Forged {item_name} for {price} gold!"
+
 # Main game loop
 currentRoom = '1-1'
 help_system = HelpSystem()
@@ -524,7 +622,7 @@ while True:
         # Determine monster type
         if currentRoom == '1-19':
             enemy_type = MONSTER_TYPES['boss']
-        elif currentRoom == '1-10':
+        elif currentRoom == 'dungeon-3':
             enemy_type = MONSTER_TYPES['vampire']
         else:
             enemy_type = MONSTER_TYPES['normal']
@@ -537,7 +635,7 @@ while True:
         }
 
         # Add vampire-specific attributes if applicable
-        if currentRoom == '1-10':
+        if currentRoom == 'dungeon-3':
             enemy["lifesteal_range"] = enemy_type['lifesteal_range']
 
         last_turn_log = ""  # Initialize empty log for the first turn.
@@ -640,7 +738,7 @@ while True:
                     player["gold"] = player.get("gold", 0) + gold_dropped
                     
                     # Special drops for specific bosses
-                    if currentRoom == '1-10':  # Vampire boss
+                    if currentRoom == 'dungeon-3':  # Vampire boss
                         inventory.append("vampire pendant")
                         print_slow(f"\n{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
                     if random.random() < enemy_type['item_drop_chance']:
@@ -655,9 +753,17 @@ while True:
                     print_slow("---------------------------")
                     player["armor"] = original_armor
                     del rooms[currentRoom]["item"]
+                    
+                    # Add key fragment drop chance
+                    if random.random() < player['key_fragment_chance']:
+                        inventory.append("key fragment")
+                        print_slow(f"\n{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                        player['key_fragment_chance'] = 0.1  # Reset chance after successful drop
+                    else:
+                        player['key_fragment_chance'] += 0.1  # Increase chance for next time
                     break
             # Monster's turn to attack
-            if currentRoom == '1-10' and "lifesteal_range" in enemy:
+            if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
                 lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
                 lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
                 enemy["health"] += lifesteal_amount
@@ -681,6 +787,11 @@ while True:
         print_slow('Shop')
         print_slow("---------------------------")
         show_market_items()
+    if currentRoom == '1-13':
+        print_slow('Blacksmith')
+        print_slow("---------------------------")
+        show_blacksmith_items()
+        print_slow("Type 'forge [item]' to craft items")
     showStatus()
 
     move = input(GREEN + "> ").lower().split()
@@ -729,6 +840,10 @@ while True:
                     item_type = item_name.split(' ')[0]
                     result = equip_armor(slot, item_type)
                     print_slow(result)
+                elif item_name == "bleeding key" and currentRoom == "1-10":
+                    rooms["1-10"]["down"] = "dungeon-1"
+                    inventory.remove("bleeding key")
+                    print_slow("You unlock the dungeon entrance with the bleeding key!")
                 else:
                     print_slow("You can't use that item!")
             else:
@@ -758,6 +873,11 @@ while True:
         elif move[0] == 'sell' and currentRoom == '1-17':
             item_name = " ".join(move[1:])
             result = sell_item(item_name)
+            print_slow(result)
+            continue
+        elif move[0] == 'forge' and currentRoom == '1-13':
+            item_name = " ".join(move[1:])
+            result = forge_item(item_name)
             print_slow(result)
             continue
         # Handle invalid commands
