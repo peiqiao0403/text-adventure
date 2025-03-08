@@ -25,14 +25,14 @@ class static_slider(Thread):
         y = 1
         while True:
             x += y
-            if x == 28: y = -1 
-            if x == 1: y = 1
+            if x == 28: y = -1  # noqa: E701
+            if x == 1: y = 1  # noqa: E701
             STR = (" " * (x - 1)) + "^" + (" " * (29 - (x + 1)))
             print("\033[101m        \033[103m     \033[102m   \033[103m     \033[101m        \033[0m")
             print(STR)
             time.sleep(self.delay)
             print("\033[F\033[F", end="")
-            if self.kill: break
+            if self.kill: break  # noqa: E701
         self.result = x
 
 def run_slider(scale: int, offset: int, delay = 0.02):
@@ -125,9 +125,9 @@ ARMOR_SLOTS = {
     'boots': ['leather', 'chainmail', 'iron']
 }
 
-# Define monster types
 MONSTER_TYPES = {
     'normal': {
+        'name': 'Monster',
         'health': 50,
         'attack_min': 5,
         'attack_max': 15,
@@ -135,11 +135,21 @@ MONSTER_TYPES = {
         'item_drop_chance': 0.2
     },
     'boss': {
+        'name': 'Boss Monster',
         'health': 200,
         'attack_min': 25,
         'attack_max': 35,
         'gold_drop_range': (100, 150),
         'item_drop_chance': 1
+    },
+    'vampire': {  # Add vampire boss type
+        'name': 'Count Dracula',
+        'health': 250,
+        'attack_min': 35,
+        'attack_max': 50,
+        'gold_drop_range': (1000, 1500),
+        'item_drop_chance': 1,
+        'lifesteal_range': (1, 5)  # Percentage range for lifesteal
     }
 }
 
@@ -354,7 +364,7 @@ rooms = {
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        "item": "sword"
+        "item": "monster"
     },
     '1-11': {
         'north': '1-10',
@@ -510,17 +520,28 @@ help_system = HelpSystem()
 while True:
     # Automatic combat initiation when a monster is present
     if "item" in rooms[currentRoom] and rooms[currentRoom]["item"] == "monster":
-        clear_lines(100)  # Clear the screen for the new combat turn
-        # Determine monster type (boss for room 1-19)
-        enemy_type = MONSTER_TYPES['boss'] if currentRoom == '1-19' else MONSTER_TYPES['normal']
+        clear_lines(100)
+        # Determine monster type
+        if currentRoom == '1-19':
+            enemy_type = MONSTER_TYPES['boss']
+        elif currentRoom == '1-10':
+            enemy_type = MONSTER_TYPES['vampire']
+        else:
+            enemy_type = MONSTER_TYPES['normal']
+        
         enemy = {
-            "name": "Boss Monster" if currentRoom == '1-19' else "Monster",
             "health": enemy_type['health'],
+            "name": enemy_type['name'],
             "attack_min": enemy_type['attack_min'],
             "attack_max": enemy_type['attack_max']
         }
+
+        # Add vampire-specific attributes if applicable
+        if currentRoom == '1-10':
+            enemy["lifesteal_range"] = enemy_type['lifesteal_range']
+
         last_turn_log = ""  # Initialize empty log for the first turn.
-        print_slow("A fearsome monster appears!")
+        print_slow(f"A {enemy['name']} appears!")
         turn = 1
         # Combat loop
         original_armor = player["armor"]
@@ -617,25 +638,37 @@ while True:
                     gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
                                                 enemy_type['gold_drop_range'][1])
                     player["gold"] = player.get("gold", 0) + gold_dropped
-                    if currentRoom == '1-19':
-                        defeated_bosses.add(currentRoom)
+                    
+                    # Special drops for specific bosses
+                    if currentRoom == '1-10':  # Vampire boss
+                        inventory.append("vampire pendant")
+                        print_slow(f"\n{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
                     if random.random() < enemy_type['item_drop_chance']:
                         # Drop a random armor piece
                         slot = random.choice(list(ARMOR_SLOTS.keys()))
                         tier = random.choice(['leather', 'chainmail', 'iron'])
                         dropped_item = f"{tier} {slot}"
                         inventory.append(dropped_item)
-                        print_slow(f"\n{RESET}The monster dropped {dropped_item}!")
+                        print_slow(f"\n{RESET}{enemy['name']} dropped {dropped_item}!")
                     print_slow(turn_log)
-                    print_slow(f"You defeated the monster and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                    print_slow(f"You defeated {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
                     print_slow("---------------------------")
                     player["armor"] = original_armor
                     del rooms[currentRoom]["item"]
                     break
             # Monster's turn to attack
+            if currentRoom == '1-10' and "lifesteal_range" in enemy:
+                lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
+                lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
+                enemy["health"] += lifesteal_amount
+                turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
             player["health"] -= enemy_attack
-            turn_log += f"The monster attacks you for{RED} {enemy_attack} damage!{RESET}\n"
+            turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
+            
+            # Add vampire lifesteal
+
+
             if player["health"] <= 0:
                 turn_log += "You died! Game over.\n"
                 print_slow(turn_log)
