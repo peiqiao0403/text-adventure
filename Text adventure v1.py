@@ -159,10 +159,10 @@ classes = {
     "Ranger": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
 }
 locked_spells = {
-    "Warrior": {'finishing blow':20, 'stun strike':15},
+    "Warrior": {'finishing blow':10, 'stun strike':15},
     "Mage": {'water bolt':10, 'thunder zapper':15},
-    "Rogue": {'stealth':10, 'stealth strike':20},
-    "Healer": {'great heal':25, 'divine shield':15, "minor heal":15, "heal":20},
+    "Rogue": {'stealth':10, 'stealth strike':15},
+    "Healer": {'great heal':25, 'divine shield':15, "minor heal":15},
     "Ranger": {'bleeding arrow':20, 'binding shot':15}
 }
 class HelpSystem:
@@ -822,7 +822,7 @@ while True:
                             }
                             player["mana"] = 0  # Use all mana for the shield
                             turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
-                        elif spell_name in ['stun strike', 'stun bolt', 'nerve strike', 'binding shot', 'thunder zapper']:
+                        elif spell_name in ['stun strike', 'thunder zapper']:
                             stun_chance = spell_percent / 100
                             if random.random() < stun_chance:
                                 stun_duration = random.randint(2, 5)
