@@ -371,7 +371,6 @@ rooms = {
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        'down': 'dungeon-1',
         "item": "monster"
     },
     '1-11': {
