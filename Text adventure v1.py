@@ -6,7 +6,7 @@ from threading import Thread
 
 GREEN = "\033[38;2;0;255;0m"
 ITEM_COLOR = "\033[38;2;255;255;0m"  # Yellow
-RESET = "\033[38;2;255;255;255m"  # Reset color back to default
+RESET = "\033[38;2;0;255;0m"  # Reset color back to default
 BLUE = "\033[38;2;0;255;255m"         # Information, navigation
 RED = "\033[38;2;255;0;0m"          # Damage, danger
 COMBAT_COLOR = "\033[38;2;255;100;50m"  # Combat, action
@@ -952,7 +952,8 @@ while True:
             result = forge_item(item_name)
             print_slow(result)
             continue
-        elif move[0] in ["stop", "quit", "exit", "halt"]:
+        elif move[0].lower() in ["stop", "quit", "exit", "halt"]:
+            print("\033[38;2;255;255;255m")
             quit()
         # Handle invalid commands
         else:
