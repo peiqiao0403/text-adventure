@@ -6,7 +6,7 @@ from threading import Thread
 
 GREEN = "\033[38;2;0;255;0m"
 ITEM_COLOR = "\033[38;2;255;255;0m"  # Yellow
-RESET = "\033[38;2;0;255;0m"  # Reset color back to default
+RESET = "\033[38;2;255;255;255m"  # Reset color back to default
 BLUE = "\033[38;2;0;255;255m"         # Information, navigation
 RED = "\033[38;2;255;0;0m"          # Damage, danger
 COMBAT_COLOR = "\033[38;2;255;100;50m"  # Combat, action
@@ -894,7 +894,7 @@ while True:
                 print_slow("You do not have that item!")
             elif inventory.count("health potion") < int(move[-1]):
                 print_slow("You do not have enough of that item!")
-            elif move[-1].isnumeric() == True and inventory.count("health potion") >= int(move[-1]):
+            elif move[-1].isnumeric() and inventory.count("health potion") >= int(move[-1]):
                 uses = move[-1]
                 for i in range(uses):
                     if item_name == "health potion":
@@ -952,7 +952,7 @@ while True:
             result = forge_item(item_name)
             print_slow(result)
             continue
-        elif move[0] == "stop":
+        elif move[0] in ["stop", "quit", "exit", "halt"]:
             quit()
         # Handle invalid commands
         else:
