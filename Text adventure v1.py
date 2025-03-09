@@ -894,6 +894,33 @@ while True:
                 print_slow("You do not have that item!")
             elif inventory.count("health potion") < int(move[-1]):
                 print_slow("You do not have enough of that item!")
+            elif move[-1].isalpha():
+                uses = 1
+                for i in range(uses):
+                    if item_name == "health potion":
+                        player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
+                        inventory.remove("health potion")
+                        print_slow(f"You used a health potion and restored 30 health {i} time(s)!")
+                    elif item_name == "mana potion":
+                        player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
+                        inventory.remove("mana potion")
+                        print_slow(f"You used a mana potion and restored 30 mana {i} time(s)!")
+                    elif item_name == "spell book":
+                        print_slow(f"{GREEN}Choose a spell: ")
+                        for spell in locked_spells[player["class"]]:
+                            print_slow(spell)
+                        print_slow("> ")
+                        if spell in locked_spells[player["class"]]:
+                            player["spells"][spell] = locked_spells[player["class"]][spell]
+                        else:
+                            print_slow("Can't unlock spell")
+                        player["mana"] = player["mana"]
+                    elif item_name == "bleeding key" and currentRoom == "1-10":
+                        rooms["1-10"]["down"] = "dungeon-1"
+                        inventory.remove("bleeding key")
+                        print_slow("You unlock the dungeon entrance with the bleeding key!")
+                    else:
+                        print_slow("You can't use that item!")
             elif move[-1].isnumeric() and inventory.count("health potion") >= int(move[-1]):
                 uses = move[-1]
                 for i in range(uses):
