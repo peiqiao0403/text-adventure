@@ -684,7 +684,7 @@ while True:
             print_slow("---------------------------")
             print_slow(f"Your Health: {player['health']}")
             print_slow(f"Your Mana: {player['mana']}")
-            print_slow(f"Your Armour: {player['armor']}")
+            print_slow(f"Your armor: {player['armor']}")
 
             # Display inventory
             show_inventory()
@@ -709,11 +709,11 @@ while True:
                 elif action[0] == "defend":
                     valid_action = True
                     defense_percent = random.randint(40, 140)
-                    plus_armour = round((10 * defense_percent) / 100)
+                    plus_armor = round((10 * defense_percent) / 100)
                     mana_regen = round((20 * defense_percent) / 100)
-                    player["armor"] += plus_armour
+                    player["armor"] += plus_armor
                     player["mana"] += mana_regen
-                    turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armour} armor and {mana_regen} mana!\n"
+                    turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armor} armor and {mana_regen} mana!\n"
 
                 elif action[0] == "cast" and len(action) > 1:
                     valid_action = True
@@ -817,10 +817,6 @@ while True:
                 lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
                 enemy["health"] += lifesteal_amount
                 turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
-            if player["armor"] + plus_armour > 80:
-                player["armor"] = 80
-            else:
-                armor = player["armor"] + plus_armour
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
             
             # Handle divine shield damage reduction
