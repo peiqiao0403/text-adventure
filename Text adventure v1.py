@@ -106,9 +106,7 @@ def print_slow(text):
                 time.sleep(0.00065)
     
     print()  # Add newline at end
-def showStart():
-    print_slow('''\nText Adventure\n=========\nCommands:\ngo [direction]\nget [item]\nuse [item]''')
-    print_slow('---------------------------')
+
 MARKET_ITEMS = {
     'health potion': {'price': 30, 'description': 'Restores 30 health'},
     'mana potion': {'price': 30, 'description': 'Restores 30 mana'},
@@ -160,7 +158,13 @@ classes = {
     "Healer": {"health": 150, "armor": 0, "mana": 45, "spells": {"circle heal": [30, 35]}, "attack": 12},
     "Ranger": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
 }
-
+locked_spells = {
+    "Warrior": {'finishing blow':10, 'stun strike':15},
+    "Mage": {'water bolt':10, 'thunder zapper':15},
+    "Rogue": {'stealth':10, 'stealth strike':15},
+    "Healer": {'great heal':25, 'divine shield':15, "minor heal":15, "heal":20},
+    "Ranger": {'bleeding arrow':20, 'binding shot':15}
+}
 class HelpSystem:
 
     def __init__(self):
@@ -236,7 +240,7 @@ def showStatus():
     for slot, item in player_equipment.items():
         if item:
             print_slow(f'- {slot}: {ITEM_COLOR}{item}{RESET}')
-    print_slow_list('Inventory', inventory)
+    show_inventory()
     if "item" in rooms[currentRoom]:
         if rooms[currentRoom]['item'] == 'monster':
             print_slow("A fearsome monster awaits you!")
@@ -362,7 +366,7 @@ rooms = {
         'west': '1-10',
         'south': '1-13',
         'east': '1-8',
-        "item": "key"
+        "item": "key fragment"
     },
     '1-10': {
         'south': '1-11',
@@ -490,16 +494,31 @@ if chosen_class not in classes:
     chosen_class = "Warrior"
 def use_item_during_combat(item):
     try:
-        if item == "health potion" and item in inventory:
-            player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
-            inventory.remove("health potion")
-            return "Used health potion! Restored 30 health!"
-        elif item == "mana potion" and item in inventory:
-            player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
-            inventory.remove("mana potion")
-            return "Used mana potion! Restored 30 mana!"
+        # Parse item name and quantity
+        item_parts = item.split(' x')
+        item_name = item_parts[0].strip()
+        quantity = int(item_parts[1]) if len(item_parts) > 1 else 1
+        
+        # Count how many of the item we have
+        item_count = inventory.count(item_name)
+        
+        if item_count >= quantity:
+            if item_name == "health potion":
+                heal_amount = 30 * quantity
+                player["health"] = min(classes[player["class"]]["health"], player["health"] + heal_amount)
+                for _ in range(quantity):
+                    inventory.remove("health potion")
+                return f"Used {quantity}x health potion! Restored {heal_amount} health!"
+            elif item_name == "mana potion":
+                mana_amount = 30 * quantity
+                player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + mana_amount)
+                for _ in range(quantity):
+                    inventory.remove("mana potion")
+                return f"Used {quantity}x mana potion! Restored {mana_amount} mana!"
+            else:
+                return f"Cannot use {item} during combat!"
         else:
-            return f"Cannot use {item} during combat!"
+            return f"Not enough {item_name}! (Have {item_count}, need {quantity})"
     except Exception as e:
         return f"Error using item: {str(e)}"
 player = {
@@ -510,7 +529,7 @@ player = {
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
-    "key_fragment_chance": 0.3  # Starting chance for key fragments
+    "key_fragment_chance": 0.7  # Starting chance for key fragments
 }
 
 player_equipment = {
@@ -522,7 +541,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = []
+inventory = ['health potion']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -611,6 +630,22 @@ def forge_item(item_name):
     inventory.append(item_name)
     return f"Forged {item_name} for {price} gold!"
 
+def show_inventory():
+    print_slow(f"{GREEN}Inventory:{ITEM_COLOR}")
+    if not inventory:
+        print_slow("Empty")
+        return
+    
+    # Count items and display with quantities
+    item_counts = {}
+    for item in inventory:
+        item_counts[item] = item_counts.get(item, 0) + 1
+    for item, count in item_counts.items():
+        if count > 1:
+            print_slow(f"{item} x{count}{GREEN}")
+        else:
+            print_slow(item)
+
 # Main game loop
 currentRoom = '1-1'
 help_system = HelpSystem()
@@ -652,13 +687,8 @@ while True:
             print_slow(f"Your Armour: {player['armor']}")
 
             # Display inventory
-            print_slow("\nInventory:")
-            if inventory:
-                for i, item in enumerate(inventory, 1):
-                    print_slow(f"{i}. {item}")
-            else:
-                print_slow("Empty")
-            
+            show_inventory()
+            print(GREEN)
             print_slow("---------------------------")
             print_slow("Choose an action: fight, defend, cast [spell], use [item]")
             action = input(GREEN + "> ").lower().split()
@@ -691,7 +721,27 @@ while True:
                     if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
                         spell_percent = random.randint(40,140)
 
-                        if spell_name == "fireball":
+                        # Add divine shield handling
+                        if spell_name == 'divine shield':
+                            shield_strength = 2 * player["mana"]  # 2 damage blocked per mana point
+                            player["divine_shield"] = {
+                                "strength": shield_strength,
+                                "rounds": 3,
+                                "mana_cost": player["mana"]  # Store original mana cost for reference
+                            }
+                            player["mana"] = 0  # Use all mana for the shield
+                            turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
+                        elif spell_name in ['stun strike', 'stun bolt', 'nerve strike', 'binding shot']:
+                            stun_chance = spell_percent / 100
+                            if random.random() < stun_chance:
+                                stun_duration = random.randint(2, 5)
+                                enemy["stunned"] = stun_duration
+                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and stunned the enemy for {stun_duration} turns!\n"
+                                # Skip enemy's next turn
+                                continue
+                            else:
+                                turn_log += f"You cast {spell_name} but the enemy resisted!\n"
+                        elif spell_name == "fireball":
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
                             turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET}!\n"
@@ -706,8 +756,7 @@ while True:
                         elif spell_name == "circle heal":
                             base_healing = player["spells"][spell_name][0]
                             healing_amount = int(base_healing * (spell_percent / 100))
-                            player["health"] = min(player["health"] + healing_amount,
-                                                classes[player["class"]]["health"])
+                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
                             turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
                         elif spell_name == "bleeding arrow":
                             base_damage = player["spells"][spell_name][0]
@@ -750,17 +799,17 @@ while True:
                         print_slow(f"\n{RESET}{enemy['name']} dropped {dropped_item}!")
                     print_slow(turn_log)
                     print_slow(f"You defeated {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
-                    print_slow("---------------------------")
                     player["armor"] = original_armor
                     del rooms[currentRoom]["item"]
                     
                     # Add key fragment drop chance
-                    if random.random() < player['key_fragment_chance']:
+                    chance = random.random()
+                    if chance < player['key_fragment_chance']:
                         inventory.append("key fragment")
                         print_slow(f"\n{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
-                        player['key_fragment_chance'] = 0.1  # Reset chance after successful drop
-                    else:
-                        player['key_fragment_chance'] += 0.1  # Increase chance for next time
+                        print(chance)
+                    print_slow("---------------------------")
+
                     break
             # Monster's turn to attack
             if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
@@ -769,6 +818,22 @@ while True:
                 enemy["health"] += lifesteal_amount
                 turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
+            
+            # Handle divine shield damage reduction
+            if hasattr(player, "divine_shield") and player["divine_shield"]:
+                shield = player["divine_shield"]
+                if shield["rounds"] > 0:
+                    damage_blocked = min(shield["strength"], enemy_attack)
+                    enemy_attack -= damage_blocked
+                    shield["strength"] -= damage_blocked
+                    shield["rounds"] -= 1
+                    turn_log += f"Divine shield blocks {damage_blocked} damage! ({shield['rounds']} rounds remaining)\n"
+                    
+                    # Remove shield if expired or depleted
+                    if shield["rounds"] <= 0 or shield["strength"] <= 0:
+                        turn_log += "Divine shield fades away!\n"
+                        player["divine_shield"] = None
+                
             player["health"] -= enemy_attack
             turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
             
@@ -825,30 +890,37 @@ while True:
         # Handle item usage
         elif move[0] == 'use':
             item_name = " ".join(move[1:])
-            if item_name in inventory:
-                if item_name == "health potion":
-                    player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
-                    inventory.remove("health potion")
-                    print_slow("You used a health potion and restored 30 health!")
-                elif item_name == "mana potion":
-                    player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
-                    inventory.remove("mana potion")
-                    print_slow("You used a mana potion and restored 30 mana!")
-                elif item_name in ARMOR_SLOTS:
-                    # Handle armor equipping
-                    slot = item_name.split(' ')[1]
-                    item_type = item_name.split(' ')[0]
-                    result = equip_armor(slot, item_type)
-                    print_slow(result)
-                elif item_name == "bleeding key" and currentRoom == "1-10":
-                    rooms["1-10"]["down"] = "dungeon-1"
-                    inventory.remove("bleeding key")
-                    print_slow("You unlock the dungeon entrance with the bleeding key!")
-                else:
-                    print_slow("You can't use that item!")
-            else:
-                print_slow("You don't have that item!")
-            continue
+            if item_name not in inventory:
+                print_slow("You do not have that item!")
+            elif inventory.count("health potion") < int(move[-1]):
+                print_slow("You do not have enough of that item!")
+            elif move[-1].isnumeric() == True and inventory.count("health potion") >= int(move[-1]):
+                uses = move[-1]
+                for i in range(uses):
+                    if item_name == "health potion":
+                        player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
+                        inventory.remove("health potion")
+                        print_slow(f"You used a health potion and restored 30 health {i} time(s)!")
+                    elif item_name == "mana potion":
+                        player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
+                        inventory.remove("mana potion")
+                        print_slow(f"You used a mana potion and restored 30 mana {i} time(s)!")
+                    elif item_name == "spell book":
+                        print_slow(f"{GREEN}Choose a spell: ")
+                        for spell in locked_spells[player["class"]]:
+                            print_slow(spell)
+                        print_slow("> ")
+                        if spell in locked_spells[player["class"]]:
+                            player["spells"][spell] = locked_spells[player["class"]][spell]
+                        else:
+                            print_slow("Can't unlock spell")
+                        player["mana"] = player["mana"]
+                    elif item_name == "bleeding key" and currentRoom == "1-10":
+                        rooms["1-10"]["down"] = "dungeon-1"
+                        inventory.remove("bleeding key")
+                        print_slow("You unlock the dungeon entrance with the bleeding key!")
+                    else:
+                        print_slow("You can't use that item!")
         # Handle armor removal
         elif move[0] == 'remove':
             slot = " ".join(move[1:])
@@ -880,6 +952,8 @@ while True:
             result = forge_item(item_name)
             print_slow(result)
             continue
+        elif move[0] == "stop":
+            quit()
         # Handle invalid commands
         else:
             print_slow("Invalid command!")

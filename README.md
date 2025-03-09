@@ -87,13 +87,14 @@ Basic movement and interaction:
 ```text
 go [direction]     - Move character
 get [item]         - Pick up items
-use [item]         - Use items
+use [item] [uses]  - Use items [uses] amount of times
 help              - Show help menu
 remove [slot]      - Remove armor from slot
 equip [type] [slot]- Equip armor in slot
 list              - Show market items
 buy [item]        - Buy from market
 sell [item]       - Sell to market
+quit              - exits the game
 ```
 
 ## Advanced Features
