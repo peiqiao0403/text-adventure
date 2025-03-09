@@ -817,6 +817,10 @@ while True:
                 lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
                 enemy["health"] += lifesteal_amount
                 turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+            if player["armor"] + plus_armour > 80:
+                player["armor"] = 80
+            else:
+                armor = player["armor"] + plus_armour
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
             
             # Handle divine shield damage reduction
