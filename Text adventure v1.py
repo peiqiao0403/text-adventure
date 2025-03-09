@@ -159,9 +159,9 @@ classes = {
     "Ranger": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
 }
 locked_spells = {
-    "Warrior": {'finishing blow':10, 'stun strike':15},
+    "Warrior": {'finishing blow':20, 'stun strike':15},
     "Mage": {'water bolt':10, 'thunder zapper':15},
-    "Rogue": {'stealth':10, 'stealth strike':15},
+    "Rogue": {'stealth':10, 'stealth strike':20},
     "Healer": {'great heal':25, 'divine shield':15, "minor heal":15, "heal":20},
     "Ranger": {'bleeding arrow':20, 'binding shot':15}
 }
@@ -371,7 +371,7 @@ rooms = {
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        # 'down': 'dungeon-1',  # Add connection to dungeon
+        'down': 'dungeon-1',
         "item": "monster"
     },
     '1-11': {
@@ -418,10 +418,11 @@ rooms = {
         'item': 'monster'
     },
     '1-20': {
-        'east': '1-19'
+        'east': '1-19',
+        'up': '2-1'
     },
     'dungeon-1': {
-        'up': '1-10',  # Connection back to main area
+        'up': '1-10',
         'east': 'dungeon-2',
         'item': 'monster'
     },
@@ -433,6 +434,97 @@ rooms = {
     'dungeon-3': {
         'north': 'dungeon-2',
         'item': 'monster'
+    },
+    '2-1': {
+        "north": '2-2',
+    },
+    '2-2': {
+        'west': '2-3',
+        'south': '2-1',
+        "item": "mana potion"
+    },
+    '2-3': {
+        'west': '2-4',
+        'east': '2-2',
+        'item': 'iron sword/wand/bow/dagger'
+    },
+    '2-4': {
+        'east': '2-3',
+        'south': '2-5',
+        'west': '2-15',
+        'item': 'mana potion'
+    },
+    '2-5': {
+        'north': '2-4',
+        'south': '2-6',
+        'item': 'monster'
+    },
+    '2-6': {
+        'west': '2-7',
+        'north': '2-5',
+        "item": "mana potion"
+    },
+    '2-7': {
+        'east': '2-6',
+        'west': '2-8',
+        'south': '2-13',
+        'north': '2-15',
+        'item': 'monster'
+    },
+    '2-8': {
+        'east': '2-7',
+        'west': '2-9',
+    },
+    '2-9': {
+        'south': '2-10',
+        'north': '1-13',
+        'east': '2-8',
+        'west': '2-10',
+        "item": "iron chestplate"
+    },
+    '2-10': {
+        'south': '2-11',
+        'north': '2-9',
+        "item": "health potion"
+    },
+    '2-11': {
+        'north': '2-10',
+        'south': '2-12',
+        "item": 'monster'
+    },
+    '2-12': {
+      'north': '2-11',
+        'item': 'monster'
+    },
+    '2-13': {
+        'east': '2-12',
+        'south': '2-9',
+        'north': '2-14',
+    },
+    '2-14': {
+        'south': '2-13',
+        "west": "2-16",
+        "item": "chainmail leggings"
+    },
+    '2-15': {
+        'east': '2-4',
+        'north': '2-7',
+        "item": "mythril boots"
+   },
+   '2-16': {
+        'west': '2-18',
+        'south': '2-17',
+        'east': '2-14',
+        'item': 'monster'
+    }, 
+    '2-17': {
+        'north': '2-16',
+        'item': 'monster'
+    },
+   '2-18': {
+        'west': '2-19',
+        'east': '2-16',
+        'item': 'spell'
     }
 }
 
@@ -731,7 +823,7 @@ while True:
                             }
                             player["mana"] = 0  # Use all mana for the shield
                             turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
-                        elif spell_name in ['stun strike', 'stun bolt', 'nerve strike', 'binding shot']:
+                        elif spell_name in ['stun strike', 'stun bolt', 'nerve strike', 'binding shot', 'thunder zapper']:
                             stun_chance = spell_percent / 100
                             if random.random() < stun_chance:
                                 stun_duration = random.randint(2, 5)
@@ -762,6 +854,14 @@ while True:
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
                             turn_log += f"You shoot an arrow with {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                        elif spell_name == "water bolt":
+                            base_damage = player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            turn_log += f"You shoot an bolt of water with {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                        elif spell_name == "finishing blow":
+                            base_damage = player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            turn_log += f"You deal the finishing blow with {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
 
                         enemy["health"] -= damage
                         player["mana"] -= player["spells"][spell_name][1]
