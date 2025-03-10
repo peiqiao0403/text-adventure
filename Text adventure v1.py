@@ -916,7 +916,13 @@ while True:
                         elif spell_name == "fireball":
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
-                            turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET}!\n"
+                            burn_duration = 3  # Burns for 3 turns
+                            burn_damage = int(damage * 0.2)  # 20% of initial damage per turn
+                            enemy["burning"] = {
+                                "duration": burn_duration,
+                                "damage": burn_damage
+                            }
+                            turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
                         elif spell_name == "shadow strike":
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
@@ -997,6 +1003,18 @@ while True:
                 lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
                 enemy["health"] += lifesteal_amount
                 turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+
+            # Handle burning damage
+            if "burning" in enemy and enemy["burning"]["duration"] > 0:
+                burn_damage = enemy["burning"]["damage"]
+                enemy["health"] -= burn_damage
+                enemy["burning"]["duration"] -= 1
+                turn_log += f"The enemy takes {RED}{burn_damage} burn damage{RESET}!\n"
+                
+                if enemy["burning"]["duration"] <= 0:
+                    del enemy["burning"]
+                    turn_log += f"The burning effect {RED}wears off{RESET}!\n"
+
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
             
             # Handle divine shield damage reduction
@@ -1043,15 +1061,20 @@ while True:
     clear_lines(100)
     if len(move) > 0:
         # Handle help command
-        if move[0] == 'help':
+        if move[0] in ['help', 'h']:
             if len(move) > 1:
                 showHelp(' '.join(move[1:]))
             else:
                 showHelp()
             continue
-        # Handle movement - check both "go direction" and just "direction"
-        elif move[0] == 'go' or move[0] in ['north', 'south', 'east', 'west', 'up', 'down']:
-            direction = move[1] if move[0] == 'go' else move[0]
+        # Handle movement - check "go direction", just "direction", or single letter direction
+        elif move[0] == 'go' or move[0] in ['north', 'south', 'east', 'west', 'up', 'down', 'n', 's', 'e', 'w', 'u', 'd']:
+            # Convert single letter to full direction
+            direction_map = {
+                'n': 'north', 's': 'south', 'e': 'east', 
+                'w': 'west', 'u': 'up', 'd': 'down'
+            }
+            direction = move[1] if move[0] == 'go' else direction_map.get(move[0], move[0])
             if direction in rooms[currentRoom]:
                 currentRoom = rooms[currentRoom][direction]
             else:
@@ -1127,7 +1150,7 @@ while True:
                     else:
                         print_slow("You can't use that item!")
         # Handle armor removal
-        elif move[0] == 'remove':
+        elif move[0] in ['remove', 'r']:
             if len(move) == 1:
                 # Remove all equipment when no slot specified
                 result = remove_armor()
@@ -1139,7 +1162,7 @@ while True:
                 print_slow(result)
             continue
         # Handle armor equipping
-        elif move[0] == 'equip':
+        elif move[0] in ['equip', 'e']:
             if len(move) == 1:
                 # Auto-equip best available gear
                 result = equip_armor()
@@ -1170,7 +1193,7 @@ while True:
             result = forge_item(item_name)
             print_slow(result)
             continue
-        elif move[0].lower() in ["stop", "quit", "exit", "halt"]:
+        elif move[0].lower() in ["stop", "quit", "exit", "halt", "q"]:
             print("\033[38;2;255;255;255m")
             quit()
         # Handle invalid commands
