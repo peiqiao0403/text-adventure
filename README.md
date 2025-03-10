@@ -133,7 +133,7 @@ Three types of enemies:
     -   Attack range: 25-35
     -   Gold drop: 100-150
     -   Item drop chance: 100%
--   **Vampire Boss**:
+-   **Count Dracula**:
     -   Health: 250
     -   Attack range: 35-45
     -   Gold drop: 500-1000
