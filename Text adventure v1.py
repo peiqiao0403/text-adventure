@@ -242,8 +242,17 @@ def showStatus():
             print_slow(f'- {slot}: {ITEM_COLOR}{item}{RESET}')
     show_inventory()
     if "item" in rooms[currentRoom]:
-        if rooms[currentRoom]['item'] == 'monster':
-            print_slow("A fearsome monster awaits you!")
+        if isinstance(rooms[currentRoom]["item"], list):
+            items = rooms[currentRoom]["item"]
+            if len(items) == 1:
+                print_slow(f"{GREEN}You see a{RESET} {ITEM_COLOR}{items[0]}{RESET}")
+            else:
+                formatted_items = [f"{ITEM_COLOR}{item}{RESET}" for item in items]
+                if len(formatted_items) == 2:
+                    item_str = f" and ".join(formatted_items)
+                else:
+                    item_str = ", ".join(formatted_items[:-1]) + f" and {formatted_items[-1]}"
+                print_slow(f"{GREEN}You see{RESET} {item_str}")
         else:
             print_slow(f"{GREEN}You see a{RESET} {ITEM_COLOR}{rooms[currentRoom]['item']}{RESET}")
     print_slow("---------------------------")
@@ -966,7 +975,7 @@ while True:
                 turn_log += "Invalid action!\n"
                 continue
             if valid_action:
-                if enemy["health"] <= 0:
+                if enemy["health"] == 0 or enemy["health"] < 0:
                     clear_lines(100)
                     gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
                                                 enemy_type['gold_drop_range'][1])
@@ -1013,6 +1022,36 @@ while True:
                 if enemy["burning"]["duration"] <= 0:
                     del enemy["burning"]
                     turn_log += f"The burning effect {RED}wears off{RESET}!\n"
+
+                # Check if enemy died from burn damage
+                if enemy["health"] <= 0:
+                    clear_lines(100)
+                    gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
+                                                enemy_type['gold_drop_range'][1])
+                    player["gold"] = player.get("gold", 0) + gold_dropped
+                    
+                    # Special drops for specific bosses
+                    if currentRoom == 'dungeon-3':  # Vampire boss
+                        inventory.append("vampire pendant")
+                        print_slow(f"\n{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                    if random.random() < enemy_type['item_drop_chance']:
+                        slot = random.choice(list(ARMOR_SLOTS.keys()))
+                        tier = random.choice(['leather', 'chainmail', 'iron'])
+                        dropped_item = f"{tier} {slot}"
+                        inventory.append(dropped_item)
+                        print_slow(f"\n{RESET}{enemy['name']} dropped {dropped_item}!")
+                    print_slow(turn_log)
+                    print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                    player["armor"] = original_armor
+                    del rooms[currentRoom]["item"]
+                    
+                    # Add key fragment drop chance
+                    chance = random.random()
+                    if chance < player['key_fragment_chance']:
+                        inventory.append("key fragment")
+                        print_slow(f"\n{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                    print_slow("---------------------------")
+                    break
 
             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
             
@@ -1080,14 +1119,51 @@ while True:
                 print_slow(f"Error: You can't go that way: {direction}")
             continue
         # Handle item pickup
-        elif move[0] == 'get':
-            item_name = " ".join(move[1:])
-            if "item" in rooms[currentRoom] and item_name == rooms[currentRoom]['item']:
-                inventory.append(item_name)
-                print_slow(item_name + ' got!')
-                del rooms[currentRoom]['item']
-            else:
-                print_slow("Can't get " + item_name + "!")
+        elif move[0] in ['get', 'g']:
+            if len(move) == 1:  # No specific item specified, get everything
+                if "item" in rooms[currentRoom]:
+                    if isinstance(rooms[currentRoom]["item"], list):
+                        items = rooms[currentRoom]["item"]
+                        if items:
+                            formatted_items = [f"{ITEM_COLOR}{item}{RESET}" for item in items]
+                            if len(formatted_items) == 1:
+                                item_str = formatted_items[0]
+                            elif len(formatted_items) == 2:
+                                item_str = f" and ".join(formatted_items)
+                            else:
+                                item_str = ", ".join(formatted_items[:-1]) + f" and {formatted_items[-1]}"
+                            inventory.extend(items)
+                            print_slow(f"Got {item_str}!")
+                            del rooms[currentRoom]['item']
+                        else:
+                            print_slow("Nothing to pick up!")
+                    else:
+                        item = rooms[currentRoom]['item']
+                        inventory.append(item)
+                        print_slow(f"Got {ITEM_COLOR}{item}{RESET}!")
+                        del rooms[currentRoom]['item']
+                else:
+                    print_slow("Nothing to pick up!")
+            else:  # Specific item specified
+                item_name = " ".join(move[1:])
+                if "item" in rooms[currentRoom]:
+                    if isinstance(rooms[currentRoom]["item"], list):
+                        if item_name in rooms[currentRoom]["item"]:
+                            rooms[currentRoom]["item"].remove(item_name)
+                            if not rooms[currentRoom]["item"]:  # If list is empty after removal
+                                del rooms[currentRoom]["item"]
+                            inventory.append(item_name)
+                            print_slow(f"Got {ITEM_COLOR}{item_name}{RESET}!")
+                        else:
+                            print_slow(f"Can't get {item_name}!")
+                    elif item_name == rooms[currentRoom]['item']:
+                        inventory.append(item_name)
+                        print_slow(f"Got {ITEM_COLOR}{item_name}{RESET}!")
+                        del rooms[currentRoom]['item']
+                    else:
+                        print_slow(f"Can't get {item_name}!")
+                else:
+                    print_slow(f"Can't get {item_name}!")
             continue
         # Handle item usage
         elif move[0] == 'use':
@@ -1161,7 +1237,7 @@ while True:
                 print_slow(result)
             continue
         # Handle armor equipping
-        elif move[0] in ['equip', 'e']:
+        elif move[0] in ['equip', 'i']:
             if len(move) == 1:
                 # Auto-equip best available gear
                 result = equip_armor()
@@ -1191,6 +1267,34 @@ while True:
             item_name = " ".join(move[1:])
             result = forge_item(item_name)
             print_slow(result)
+            continue
+        elif move[0] in ['drop']:
+            if len(move) == 1:
+                # Drop all items
+                if not inventory:
+                    print_slow("You have nothing to drop!")
+                else:
+                    dropped_items = inventory.copy()
+                    if "item" not in rooms[currentRoom]:
+                        rooms[currentRoom]["item"] = []
+                    elif not isinstance(rooms[currentRoom]["item"], list):
+                        rooms[currentRoom]["item"] = [rooms[currentRoom]["item"]]
+                    rooms[currentRoom]["item"].extend(dropped_items)
+                    inventory.clear()
+                    print_slow(f"Dropped all items: {ITEM_COLOR}{', '.join(dropped_items)}{RESET}")
+            else:
+                # Drop specific item
+                item_name = " ".join(move[1:])
+                if item_name in inventory:
+                    inventory.remove(item_name)
+                    if "item" not in rooms[currentRoom]:
+                        rooms[currentRoom]["item"] = []
+                    elif not isinstance(rooms[currentRoom]["item"], list):
+                        rooms[currentRoom]["item"] = [rooms[currentRoom]["item"]]
+                    rooms[currentRoom]["item"].append(item_name)
+                    print_slow(f"Dropped: {ITEM_COLOR}{item_name}{RESET}")
+                else:
+                    print_slow(f"You don't have {item_name}!")
             continue
         elif move[0].lower() in ["stop", "quit", "exit", "halt", "q"]:
             print("\033[38;2;255;255;255m")
