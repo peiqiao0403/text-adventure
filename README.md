@@ -1,4 +1,3 @@
-
 # Text Adventure Documentation
 
 ## Overview
@@ -49,16 +48,19 @@ Combat in the game is turn-based with timing-based elements for attacks and spel
         -   Uses timing slider for accuracy
         -   Base damage varies by class
         -   Higher timing accuracy increases damage dealt
+        -   Accuracy ranges from 35% to 100%
     -   **Defend**
-        -   Timing affects defense effectiveness
+        -   Provides 40-140% defense efficiency
         -   Successful defense provides temporary armor bonus
-        -   Also regenerates some mana
+        -   Also regenerates mana based on defense efficiency
     -   **Cast Spell**
-        -   Each class has a unique spell
-        -   Spell effectiveness depends on timing
+        -   Each class has unique spells
+        -   Spell effectiveness ranges from 40-140%
         -   Consumes mana based on spell type
+        -   Special effects like burning, stunning, or lifesteal
     -   **Use Item**
         -   Can use health or mana potions during combat
+        -   Multiple items can be used with "use [item] [quantity]"
         -   Items provide immediate effects
 
 ## Inventory and Equipment System
@@ -85,16 +87,17 @@ The market (located in room 1-17) allows you to:
 
 Basic movement and interaction:
 ```text
-go [direction]     - Move character
-get [item]         - Pick up items
-use [item] [uses]  - Use items [uses] amount of times
+go [direction]     - Move character (or n,s,e,w,u,d)
+get [item]         - Pick up items (or g)
+use [item] [qty]   - Use items with optional quantity
 help              - Show help menu
-remove [slot]      - Remove armor from slot
-equip [type] [slot]- Equip armor in slot
+remove [slot]      - Remove armor from slot (or r)
+equip [type] [slot]- Equip armor in slot (or i)
 list              - Show market items
 buy [item]        - Buy from market
 sell [item]       - Sell to market
-quit              - exits the game
+drop [item]       - Drop items in current room
+quit              - Exit the game (or q)
 ```
 
 ## Advanced Features
@@ -118,7 +121,7 @@ The game world is divided into rooms, each with:
 
 ### Monster Types
 
-Two types of enemies:
+Three types of enemies:
 
 -   **Normal Monsters**:
     -   Health: 50
@@ -130,5 +133,11 @@ Two types of enemies:
     -   Attack range: 25-35
     -   Gold drop: 100-150
     -   Item drop chance: 100%
+-   **Vampire Boss**:
+    -   Health: 250
+    -   Attack range: 35-45
+    -   Gold drop: 500-1000
+    -   Item drop chance: 100%
+    -   Special: Life drain ability
 
 This documentation covers all major aspects of the game. Please use the help system during gameplay for additional details about specific mechanics or commands.
