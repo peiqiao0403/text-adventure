@@ -87,17 +87,17 @@ The market (located in room 1-17) allows you to:
 
 Basic movement and interaction:
 ```text
-go [direction]     - Move character (or n,s,e,w,u,d)
-get [item]         - Pick up items (or g)
-use [item] [qty]   - Use items with optional quantity
-help              - Show help menu
-remove [slot]      - Remove armor from slot (or r)
-equip [type] [slot]- Equip armor in slot (or i)
-list              - Show market items
-buy [item]        - Buy from market
-sell [item]       - Sell to market
-drop [item]       - Drop items in current room
-quit              - Exit the game (or q)
+go [direction]      - Move character (or n,s,e,w,u,d)
+get [item]          - Pick up items (or g)
+use [item] [qty]    - Use items with optional quantity
+help                - Show help menu
+remove [slot]       - Remove armor from slot (or r)
+equip [type] [slot] - Equip armor in slot (or i)
+list                - Show market items
+buy [item]          - Buy from market
+sell [item]         - Sell to market
+drop [item]         - Drop items in current room
+quit                - Exit the game (or q)
 ```
 
 ## Advanced Features
