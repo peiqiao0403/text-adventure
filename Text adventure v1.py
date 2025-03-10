@@ -993,7 +993,6 @@ while True:
                     if chance < player['key_fragment_chance']:
                         inventory.append("key fragment")
                         print_slow(f"\n{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
-                        print(chance)
                     print_slow("---------------------------")
 
                     break
