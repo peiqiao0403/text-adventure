@@ -125,7 +125,7 @@ ARMOR_SLOTS = {
 
 MONSTER_TYPES = {
     'normal': {
-        'name': 'Monster',
+        'names': ['Orc', 'Goblin', 'Zombie', 'Ghoul'],  # List of possible monster names
         'health': 50,
         'attack_min': 5,
         'attack_max': 15,
@@ -140,14 +140,14 @@ MONSTER_TYPES = {
         'gold_drop_range': (100, 150),
         'item_drop_chance': 1
     },
-    'vampire': {  # Add vampire boss type
+    'vampire': {
         'name': 'Count Dracula',
         'health': 250,
         'attack_min': 35,
         'attack_max': 45,
         'gold_drop_range': (500, 1000),
         'item_drop_chance': 1,
-        'lifesteal_range': (5, 10)  # Percentage range for lifesteal
+        'lifesteal_range': (5, 10)
     }
 }
 
@@ -251,9 +251,78 @@ def showStatus():
 def print_slow_list(tag, items):
     print_slow(f"{tag}: {ITEM_COLOR}{', '.join(map(str, items))}{RESET}")
 
-def equip_armor(item_type, slot):
-    """Equip armor or sword in specified slot"""
-    global player_equipment
+def get_tier_value(tier):
+    """Helper function to determine the value/strength of a tier"""
+    tier_values = {
+        'leather': 1,
+        'chainmail': 2,
+        'iron': 3,
+        'wooden': 1,
+        'steel': 2,
+        'mythril': 4
+    }
+    return tier_values.get(tier, 0)
+
+def find_best_equipment(slot=None):
+    """Find the best available equipment for given slot or all slots"""
+    best_equipment = {}
+    
+    # Function to find best item for a specific slot
+    def find_best_for_slot(slot):
+        best_tier = None
+        best_tier_value = -1
+        
+        for item in inventory:
+            if slot == 'sword' and item.endswith('sword'):
+                tier = item.split(' ')[0]
+                tier_value = get_tier_value(tier)
+                if tier_value > best_tier_value:
+                    best_tier = tier
+                    best_tier_value = tier_value
+            elif slot != 'sword' and item.endswith(slot):
+                tier = item.split(' ')[0]
+                tier_value = get_tier_value(tier)
+                if tier_value > best_tier_value:
+                    best_tier = tier
+                    best_tier_value = tier_value
+        
+        return best_tier
+
+    if slot:
+        # Find best equipment for specific slot
+        best_tier = find_best_for_slot(slot)
+        if best_tier:
+            best_equipment[slot] = best_tier
+    else:
+        # Find best equipment for all slots
+        for slot in list(ARMOR_SLOTS.keys()) + ['sword']:
+            best_tier = find_best_for_slot(slot)
+            if best_tier:
+                best_equipment[slot] = best_tier
+    
+    return best_equipment
+
+def equip_armor(slot=None, item_type=None):
+    """Enhanced equip function that can automatically equip best gear"""
+    if not slot:
+        # Auto-equip best available equipment for all slots
+        best_equipment = find_best_equipment()
+        if not best_equipment:
+            return "No equipment available to equip!"
+        results = []
+        for slot, tier in best_equipment.items():
+            result = equip_armor(slot, tier)
+            results.append(result)
+        return "\n".join(filter(None, results))  # Filter out None/empty results
+    
+    if not item_type:
+        # Auto-equip best available equipment for specific slot
+        best_equipment = find_best_equipment(slot)
+        if not best_equipment:
+            return f"No equipment available for {slot}!"
+        item_type = best_equipment[slot]
+    
+    # Original equip logic
     if slot not in ARMOR_SLOTS and slot != 'sword':
         return "Invalid equipment slot!"
 
@@ -275,15 +344,15 @@ def equip_armor(item_type, slot):
         player['attack'] += damage_bonus
         return f"Equipped {item_name} (+{damage_bonus} attack)"
 
-    # Handle armor equipping (existing code)
+    # Handle armor equipping
     item_name = f"{item_type} {slot}"
     if item_name not in inventory:
         return f"You don't have {item_type} {slot}!"
     current_item = player_equipment[slot]
     if current_item:
         old_tier = current_item.split(' ')[0]
-        if old_tier != item_type:
-            return f"You must remove {old_tier} {slot} first!"
+        player["armor"] -= ARMOR_TIERS[old_tier]['defense']
+        inventory.append(current_item)
     player_equipment[slot] = item_name
     inventory.remove(item_name)
     defense_bonus = ARMOR_TIERS[item_type]['defense']
@@ -291,9 +360,18 @@ def equip_armor(item_type, slot):
     return f"Equipped {item_type} {slot} (+{defense_bonus} defense)"
 
 
-def remove_armor(slot):
-    """Remove armor or sword from specified slot"""
+def remove_armor(slot=None):
+    """Remove armor or sword from specified slot, or all slots if none specified"""
     global player_equipment
+    
+    if slot is None:
+        # Remove all equipment
+        results = []
+        for equipped_slot, item in player_equipment.items():
+            if item:  # Only try to remove if there's equipment in the slot
+                results.append(remove_armor(equipped_slot))
+        return "\n".join(results) if results else "No equipment to remove!"
+    
     if slot not in ARMOR_SLOTS and slot != 'sword':
         return "Invalid equipment slot!"
 
@@ -310,7 +388,7 @@ def remove_armor(slot):
         player_equipment[slot] = None
         return f"Removed {current_item} (-{damage_bonus} attack)"
 
-    # Handle armor removal (existing code)
+    # Handle armor removal
     item_type = current_item.split(' ')[0]
     defense_bonus = ARMOR_TIERS[item_type]['defense']
     player["armor"] -= defense_bonus
@@ -445,7 +523,7 @@ rooms = {
     '2-3': {
         'west': '2-4',
         'east': '2-2',
-        'item': 'iron sword/wand/bow/dagger'
+        'item': 'iron sword'
     },
     '2-4': {
         'east': '2-3',
@@ -492,8 +570,8 @@ rooms = {
         "item": 'monster'
     },
     '2-12': {
-      'north': '2-11',
-        'item': 'monster'
+    'north': '2-11',
+    'item': 'monster'
     },
     '2-13': {
         'east': '2-12',
@@ -509,8 +587,8 @@ rooms = {
         'east': '2-4',
         'north': '2-7',
         "item": "mythril boots"
-   },
-   '2-16': {
+    },
+    '2-16': {
         'west': '2-18',
         'south': '2-17',
         'east': '2-14',
@@ -520,7 +598,7 @@ rooms = {
         'north': '2-16',
         'item': 'monster'
     },
-   '2-18': {
+    '2-18': {
         'west': '2-19',
         'east': '2-16',
         'item': 'spell'
@@ -632,7 +710,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['health potion']
+inventory = ['iron helmet']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -733,9 +811,9 @@ def show_inventory():
         item_counts[item] = item_counts.get(item, 0) + 1
     for item, count in item_counts.items():
         if count > 1:
-            print_slow(f"{item} x{count}{GREEN}")
+            print_slow(f"{ITEM_COLOR}{item} x{count}{GREEN}")
         else:
-            print_slow(item)
+            print_slow(f"{ITEM_COLOR}{item}{GREEN}")
 
 # Main game loop
 currentRoom = '1-1'
@@ -748,14 +826,17 @@ while True:
         # Determine monster type
         if currentRoom == '1-19':
             enemy_type = MONSTER_TYPES['boss']
+            enemy_name = enemy_type['name']
         elif currentRoom == 'dungeon-3':
             enemy_type = MONSTER_TYPES['vampire']
+            enemy_name = enemy_type['name']
         else:
             enemy_type = MONSTER_TYPES['normal']
+            enemy_name = random.choice(enemy_type['names'])  # Randomly select a monster name
         
         enemy = {
             "health": enemy_type['health'],
-            "name": enemy_type['name'],
+            "name": enemy_name,  # Use the selected name
             "attack_min": enemy_type['attack_min'],
             "attack_max": enemy_type['attack_max']
         }
@@ -897,7 +978,7 @@ while True:
                         inventory.append(dropped_item)
                         print_slow(f"\n{RESET}{enemy['name']} dropped {dropped_item}!")
                     print_slow(turn_log)
-                    print_slow(f"You defeated {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                    print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
                     player["armor"] = original_armor
                     del rooms[currentRoom]["item"]
                     
@@ -961,16 +1042,16 @@ while True:
     move = input(GREEN + "> ").lower().split()
     clear_lines(100)
     if len(move) > 0:
-    # Handle help command
+        # Handle help command
         if move[0] == 'help':
             if len(move) > 1:
                 showHelp(' '.join(move[1:]))
             else:
                 showHelp()
             continue
-        # Handle movement
-        elif move[0] == 'go':
-            direction = move[1]
+        # Handle movement - check both "go direction" and just "direction"
+        elif move[0] == 'go' or move[0] in ['north', 'south', 'east', 'west', 'up', 'down']:
+            direction = move[1] if move[0] == 'go' else move[0]
             if direction in rooms[currentRoom]:
                 currentRoom = rooms[currentRoom][direction]
             else:
@@ -991,8 +1072,6 @@ while True:
             item_name = " ".join(move[1:])
             if item_name not in inventory:
                 print_slow("You do not have that item!")
-            elif inventory.count("health potion") < int(move[-1]):
-                print_slow("You do not have enough of that item!")
             elif move[-1].isalpha():
                 uses = 1
                 for i in range(uses):
@@ -1020,7 +1099,7 @@ while True:
                         print_slow("You unlock the dungeon entrance with the bleeding key!")
                     else:
                         print_slow("You can't use that item!")
-            elif move[-1].isnumeric() and inventory.count("health potion") >= int(move[-1]):
+            elif move[-1].isnumeric() and inventory.count(item_name) >= int(move[-1]):
                 uses = move[-1]
                 for i in range(uses):
                     if item_name == "health potion":
@@ -1049,19 +1128,32 @@ while True:
                         print_slow("You can't use that item!")
         # Handle armor removal
         elif move[0] == 'remove':
-            slot = " ".join(move[1:])
-            result = remove_armor(slot)
-            print_slow(result)
+            if len(move) == 1:
+                # Remove all equipment when no slot specified
+                result = remove_armor()
+                print_slow(result)
+            else:
+                # Remove specific slot
+                slot = " ".join(move[1:])
+                result = remove_armor(slot)
+                print_slow(result)
             continue
         # Handle armor equipping
         elif move[0] == 'equip':
-            if len(move) >= 3:
-                slot = move[1]
-                item_type = move[2]
-                result = equip_armor(slot, item_type)
+            if len(move) == 1:
+                # Auto-equip best available gear
+                result = equip_armor()
+                print_slow(result)
+            elif len(move) == 2:
+                # Auto-equip best available gear for specific slot
+                result = equip_armor(move[1])
+                print_slow(result)
+            elif len(move) == 3:
+                # Manual equip specific item to specific slot
+                result = equip_armor(move[2], move[1])
                 print_slow(result)
             else:
-                print_slow("Usage: equip [slot] [type]")
+                print_slow("Usage: equip [slot] [type] or equip [slot] or equip")
             continue
         elif move[0] == 'buy' and currentRoom == '1-17':
             item_name = " ".join(move[1:])
@@ -1086,3 +1178,4 @@ while True:
             print_slow("Invalid command!")
     else:
         print_slow("Invalid command!")
+        
