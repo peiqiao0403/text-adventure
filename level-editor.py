@@ -101,9 +101,6 @@ rooms = {
 }
 
 
-
-
-
 rooms = {
     '2-1': {
         "north": '2-2',
@@ -247,12 +244,13 @@ rooms = {
         },
     '2-29': {
         'west': '2-28',
-        'south': '2-30':
+        'south': '2-30',
         'item': 'iron boots'
         },
     '2-30': {
         'east': '2-29',
         'item': 'health potion'
+    }
 }
 
 # Mapping for reverse directions
