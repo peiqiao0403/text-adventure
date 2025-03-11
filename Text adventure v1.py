@@ -719,7 +719,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = []
+inventory = ['spell book']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -827,6 +827,60 @@ def show_inventory():
 # Main game loop
 currentRoom = '1-1'
 help_system = HelpSystem()
+
+def display_spell_book(player_class):
+    """Display a formatted spellbook with all available spells for the class"""
+    print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
+    print_slow("\nCurrent Spells:")
+    
+    print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
+    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
+    print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
+    
+    # Display current spells
+    for spell, values in player["spells"].items():
+        effect = values[0]
+        cost = values[1]
+        special = get_spell_description(spell)
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+    
+    print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
+    
+    # Display unlockable spells
+    print_slow("\nUnlockable Spells:")
+    print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
+    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
+    print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
+    
+    for spell, values in locked_spells[player_class].items():
+        effect = values[0]
+        cost = values[1]
+        special = get_spell_description(spell)
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+    
+    print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
+    print_slow("\nType the name of the spell you want to learn, or 'exit' to close the spellbook:")
+
+def get_spell_description(spell_name):
+    """Return a short description of what the spell does"""
+    descriptions = {
+        "slash": "Basic melee attack",
+        "finishing blow": "Powerful finishing attack",
+        "stun strike": "Chance to stun enemy (2-5 turns)",
+        "fireball": "Causes burning for 3 turns",
+        "water bolt": "Basic water attack, low cost",
+        "thunder zapper": "Chance to stun enemy",
+        "shadow strike": "Basic rogue attack",
+        "stealth": "Allows you to exit the battle",
+        "stealth strike": "Attack from stealth for bonus",
+        "circle heal": "Group healing spell",
+        "great heal": "Powerful single target heal",
+        "divine shield": "Block damage for 3 rounds",
+        "minor heal": "Small efficient heal",
+        "bleeding arrow": "Causes bleeding damage",
+        "binding shot": "Roots enemy in place"
+    }
+    return descriptions.get(spell_name, "")
 
 while True:
     # Automatic combat initiation when a monster is present
@@ -1164,16 +1218,17 @@ while True:
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
                         elif item_name == "spell book":
-                            print_slow(f"{GREEN}Choose a spell: ")
-                            for spell in locked_spells[player["class"]]:
-                                print_slow(f" - {spell}")
-                            spell = input("> ")
+                            display_spell_book(player["class"])
+                            spell = input(GREEN + "> ").lower()
                             clear_lines(100)
-                            if spell in locked_spells[player["class"]]:
+                            if spell == "exit":
+                                print_slow("You close the spell book.")
+                            elif spell in locked_spells[player["class"]]:
                                 player["spells"][spell] = locked_spells[player["class"]][spell]
                                 inventory.remove("spell book")
+                                print_slow(f"You learned the {COMBAT_COLOR}{spell}{RESET} spell!")
                             else:
-                                print_slow("Can't unlock spell")
+                                print_slow("That spell isn't available to learn.")
                         elif item_name == "bleeding key" and currentRoom == "1-10":
                             rooms["1-10"]["down"] = "dungeon-1"
                             inventory.remove("bleeding key")
