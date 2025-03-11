@@ -724,62 +724,61 @@ inventory = ['spell book']
 # Track defeated bosses
 defeated_bosses = set()
 
+def display_table(title, items, columns=None):
+    """Display a formatted table with consistent spacing
+    title: string for the table header
+    items: dictionary of items to display
+    columns: list of column names and widths [(name, width)]"""
+    
+    if columns is None:
+        columns = [
+            ("Item Name", 22),
+            ("Price", 17),
+            ("Description", 32)
+        ]
+    
+    # Create the table border and header format
+    border = "┌" + "┬".join("─" * width for _, width in columns) + "┐"
+    header = "│" + "│".join(f" {name:<{width-2}} " for name, width in columns) + "│"
+    separator = "├" + "┼".join("─" * width for _, width in columns) + "┤"
+    row_format = "│" + "│".join(f" {{{i}:<{width-2}}} " for i, (_, width) in enumerate(columns)) + "│"
+    bottom = "└" + "┴".join("─" * width for _, width in columns) + "┘"
 
-def show_market_items():
-    # print_slow top border
-    print_slow("""┌──────────────────────┬────────────┬────────────────────────┐
-| Item Name            │ Price      │ Description            |
-├──────────────────────┼────────────┼────────────────────────┤
-| health potion        │    30 gold │ Restores 30 health     |
-| mana potion          │    30 gold │ Restores 30 mana       |
-| leather helmet       │    50 gold │ Basic head protection  |
-| leather chestplate   │    70 gold │ Basic chest protection |
-| leather pants        │    60 gold │ Basic leg protection   |
-| leather boots        │    40 gold │ Basic foot protection  |
-└──────────────────────┴────────────┴────────────────────────┘""")
+    print_slow(f"\n{GREEN}{title}")
+    print_slow(border)
+    print_slow(header)
+    print_slow(separator)
+    
+    for item_name, details in items.items():
+        if 'materials' in details:  # Blacksmith items
+            price = f"{details['price']} gold"
+            if details['materials']:
+                materials = ", ".join(f"{amt} {mat}" for mat, amt in details['materials'].items())
+                price = f"{materials}"
+        else:  # Market items
+            price = f"{details['price']} gold"
+        
+        print_slow(row_format.format(
+            item_name,
+            price,
+            details['description']
+        ))
+    
+    print_slow(bottom)
     print_slow("---------------------------")
-    
 
-
-def buy_item(item_name):
-    """Handle purchasing items from the market"""
-    if item_name not in MARKET_ITEMS:
-        return "That item isn't available in the market!"
-    
-    price = MARKET_ITEMS[item_name]['price']
-    if player['gold'] < price:
-        return f"You don't have enough gold! (Need {price} gold)"
-    
-    player['gold'] -= price
-    inventory.append(item_name)
-    return f"Bought {item_name} for {price} gold!"
-
-def sell_item(item_name):
-    """Handle selling items to the market"""
-    if item_name not in inventory:
-        return "You don't have that item!"
-    
-    if item_name in MARKET_ITEMS:
-        sell_price = MARKET_ITEMS[item_name]['price'] // 2  # Sell for half the buy price
-        inventory.remove(item_name)
-        player['gold'] += sell_price
-        return f"Sold {item_name} for {sell_price} gold!"
-    return "You can't sell that item here!"
+# Update the existing functions to use the new display_table function
+def show_market_items():
+    display_table(
+        "Market Items",
+        MARKET_ITEMS
+    )
 
 def show_blacksmith_items():
-    print_slow("""
-┌──────────────────────┬───────────────────┬────────────────────────┐
-| Item Name            │ Price             │ Description            |
-├──────────────────────┼───────────────────┼────────────────────────┤
-| bleeding key         │   3 key fragments │ Opens dungeon entrance |
-| iron sword           │          100 gold │ +10 attack damage      |
-| steel sword          │          200 gold │ +15 attack damage      |
-| iron helmet          │          100 gold │ +15 defense            |
-| iron chestplate      │          150 gold │ +15 defense            |
-| iron pants           │          130 gold │ +15 defense            |
-| iron boots           │           80 gold │ +15 defense            |
-└──────────────────────┴───────────────────┴────────────────────────┘""")
-    print_slow("---------------------------")
+    display_table(
+        "Blacksmith Items",
+        BLACKSMITH_RECIPES
+    )
 
 def forge_item(item_name):
     """Handle crafting items at the blacksmith"""
@@ -825,7 +824,7 @@ def show_inventory():
             print_slow(f"{ITEM_COLOR} - {item}{GREEN}")
 
 # Main game loop
-currentRoom = '1-1'
+currentRoom = '1-13'
 help_system = HelpSystem()
 
 def display_spell_book(player_class):
@@ -881,6 +880,31 @@ def get_spell_description(spell_name):
         "binding shot": "Roots enemy in place"
     }
     return descriptions.get(spell_name, "")
+
+def buy_item(item_name):
+    """Handle purchasing items from the market"""
+    if item_name not in MARKET_ITEMS:
+        return "That item isn't available in the market!"
+    
+    price = MARKET_ITEMS[item_name]['price']
+    if player['gold'] < price:
+        return f"You don't have enough gold! (Need {price} gold)"
+    
+    player['gold'] -= price
+    inventory.append(item_name)
+    return f"Bought {item_name} for {price} gold!"
+
+def sell_item(item_name):
+    """Handle selling items to the market"""
+    if item_name not in inventory:
+        return "You don't have that item!"
+    
+    if item_name in MARKET_ITEMS:
+        sell_price = MARKET_ITEMS[item_name]['price'] // 2  # Sell for half the buy price
+        inventory.remove(item_name)
+        player['gold'] += sell_price
+        return f"Sold {item_name} for {sell_price} gold!"
+    return "You can't sell that item here!"
 
 while True:
     # Automatic combat initiation when a monster is present
