@@ -10,6 +10,7 @@ RESET = "\033[38;2;0;255;0m"  # Reset color back to default
 BLUE = "\033[38;2;0;255;255m"         # Information, navigation
 RED = "\033[38;2;255;0;0m"          # Damage, danger
 COMBAT_COLOR = "\033[38;2;255;100;50m"  # Combat, action
+
 class static_slider(Thread):
     def __init__(self, delay: int):
         """A class which runs a visual slider and return a number up to 29. 
@@ -19,7 +20,7 @@ class static_slider(Thread):
         self.delay = delay
         self.kill = False
         self.result = 0
-    
+
     def run(self):
         x = 0
         y = 1
@@ -47,7 +48,6 @@ def run_slider(scale: int, offset: int, delay = 0.02):
     print()
     return round(100 * (1 - abs(main.result - 15) / (100 / scale))) + offset
 
-
 # Define armor tiers and their properties
 ARMOR_TIERS = {
     'leather': {'defense': 5, 'weight': 1},
@@ -62,6 +62,7 @@ SWORD_TIERS = {
     'steel': {'damage': 15},
     'mythril': {'damage': 30}
 }
+
 def print_slow(text):
     
     # Split text into parts that are either ANSI sequences or regular text
@@ -699,6 +700,7 @@ def use_item_during_combat(item):
             return f"Not enough {item_name}! (Have {item_count}, need {quantity})"
     except Exception as e:
         return f"Error using item: {str(e)}"
+    
 player = {
     "health": classes[chosen_class]["health"],
     "armor": classes[chosen_class]["armor"],
@@ -929,7 +931,8 @@ while True:
             "health": enemy_type['health'],
             "name": enemy_name,  # Use the selected name
             "attack_min": enemy_type['attack_min'],
-            "attack_max": enemy_type['attack_max']
+            "attack_max": enemy_type['attack_max'],
+            "stunned": 0
         }
 
         # Add vampire-specific attributes if applicable
@@ -1100,11 +1103,11 @@ while True:
             # Monster's turn to attack
             
             # Check if enemy is stunned first
-            if "stunned" in enemy and enemy["stunned"] > 0:
+            if enemy["stunned"] > 0:
                 enemy["stunned"] -= 1
                 turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
                 if enemy["stunned"] <= 0:
-                    del enemy["stunned"]
+                    enemy["stunned"] = 0
                     turn_log += f"{enemy['name']} recovers from being stunned!\n"
             else:
                 # Only proceed with enemy attack if not stunned
