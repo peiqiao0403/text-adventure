@@ -159,11 +159,11 @@ classes = {
     "Ranger": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
 }
 locked_spells = {
-    "Warrior": {'finishing blow':10, 'stun strike':15},
-    "Mage": {'water bolt':10, 'thunder zapper':15},
-    "Rogue": {'stealth':10, 'stealth strike':15},
-    "Healer": {'great heal':25, 'divine shield':15, "minor heal":15},
-    "Ranger": {'bleeding arrow':20, 'binding shot':15}
+    "Warrior": {'finishing blow': [20, 10], 'stun strike': [15, 15]},
+    "Mage": {'water bolt': [15, 10], 'thunder zapper': [20, 15]},
+    "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 15]},
+    "Healer": {'great heal': [40, 25], 'divine shield': [0, 15], "minor heal": [20, 15]},
+    "Ranger": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]}
 }
 class HelpSystem:
 
@@ -249,7 +249,7 @@ def showStatus():
             else:
                 formatted_items = [f"{ITEM_COLOR}{item}{RESET}" for item in items]
                 if len(formatted_items) == 2:
-                    item_str = f" and ".join(formatted_items)
+                    item_str = " and ".join(formatted_items)
                 else:
                     item_str = ", ".join(formatted_items[:-1]) + f" and {formatted_items[-1]}"
                 print_slow(f"{GREEN}You see{RESET} {item_str}")
@@ -523,6 +523,7 @@ rooms = {
     },
     '2-1': {
         "north": '2-2',
+        "down":'1-20'
     },
     '2-2': {
         'west': '2-3',
@@ -594,8 +595,7 @@ rooms = {
     },
     '2-15': {
         'east': '2-4',
-        'north': '2-7',
-        "item": "mythril boots"
+        'north': '2-7'
     },
     '2-16': {
         'west': '2-18',
@@ -719,7 +719,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['iron helmet']
+inventory = []
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -811,7 +811,7 @@ def forge_item(item_name):
 def show_inventory():
     print_slow(f"{GREEN}Inventory:{ITEM_COLOR}")
     if not inventory:
-        print_slow("Empty")
+        print_slow(f"Empty{GREEN}")
         return
     
     # Count items and display with quantities
@@ -820,9 +820,9 @@ def show_inventory():
         item_counts[item] = item_counts.get(item, 0) + 1
     for item, count in item_counts.items():
         if count > 1:
-            print_slow(f"{ITEM_COLOR}{item} x{count}{GREEN}")
+            print_slow(f"{ITEM_COLOR} - {item} x{count}{GREEN}")
         else:
-            print_slow(f"{ITEM_COLOR}{item}{GREEN}")
+            print_slow(f"{ITEM_COLOR} - {item}{GREEN}")
 
 # Main game loop
 currentRoom = '1-1'
@@ -855,7 +855,10 @@ while True:
             enemy["lifesteal_range"] = enemy_type['lifesteal_range']
 
         last_turn_log = ""  # Initialize empty log for the first turn.
-        print_slow(f"A {enemy['name']} appears!")
+        if currentRoom == 'dungeon-3' or currentRoom == '1-19':        
+            print_slow(f"{enemy['name']} appears!")
+        else:
+            print_slow(f"A {enemy['name']} appears!")
         turn = 1
         # Combat loop
         original_armor = player["armor"]
@@ -901,6 +904,7 @@ while True:
                     spell_name = " ".join(action[1:])  # Join all remaining words into spell name
                     if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
                         spell_percent = random.randint(40,140)
+                        damage = 0  # Initialize damage to 0 by default
 
                         # Add divine shield handling
                         if spell_name == 'divine shield':
@@ -914,11 +918,13 @@ while True:
                             turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
                         elif spell_name in ['stun strike', 'thunder zapper']:
                             stun_chance = spell_percent / 100
+                            damage = 0
                             if random.random() < stun_chance:
                                 stun_duration = random.randint(2, 5)
                                 enemy["stunned"] = stun_duration
                                 turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and stunned the enemy for {stun_duration} turns!\n"
                                 # Skip enemy's next turn
+                                print(turn_log)
                                 continue
                             else:
                                 turn_log += f"You cast {spell_name} but the enemy resisted!\n"
@@ -977,104 +983,75 @@ while True:
             if valid_action:
                 if enemy["health"] == 0 or enemy["health"] < 0:
                     clear_lines(100)
+                    print_slow(turn_log)  # Show the combat efficiency/results first
+                    
                     gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
                                                 enemy_type['gold_drop_range'][1])
-                    player["gold"] = player.get("gold", 0) + gold_dropped
                     
                     # Special drops for specific bosses
                     if currentRoom == 'dungeon-3':  # Vampire boss
                         inventory.append("vampire pendant")
-                        print_slow(f"\n{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                        print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                    
                     if random.random() < enemy_type['item_drop_chance']:
                         # Drop a random armor piece
                         slot = random.choice(list(ARMOR_SLOTS.keys()))
                         tier = random.choice(['leather', 'chainmail', 'iron'])
                         dropped_item = f"{tier} {slot}"
                         inventory.append(dropped_item)
-                        print_slow(f"\n{RESET}{enemy['name']} dropped {dropped_item}!")
-                    print_slow(turn_log)
-                    print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
-                    player["armor"] = original_armor
-                    del rooms[currentRoom]["item"]
+                        print_slow(f"{RESET}{enemy['name']} dropped {ITEM_COLOR}{dropped_item}{RESET}!")
                     
                     # Add key fragment drop chance
                     chance = random.random()
                     if chance < player['key_fragment_chance']:
                         inventory.append("key fragment")
-                        print_slow(f"\n{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
-                    print_slow("---------------------------")
-
-                    break
-            # Monster's turn to attack
-            if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
-                lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
-                lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
-                enemy["health"] += lifesteal_amount
-                turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
-
-            # Handle burning damage
-            if "burning" in enemy and enemy["burning"]["duration"] > 0:
-                burn_damage = enemy["burning"]["damage"]
-                enemy["health"] -= burn_damage
-                enemy["burning"]["duration"] -= 1
-                turn_log += f"The enemy takes {RED}{burn_damage} burn damage{RESET}!\n"
-                
-                if enemy["burning"]["duration"] <= 0:
-                    del enemy["burning"]
-                    turn_log += f"The burning effect {RED}wears off{RESET}!\n"
-
-                # Check if enemy died from burn damage
-                if enemy["health"] <= 0:
-                    clear_lines(100)
-                    gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
-                                                enemy_type['gold_drop_range'][1])
+                        print_slow(f"{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                    
+                    # Show gold drop last
+                    print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
                     player["gold"] = player.get("gold", 0) + gold_dropped
                     
-                    # Special drops for specific bosses
-                    if currentRoom == 'dungeon-3':  # Vampire boss
-                        inventory.append("vampire pendant")
-                        print_slow(f"\n{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
-                    if random.random() < enemy_type['item_drop_chance']:
-                        slot = random.choice(list(ARMOR_SLOTS.keys()))
-                        tier = random.choice(['leather', 'chainmail', 'iron'])
-                        dropped_item = f"{tier} {slot}"
-                        inventory.append(dropped_item)
-                        print_slow(f"\n{RESET}{enemy['name']} dropped {dropped_item}!")
-                    print_slow(turn_log)
-                    print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
                     player["armor"] = original_armor
                     del rooms[currentRoom]["item"]
-                    
-                    # Add key fragment drop chance
-                    chance = random.random()
-                    if chance < player['key_fragment_chance']:
-                        inventory.append("key fragment")
-                        print_slow(f"\n{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
                     print_slow("---------------------------")
                     break
-
-            enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
+            # Monster's turn to attack
             
-            # Handle divine shield damage reduction
-            if hasattr(player, "divine_shield") and player["divine_shield"]:
-                shield = player["divine_shield"]
-                if shield["rounds"] > 0:
-                    damage_blocked = min(shield["strength"], enemy_attack)
-                    enemy_attack -= damage_blocked
-                    shield["strength"] -= damage_blocked
-                    shield["rounds"] -= 1
-                    turn_log += f"Divine shield blocks {damage_blocked} damage! ({shield['rounds']} rounds remaining)\n"
-                    
-                    # Remove shield if expired or depleted
-                    if shield["rounds"] <= 0 or shield["strength"] <= 0:
-                        turn_log += "Divine shield fades away!\n"
-                        player["divine_shield"] = None
+            # Check if enemy is stunned first
+            if "stunned" in enemy and enemy["stunned"] > 0:
+                enemy["stunned"] -= 1
+                turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
+                if enemy["stunned"] <= 0:
+                    del enemy["stunned"]
+                    turn_log += f"{enemy['name']} recovers from being stunned!\n"
+            else:
+                # Only proceed with enemy attack if not stunned
+                if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
+                    lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
+                    lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
+                    enemy["health"] += lifesteal_amount
+                    turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+
+                # Regular enemy attack (only happens if not stunned)
+                enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
                 
-            player["health"] -= enemy_attack
-            turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
-            
-            # Add vampire lifesteal
-
+                # Handle divine shield damage reduction
+                if hasattr(player, "divine_shield") and player["divine_shield"]:
+                    shield = player["divine_shield"]
+                    if shield["rounds"] > 0:
+                        damage_blocked = min(shield["strength"], enemy_attack)
+                        enemy_attack -= damage_blocked
+                        shield["strength"] -= damage_blocked
+                        shield["rounds"] -= 1
+                        turn_log += f"Divine shield blocks {damage_blocked} damage! ({shield['rounds']} rounds remaining)\n"
+                        
+                        # Remove shield if expired or depleted
+                        if shield["rounds"] <= 0 or shield["strength"] <= 0:
+                            turn_log += "Divine shield fades away!\n"
+                            player["divine_shield"] = None
+                    
+                player["health"] -= enemy_attack
+                turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
 
             if player["health"] <= 0:
                 turn_log += "You died! Game over.\n"
@@ -1129,7 +1106,7 @@ while True:
                             if len(formatted_items) == 1:
                                 item_str = formatted_items[0]
                             elif len(formatted_items) == 2:
-                                item_str = f" and ".join(formatted_items)
+                                item_str = " and ".join(formatted_items)
                             else:
                                 item_str = ", ".join(formatted_items[:-1]) + f" and {formatted_items[-1]}"
                             inventory.extend(items)
@@ -1167,63 +1144,46 @@ while True:
             continue
         # Handle item usage
         elif move[0] == 'use':
-            item_name = " ".join(move[1:])
-            if item_name not in inventory:
-                print_slow("You do not have that item!")
-            elif move[-1].isalpha():
-                uses = 1
-                for i in range(uses):
-                    if item_name == "health potion":
-                        player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
-                        inventory.remove("health potion")
-                        print_slow(f"You used a health potion and restored 30 health {i} time(s)!")
-                    elif item_name == "mana potion":
-                        player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
-                        inventory.remove("mana potion")
-                        print_slow(f"You used a mana potion and restored 30 mana {i} time(s)!")
-                    elif item_name == "spell book":
-                        print_slow(f"{GREEN}Choose a spell: ")
-                        for spell in locked_spells[player["class"]]:
-                            print_slow(spell)
-                        print_slow("> ")
-                        if spell in locked_spells[player["class"]]:
-                            player["spells"][spell] = locked_spells[player["class"]][spell]
+            try:
+                # Parse item name and quantity
+                item_parts = " ".join(move[1:]).split(' x')
+                item_name = item_parts[0].strip()
+                quantity = int(item_parts[1]) if len(item_parts) > 1 else 1
+                
+                # Count how many of the item we have
+                item_count = inventory.count(item_name)
+                
+                if item_count >= quantity:
+                    for _ in range(quantity):
+                        if item_name == "health potion":
+                            player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
+                            inventory.remove("health potion")
+                            print_slow("Used health potion! Restored 30 health!")
+                        elif item_name == "mana potion":
+                            player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
+                            inventory.remove("mana potion")
+                            print_slow("Used mana potion! Restored 30 mana!")
+                        elif item_name == "spell book":
+                            print_slow(f"{GREEN}Choose a spell: ")
+                            for spell in locked_spells[player["class"]]:
+                                print_slow(f" - {spell}")
+                            spell = input("> ")
+                            clear_lines(100)
+                            if spell in locked_spells[player["class"]]:
+                                player["spells"][spell] = locked_spells[player["class"]][spell]
+                                inventory.remove("spell book")
+                            else:
+                                print_slow("Can't unlock spell")
+                        elif item_name == "bleeding key" and currentRoom == "1-10":
+                            rooms["1-10"]["down"] = "dungeon-1"
+                            inventory.remove("bleeding key")
+                            print_slow("You unlock the dungeon entrance with the bleeding key!")
                         else:
-                            print_slow("Can't unlock spell")
-                        player["mana"] = player["mana"]
-                    elif item_name == "bleeding key" and currentRoom == "1-10":
-                        rooms["1-10"]["down"] = "dungeon-1"
-                        inventory.remove("bleeding key")
-                        print_slow("You unlock the dungeon entrance with the bleeding key!")
-                    else:
-                        print_slow("You can't use that item!")
-            elif move[-1].isnumeric() and inventory.count(item_name) >= int(move[-1]):
-                uses = move[-1]
-                for i in range(uses):
-                    if item_name == "health potion":
-                        player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
-                        inventory.remove("health potion")
-                        print_slow(f"You used a health potion and restored 30 health {i} time(s)!")
-                    elif item_name == "mana potion":
-                        player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
-                        inventory.remove("mana potion")
-                        print_slow(f"You used a mana potion and restored 30 mana {i} time(s)!")
-                    elif item_name == "spell book":
-                        print_slow(f"{GREEN}Choose a spell: ")
-                        for spell in locked_spells[player["class"]]:
-                            print_slow(spell)
-                        print_slow("> ")
-                        if spell in locked_spells[player["class"]]:
-                            player["spells"][spell] = locked_spells[player["class"]][spell]
-                        else:
-                            print_slow("Can't unlock spell")
-                        player["mana"] = player["mana"]
-                    elif item_name == "bleeding key" and currentRoom == "1-10":
-                        rooms["1-10"]["down"] = "dungeon-1"
-                        inventory.remove("bleeding key")
-                        print_slow("You unlock the dungeon entrance with the bleeding key!")
-                    else:
-                        print_slow("You can't use that item!")
+                            print_slow("You can't use that item!")
+                else:
+                    print_slow(f"Not enough {item_name}! (Have {item_count}, need {quantity})")
+            except Exception as e:
+                print_slow(f"Error using item: {str(e)}")
         # Handle armor removal
         elif move[0] in ['remove', 'r']:
             if len(move) == 1:
@@ -1304,4 +1264,5 @@ while True:
             print_slow("Invalid command!")
     else:
         print_slow("Invalid command!")
+        
         
