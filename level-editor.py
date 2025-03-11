@@ -104,107 +104,156 @@ rooms = {
 
 
 
-#rooms = {
-    #'2-1': {
-        #"north": '2-2',
-    #},
-    #'2-2': {
-        #'west': '2-3',
-        #'south': '2-1',
-        #"item": "mana potion"
-    #},
-    #'2-3': {
-        #'west': '2-4',
-        #'east': '2-2',
-        #'item': 'iron sword/wand/bow/dagger'
-   # },
-   # '2-4': {
-       # 'east': '2-3',
-       # 'south': '2-5',
-      #  'west': '2-15',
-      #  'item': 'mana potion'
-    #},
-  #  '2-5': {
-    #    'north': '2-4',
-    #    'south': '2-6',
-    #    'item': 'monster'
-   # },
-    #'2-6': {
-     #   'west': '2-7',
-      #  'north': '2-5',
-     #   "item": "mana potion"
-   # },
-   # '2-7': {
-   #     'east': '2-6',
-    #    'west': '2-8',
-    #    'south': '2-13',
-    #    'north': '2-15',
-    #    'item': 'monster'
-  #  },
-  #  '2-8': {
-      #  'east': '2-7',
-     #   'west': '2-9',
-  #  },
-   # '2-9': {
-    #    'south': '2-10',
-   #     'north': '1-13',
-  #      'east': '2-8',
-   #     'west': '2-10',
-   #     "item": "iron chestplate"
-    #},
-    #'2-10': {
-     #   'south': '2-11',
-      #  'north': '2-9',
-     #   "item": "health potion"
-  #  },
-    #'2-11': {
-    #    'north': '2-10',
-    #    'south': '2-12',
-    #    "item": 'monster'
-  #  },
-    #'2-12': {
-    #  'north': '2-11',
-    #    'item': 'monster'
-  #  },
-    #'2-13': {
-     #   'east': '2-12',
-      #  'south': '2-9',
-      #  'north': '2-14',
- #   },
-  #  '2-14': {
-     #   'south': '2-13',
-     #   "west": "2-16",
-      #  "item": "chainmail leggings"
-   # },
-    #'2-15': {
-       # 'east': '2-4',
-        #'north': '2-7',
-       # "item": "mythril boots"
-  #  },
-   # '2-16': {
-       # 'west': '2-18',
-       # 'south': '2-17',
-       # 'east': '2-14',
-       # 'item': 'monster'
-  #  },
-    #'2-17': {
-      #  'north': '2-16',
-      #  'item': 'monster'
-   # },
-   # '2-18': {
-      #  'west': '2-19',
-      #  'east': '2-16',
-       # 'item': 'spell'
-  #  },
-    #'2-19': {
-      #  'north': '2-20',
-      #  'east': '2-18',
-       # 'item': 'health potion'
-  #  },
-   # '2-20': {
-     #   'south': '2-19'
-  #  }
-#}
+rooms = {
+    '2-1': {
+        "north": '2-2',
+    },
+    '2-2': {
+        'west': '2-3',
+        'south': '2-1',
+        "item": "mana potion"
+    },
+    '2-3': {
+        'west': '2-4',
+        'east': '2-2',
+        'item': 'iron sword'
+    },
+    '2-4': {
+        'east': '2-3',
+        'south': '2-5',
+        'west': '2-15',
+        'item': 'mana potion'
+    },
+    '2-5': {
+        'north': '2-4',
+        'south': '2-6',
+        'item': 'monster'
+    },
+    '2-6': {
+        'west': '2-7',
+        'north': '2-5',
+        "item": "mana potion"
+    },
+    '2-7': {
+        'east': '2-6',
+        'west': '2-8',
+        'south': '2-13',
+        'north': '2-15',
+        'item': 'monster'
+    },
+    '2-8': {
+        'east': '2-7',
+        'west': '2-9',
+    },
+    '2-9': {
+        'south': '2-10',
+        'north': '1-13',
+        'east': '2-8',
+        'west': '2-10',
+        "item": "iron chestplate"
+    },
+    '2-10': {
+        'south': '2-11',
+        'north': '2-9',
+        "item": "health potion"
+    },
+    '2-11': {
+        'north': '2-10',
+        'south': '2-12',
+        "item": 'monster'
+    },
+    '2-12': {
+      'north': '2-11',
+      'item': 'monster'
+    },
+    '2-13': {
+        'east': '2-12',
+        'south': '2-9',
+        'north': '2-14',
+    },
+    '2-14': {
+        'south': '2-13',
+        "west": "2-16",
+        "item": "chainmail leggings"
+    },
+    '2-15': {
+        'east': '2-4',
+        'north': '2-7',
+        "item": "mythril boots"
+    },
+    '2-16': {
+        'west': '2-18',
+        'south': '2-17',
+        'east': '2-14',
+        'item': 'monster'
+    },
+    '2-17': {
+        'north': '2-16',
+        'item': 'monster'
+    },
+    '2-18': {
+        'west': '2-19',
+        'east': '2-16',
+        'item': 'spell'
+   },
+    '2-19': {
+        'north': '2-20',
+        'east': '2-18',
+        'item': 'health potion'
+    },
+    '2-20': {
+        'south': '2-19'
+    },
+    '2-21': {
+        'south': '2-20',
+        'north': '2-22'
+        },
+    '2-22': {
+        'south': '2-21',
+        'north': '2-23',
+        'east': '2-26'
+        },
+    '2-23': {
+        'south': '2-22',
+        'west': '2-24',
+        'item': 'mana potion'
+        },
+    '2-24': {
+        'east': '2-23',
+        'south': '2-25'
+            
+        },
+    '2-25': {
+        'north': '2-24',
+        'east': '2-28',
+        'item': 'steel sword'
+            
+        },
+    '2-26': {
+        'west': '2-23',
+        'east': '2-27',
+        'item': 'monster'
+
+         },
+    '2-27': {
+        'west': '2-26',
+        'item': 'monster'
+
+        },
+    '2-28': {
+        'west': '2-25',
+        'east': '2-29',
+        'item': 'monster'
+        },
+    '2-29': {
+        'west': '2-28',
+        'south': '2-30':
+        'item': 'steel boots'
+        },
+    '2-30': {
+        'east': '2-29',
+        'item': 'monster'
+}
 
 # Mapping for reverse directions
 reverse_direction = {"north": "south", "south": "north", "east": "west", "west": "east"}
