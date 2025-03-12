@@ -914,6 +914,23 @@ def sell_item(item_name):
         return f"Sold {item_name} for {sell_price} gold!"
     return "You can't sell that item here!"
 
+# Add this function to generate a random normal monster
+def generate_random_monster():
+    enemy_type = MONSTER_TYPES['normal']
+    enemy_name = random.choice(enemy_type['names'])
+    
+    # Add some randomness to monster stats
+    health_variation = random.uniform(0.8, 1.2)  # 80% to 120% of base health
+    attack_variation = random.uniform(0.9, 1.1)  # 90% to 110% of base attack
+    
+    return {
+        "health": int(enemy_type['health'] * health_variation),
+        "name": enemy_name,
+        "attack_min": int(enemy_type['attack_min'] * attack_variation),
+        "attack_max": int(enemy_type['attack_max'] * attack_variation),
+        "stunned": 0
+    }
+
 while True:
     # Automatic combat initiation when a monster is present
     if "monster" in rooms[currentRoom]:
@@ -921,39 +938,59 @@ while True:
         # Determine monster type
         monster_type = rooms[currentRoom]["monster"]
         
+        # Initialize enemies list
+        enemies = []
+        
         if monster_type == 'boss':
             enemy_type = MONSTER_TYPES['boss']
-            enemy_name = enemy_type['name']
+            enemy = {
+                "health": enemy_type['health'],
+                "name": enemy_type['name'],
+                "attack_min": enemy_type['attack_min'],
+                "attack_max": enemy_type['attack_max'],
+                "stunned": 0
+            }
+            enemies.append(enemy)
+            print_slow(f"{enemy['name']} appears!")
         elif monster_type == 'vampire':
             enemy_type = MONSTER_TYPES['vampire']
-            enemy_name = enemy_type['name']
-        else:  # normal monster
-            enemy_type = MONSTER_TYPES['normal']
-            enemy_name = random.choice(enemy_type['names'])  # Randomly select a monster name
-        
-        enemy = {
-            "health": enemy_type['health'],
-            "name": enemy_name,  # Use the selected name
-            "attack_min": enemy_type['attack_min'],
-            "attack_max": enemy_type['attack_max'],
-            "stunned": 0
-        }
-
-        # Add vampire-specific attributes if applicable
-        if monster_type == 'vampire':
-            enemy["lifesteal_range"] = enemy_type['lifesteal_range']
-
-        last_turn_log = ""  # Initialize empty log for the first turn.
-        if monster_type in ['vampire', 'boss']:
+            enemy = {
+                "health": enemy_type['health'],
+                "name": enemy_type['name'],
+                "attack_min": enemy_type['attack_min'],
+                "attack_max": enemy_type['attack_max'],
+                "stunned": 0,
+                "lifesteal_range": enemy_type['lifesteal_range']
+            }
+            enemies.append(enemy)
             print_slow(f"{enemy['name']} appears!")
-        else:
-            print_slow(f"A {enemy['name']} appears!")
+        else:  # normal monster - generate 1-3 random monsters
+            num_monsters = random.randint(1, 3)
+            for i in range(num_monsters):
+                enemies.append(generate_random_monster())
+            
+            # Announce the encounter
+            if num_monsters == 1:
+                print_slow(f"A {enemies[0]['name']} appears!")
+            else:
+                monster_names = [f"{enemy['name']}" for enemy in enemies]
+                if len(monster_names) == 2:
+                    print_slow(f"A {monster_names[0]} and a {monster_names[1]} appear!")
+                else:
+                    print_slow(f"A {', '.join(monster_names[:-1])}, and a {monster_names[-1]} appear!")
+
+        last_turn_log = ""  # Initialize empty log for the first turn
         turn = 1
+        
         # Combat loop
         original_armor = player["armor"]
-        while enemy["health"] > 0 and player["health"] > 0:
+        while len(enemies) > 0 and player["health"] > 0:
             print_slow("---------------------------")
-            print_slow(f"Enemy Health: {enemy['health']}")
+            
+            # Display all enemy health
+            for i, enemy in enumerate(enemies):
+                print_slow(f"Enemy {i+1} ({enemy['name']}): {enemy['health']} HP")
+            
             print_slow("---------------------------")
             print_slow(f"Your Health: {player['health']}")
             print_slow(f"Your Mana: {player['mana']}")
@@ -963,21 +1000,46 @@ while True:
             show_inventory()
             print(GREEN)
             print_slow("---------------------------")
-            print_slow("Choose an action: fight, defend, cast [spell], use [item], flee")
+            
+            if len(enemies) > 1:
+                print_slow("Choose an action: fight [enemy#], defend, cast [spell] [enemy#], use [item]")
+                print_slow(f"Enemy numbers: {', '.join([f'{i+1}: {enemy['name']}' for i, enemy in enumerate(enemies)])}")
+            else:
+                print_slow("Choose an action: fight, defend, cast [spell], use [item]")
+            
             action = input(GREEN + "> ").lower().split()
             clear_lines(100)  # Clear the screen for the new combat turn
             turn += 1
             valid_action = False
             turn_log = ""  # Log for this turn
+            
+            # Parse target enemy if specified
+            target_idx = 0  # Default to first enemy
+            
             if len(action) > 0:
+                # Handle targeting for multiple enemies
+                if len(enemies) > 1 and len(action) > 1:
+                    # Check if the last argument is a number for targeting
+                    if action[-1].isdigit() and 1 <= int(action[-1]) <= len(enemies):
+                        target_idx = int(action[-1]) - 1
+                        action = action[:-1]  # Remove the target from action
+                
                 if action[0] == "fight":
                     valid_action = True
                     print(GREEN + "Time your attack! The closer to the green center, the more damage you deal!")
                     accuracy_percent = run_slider(7.5, 35)
                     base_damage = player["attack"]
                     attack_damage = int(base_damage * (accuracy_percent / 100))
-                    turn_log += f"{GREEN}You attack with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{RESET}\n"
+                    
+                    # Apply damage to targeted enemy
+                    enemy = enemies[target_idx]
+                    turn_log += f"{GREEN}You attack {enemy['name']} with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{RESET}\n"
                     enemy["health"] -= attack_damage
+                    
+                    # Check if enemy is defeated
+                    if enemy["health"] <= 0:
+                        turn_log += f"You defeated {enemy['name']}!\n"
+                        # Don't remove enemy yet, do it after all enemies have attacked
 
                 elif action[0] == "defend":
                     valid_action = True
@@ -990,20 +1052,29 @@ while True:
 
                 elif action[0] == "cast" and len(action) > 1:
                     valid_action = True
-                    spell_name = " ".join(action[1:])  # Join all remaining words into spell name
+                    # Extract spell name - if target is included, it was already parsed above
+                    spell_parts = action[1:]
+                    if action[-1].isdigit() and len(enemies) > 1:
+                        spell_parts = action[1:-1]
+                    
+                    spell_name = " ".join(spell_parts)  # Join all remaining words into spell name
+                    
                     if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
                         spell_percent = random.randint(40,140)
                         damage = 0  # Initialize damage to 0 by default
+                        
+                        # Get targeted enemy
+                        enemy = enemies[target_idx]
 
-                        # Add divine shield handling
+                        # Handle spells - similar to before, but now targeting specific enemy
                         if spell_name == 'divine shield':
-                            shield_strength = 2 * player["mana"]  # 2 damage blocked per mana point
+                            shield_strength = 2 * player["mana"]
                             player["divine_shield"] = {
                                 "strength": shield_strength,
                                 "rounds": 3,
-                                "mana_cost": player["mana"]  # Store original mana cost for reference
+                                "mana_cost": player["mana"]
                             }
-                            player["mana"] = 0  # Use all mana for the shield
+                            player["mana"] = 0
                             turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
                         elif spell_name in ['stun strike', 'thunder zapper', 'binding shot']:
                             stun_chance = spell_percent / 100
@@ -1011,12 +1082,9 @@ while True:
                             if random.random() < stun_chance:
                                 stun_duration = random.randint(2, 5)
                                 enemy["stunned"] = stun_duration
-                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and stunned the enemy for {stun_duration} turns!\n"
-                                # Skip enemy's next turn
-                                print(turn_log)
-                                continue
+                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and stunned {enemy['name']} for {stun_duration} turns!\n"
                             else:
-                                turn_log += f"You cast {spell_name} but the enemy resisted!\n"
+                                turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
                         elif spell_name == 'stealth strike':
                             stun_chance = spell_percent / 100
                             damage = 0
@@ -1024,217 +1092,209 @@ while True:
                                 confusion_duration = random.randint(2, 5)
                                 recovery_chance = random.randint(10, 30)
                                 enemy["confused"] = [confusion_duration, recovery_chance]
-                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and confused the enemy for {confusion_duration} turns!\n"
-                                # Skip enemy's next turn
-                                
-                                print(turn_log)
-                                continue
+                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and confused {enemy['name']} for {confusion_duration} turns!\n"
                             else:
-                                turn_log += f"You cast {spell_name} but the enemy resisted!\n"
+                                turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
                         elif spell_name == "fireball":
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
-                            burn_duration = 3  # Burns for 3 turns
-                            burn_damage = int(damage * 0.5)  # 20% of initial damage per turn
+                            burn_duration = 3
+                            burn_damage = int(damage * 0.5)
                             enemy["burning"] = {
                                 "duration": burn_duration,
                                 "damage": burn_damage
                             }
-                            turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
-                        elif spell_name == "back stab":
+                            turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
+                            enemy["health"] -= damage
+                        elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow"]:
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
-                            turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
-                        elif spell_name == "slash":
-                            base_damage = player["spells"][spell_name][0]
-                            damage = int(base_damage * (spell_percent / 100))
-                            turn_log += f"You swing your weapon with {spell_percent}% precision for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                            turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                            enemy["health"] -= damage
                         elif spell_name == "circle heal":
                             base_healing = player["spells"][spell_name][0]
                             healing_amount = int(base_healing * (spell_percent / 100))
                             player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
                             turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                        elif spell_name == "bleeding arrow":
-                            base_damage = player["spells"][spell_name][0]
-                            damage = int(base_damage * (spell_percent / 100))
-                            turn_log += f"You shoot an arrow with {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
-                        elif spell_name == "water bolt":
-                            base_damage = player["spells"][spell_name][0]
-                            damage = int(base_damage * (spell_percent / 100))
-                            turn_log += f"You shoot an bolt of water with {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
                         elif spell_name == "finishing blow":
-                            base_damage = player["spells"][spell_name][0]  # Get the base damage
+                            base_damage = player["spells"][spell_name][0]
                             
-                            # Calculate enemy health percentage
-                            max_enemy_health = enemy_type['health']
+                            # Get enemy's original max health
+                            max_enemy_health = MONSTER_TYPES[monster_type]['health'] if monster_type != 'normal' else MONSTER_TYPES['normal']['health']
                             current_health_percent = (enemy["health"] / max_enemy_health) * 100
                             
-                            # Adjust damage based on enemy health percentage
                             if current_health_percent < 25:
-                                # Enemy is below 25% health - deal maximum damage
-                                damage_multiplier = 4  # 400% damage from base 20
-                                turn_log += f"CRITICAL FINISHING BLOW! The enemy is weakened! \n"
+                                damage_multiplier = 4
+                                turn_log += f"CRITICAL FINISHING BLOW! {enemy['name']} is weakened! \n"
                             elif current_health_percent < 50:
-                                # Enemy is between 25-50% health - deal high damage
-                                damage_multiplier = 2  # 200% damage from base 20
-                                turn_log += f"Strong finishing blow! \n"
+                                damage_multiplier = 2
+                                turn_log += f"Strong finishing blow on {enemy['name']}! \n"
                             elif current_health_percent < 75:
-                                # Enemy is between 50-75% health - deal moderate damage
-                                damage_multiplier = 1  # 100% damage from base 20
-                                turn_log += f"Effective finishing blow! \n"
+                                damage_multiplier = 1
+                                turn_log += f"Effective finishing blow on {enemy['name']}! \n"
                             else:
-                                # Enemy is above 75% health - deal reduced damage
-                                damage_multiplier = 0.25  # 25% damage from base 20
-                                turn_log += f"Weak finishing blow! The enemy is too healthy! \n"
+                                damage_multiplier = 0.25
+                                turn_log += f"Weak finishing blow on {enemy['name']}! The enemy is too healthy! \n"
                             
-                            # Calculate final damage with spell efficiency and health-based multiplier
                             damage = int(base_damage * (spell_percent / 100) * damage_multiplier)
-                            
                             turn_log += f"You deal {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                            enemy["health"] -= damage
+                        
+                        # Deduct mana cost
+                        player["mana"] -= player["spells"][spell_name][1]
+                        
+                    else:
+                        turn_log += f"Not enough mana or invalid spell! (Spell: {spell_name})\n"
+                        valid_action = False
 
-                        elif spell_name == "stealth":
-                            # Stealth spell focused on escaping combat
-                            # Calculate escape chance (50-80% based on spell efficiency)
-                            escape_base = 50
-                            escape_bonus = min(30, spell_percent // 5)  # Up to +30% based on spell efficiency
-                            escape_chance = escape_base + escape_bonus
-                            
-                            turn_log += f"You attempt to vanish into the shadows with {spell_percent}% efficiency...\n"
-                            
-                            # Roll for escape
-                            escape_roll = random.randint(1, 100)
-                            if escape_roll <= escape_chance:
-                                # Successful escape
-                                turn_log += f"{BLUE}Success! You slip away from combat! ({escape_chance}% chance){RESET}\n"
-                                print_slow(turn_log)
-                                player["armor"] = original_armor  # Reset armor
-                                player["mana"] -= player["spells"][spell_name][1]  # Deduct mana cost
-                                
-                                # Get all adjacent rooms
-                                adjacent_rooms = []
-                                for direction in ['north', 'south', 'east', 'west', 'up', 'down']:
-                                    if direction in rooms[currentRoom]:
-                                        adjacent_room = rooms[currentRoom][direction]
-                                        # Skip special rooms
-                                        if not adjacent_room.startswith('dungeon') and adjacent_room != '1-17' and adjacent_room != '1-13':
-                                            adjacent_rooms.append(adjacent_room)
-                                
-                                # Teleport to random adjacent room if available
-                                if adjacent_rooms:
-                                    currentRoom = random.choice(adjacent_rooms)
-                                    turn_log += f"{BLUE}You slip away to room {currentRoom}!{RESET}\n"
-                                    print_slow(turn_log)
-                                else:
-                                    turn_log += f"{BLUE}You hide in the shadows, but there's nowhere to escape to!{RESET}\n"
-                                    print_slow(turn_log)
-                                
-                                break  # Exit combat loop
-                            else:
-                                # Failed escape
-                                turn_log += f"{RED}Failed! The enemy spotted you! ({escape_roll} > {escape_chance}){RESET}\n"
-                                player["mana"] -= player["spells"][spell_name][1]  # Deduct mana cost
+                elif action[0] == "use" and len(action) > 1:
+                    valid_action = True
+                    item_name = " ".join(action[1:])
+                    item_result = use_item_during_combat(item_name)
+                    if item_result:
+                        turn_log += item_result + "\n"
+                    else:
+                        turn_log += "Invalid action!\n"
+                        valid_action = False
 
-                        else:
-                            turn_log += f"Not enough mana or invalid spell! (Spell: {spell_name})\n"
-                    elif action[0] == "use" and len(action) > 1:
-                        valid_action = True
-                        item_name = " ".join(action[1:])
-                        item_result = use_item_during_combat(item_name)
-                        if item_result:
-                            turn_log += item_result + "\n"
-                        else:
-                            turn_log += "Invalid action!\n"
+
 
                 else:
                     turn_log += "Invalid action!\n"
-                    continue
-                if valid_action:
-                    if enemy["health"] == 0 or enemy["health"] < 0:
-                        clear_lines(100)
-                        print_slow(turn_log)  # Show the combat efficiency/results first
+                    valid_action = False
+                    
+                # Remove any defeated enemies
+                defeated_indices = []
+                for i, enemy in enumerate(enemies):
+                    if enemy["health"] <= 0:
+                        defeated_indices.append(i)
+                
+                # Remove from highest index to lowest to avoid index issues
+                for idx in sorted(defeated_indices, reverse=True):
+                    del enemies[idx]
+                
+                # Check if all enemies are defeated
+                if len(enemies) == 0:
+                    clear_lines(100)
+                    print_slow(turn_log)  # Show the combat results first
+                    
+                    # Handle monster drops and rewards
+                    if monster_type == 'boss':
+                        # Boss rewards
+                        gold_dropped = random.randint(MONSTER_TYPES['boss']['gold_drop_range'][0],
+                                                     MONSTER_TYPES['boss']['gold_drop_range'][1])
+                        print_slow(f"You defeated the boss and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                        player["gold"] += gold_dropped
+                    elif monster_type == 'vampire':
+                        # Vampire rewards
+                        gold_dropped = random.randint(MONSTER_TYPES['vampire']['gold_drop_range'][0],
+                                                     MONSTER_TYPES['vampire']['gold_drop_range'][1])
+                        inventory.append("vampire pendant")
+                        print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                        print_slow(f"You earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                        player["gold"] += gold_dropped
+                    else:
+                        # Normal monster rewards - based on how many were defeated
+                        gold_base = MONSTER_TYPES['normal']['gold_drop_range'][0]
+                        gold_max = MONSTER_TYPES['normal']['gold_drop_range'][1]
+                        total_gold = random.randint(gold_base, gold_max)
                         
-                        gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
-                                                    enemy_type['gold_drop_range'][1])
-                        
-                        # Special drops for specific bosses
-                        if monster_type == 'vampire':
-                            inventory.append("vampire pendant")
-                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
-                        
-                        if random.random() < enemy_type['item_drop_chance']:
-                            # Drop a random armor piece
+                        # Chance for armor drops
+                        if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
                             slot = random.choice(list(ARMOR_SLOTS.keys()))
                             tier = random.choice(['leather', 'chainmail', 'iron'])
                             dropped_item = f"{tier} {slot}"
                             inventory.append(dropped_item)
-                            print_slow(f"{RESET}{enemy['name']} dropped {ITEM_COLOR}{dropped_item}{RESET}!")
+                            print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
                         
-                        # Add key fragment drop chance
-                        chance = random.random()
-                        if chance < player['key_fragment_chance']:
+                        # Key fragment drop chance
+                        if random.random() < player['key_fragment_chance']:
                             inventory.append("key fragment")
-                            print_slow(f"{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                            print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
                         
-                        # Show gold drop last
-                        print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
-                        player["gold"] = player.get("gold", 0) + gold_dropped
+                        print_slow(f"You defeated all monsters and earned{ITEM_COLOR} {total_gold} gold{RESET}!")
+                        player["gold"] += total_gold
+                    
+                    player["armor"] = original_armor
+                    del rooms[currentRoom]["monster"]
+                    print_slow("---------------------------")
+                    break
+                
+                if valid_action:
+                    # All enemies attack if not stunned/confused
+                    for i, enemy in enumerate(enemies):
+                        # Skip defeated enemies
+                        if enemy["health"] <= 0:
+                            continue
+                            
+                        # Apply burning damage if active
+                        if "burning" in enemy:
+                            burn = enemy["burning"]
+                            if burn["duration"] > 0:
+                                enemy["health"] -= burn["damage"]
+                                turn_log += f"{enemy['name']} takes {burn['damage']} burning damage! ({burn['duration']} turns remaining)\n"
+                                burn["duration"] -= 1
+                                if burn["duration"] <= 0:
+                                    del enemy["burning"]
+                                    turn_log += f"The fire consuming {enemy['name']} dies out.\n"
                         
-                        player["armor"] = original_armor
-                        del rooms[currentRoom]["monster"]
-                        print_slow("---------------------------")
-                        break
-                # Monster's turn to attack
-                
-                # Check if enemy is stunned first
-                if enemy["stunned"] > 0:
-                    enemy["stunned"] -= 1
-                    turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
-                    if enemy["stunned"] <= 0:
-                        turn_log += f"{enemy['name']} recovers from being stunned!\n"
-                elif "confused" in enemy and enemy["confused"][0] > 0:
-                    enemy["confused"][0] -= 1
-                    turn_log += f"{enemy['name']} is confused and cannot attack! ({enemy['confused'][0]} turns remaining)\n"
-                    recovery_chance = enemy["confused"][1]
-                    recovery_roll = random.randint(1, 100)
-                    if enemy["confused"][0] <= 0 or recovery_roll <= recovery_chance:
-                        del enemy["confused"]
-                        turn_log += f"{enemy['name']} recovers from being confused!\n"
-                else:
-                    # Only proceed with enemy attack if not stunned
-                    if monster_type == 'vampire' and "lifesteal_range" in enemy:
-                        lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
-                        lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
-                        enemy["health"] += lifesteal_amount
-                        turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
-
-                    # Regular enemy attack (only happens if not stunned)
-                    enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
-                
-                    # Handle divine shield damage reduction
-                    if hasattr(player, "divine_shield") and player["divine_shield"]:
-                        shield = player["divine_shield"]
-                        if shield["rounds"] > 0:
-                            damage_blocked = min(shield["strength"], enemy_attack)
-                            enemy_attack -= damage_blocked
-                            shield["strength"] -= damage_blocked
-                            shield["rounds"] -= 1
-                            turn_log += f"Divine shield blocks {damage_blocked} damage! ({shield['rounds']} rounds remaining)\n"
-
-                            # Remove shield if expired or depleted
-                            if shield["rounds"] <= 0 or shield["strength"] <= 0:
-                                turn_log += "Divine shield fades away!\n"
-                                player["divine_shield"] = None
-
-                    player["health"] -= enemy_attack
-                    turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
-                
-                if player["health"] <= 0:
-                    turn_log += "You died! Game over.\n"
+                        # Check if enemy is stunned
+                        if enemy["stunned"] > 0:
+                            enemy["stunned"] -= 1
+                            turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
+                            if enemy["stunned"] <= 0:
+                                turn_log += f"{enemy['name']} recovers from being stunned!\n"
+                            continue
+                        
+                        # Check if enemy is confused
+                        if "confused" in enemy and enemy["confused"][0] > 0:
+                            enemy["confused"][0] -= 1
+                            turn_log += f"{enemy['name']} is confused and cannot attack! ({enemy['confused'][0]} turns remaining)\n"
+                            recovery_chance = enemy["confused"][1]
+                            recovery_roll = random.randint(1, 100)
+                            if enemy["confused"][0] <= 0 or recovery_roll <= recovery_chance:
+                                del enemy["confused"]
+                                turn_log += f"{enemy['name']} recovers from being confused!\n"
+                            continue
+                        
+                        # Handle vampire lifesteal
+                        if monster_type == 'vampire' and "lifesteal_range" in enemy:
+                            lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
+                            lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
+                            enemy["health"] += lifesteal_amount
+                            turn_log += f"{RED}{enemy['name']} drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+                        
+                        # Normal enemy attack
+                        enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
+                        
+                        # Handle divine shield
+                        if hasattr(player, "divine_shield") and player["divine_shield"]:
+                            shield = player["divine_shield"]
+                            if shield["rounds"] > 0:
+                                damage_blocked = min(shield["strength"], enemy_attack)
+                                enemy_attack -= damage_blocked
+                                shield["strength"] -= damage_blocked
+                                shield["rounds"] -= 1
+                                turn_log += f"Divine shield blocks {damage_blocked} damage from {enemy['name']}! ({shield['rounds']} rounds remaining)\n"
+                                
+                                if shield["rounds"] <= 0 or shield["strength"] <= 0:
+                                    turn_log += "Divine shield fades away!\n"
+                                    player["divine_shield"] = None
+                        
+                        player["health"] -= enemy_attack
+                        turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
+                    
+                    # Check player death
+                    if player["health"] <= 0:
+                        turn_log += "You died! Game over.\n"
+                        print_slow(turn_log)
+                        exit()
+                    
+                    last_turn_log = turn_log
                     print_slow(turn_log)
-                    exit()
-                last_turn_log = turn_log
-                print_slow(turn_log)
-                continue
+                else:
+                    print_slow("Invalid action! Try again.")
+                    
     # Show current status
     if currentRoom == '1-17':
         print_slow('Shop')
