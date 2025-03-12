@@ -1189,7 +1189,7 @@ while True:
                     turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
                     if enemy["stunned"] <= 0:
                         turn_log += f"{enemy['name']} recovers from being stunned!\n"
-                if "confused" in enemy and enemy["confused"][0] > 0:
+                elif "confused" in enemy and enemy["confused"][0] > 0:
                     enemy["confused"][0] -= 1
                     turn_log += f"{enemy['name']} is confused and cannot attack! ({enemy['confused'][0]} turns remaining)\n"
                     recovery_chance = enemy["confused"][1]
