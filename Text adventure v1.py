@@ -52,14 +52,20 @@ def run_slider(scale: int, offset: int, delay = 0.02):
 
 def save_game():
     """Save the current game state to a file"""
-    # Create game state dictionary
+    # Create comprehensive game state dictionary
     game_state = {
         "player": player,
         "inventory": inventory,
         "player_equipment": player_equipment,
         "currentRoom": currentRoom,
         "defeated_bosses": list(defeated_bosses),
-        "rooms": rooms  # Include room state
+        "rooms": rooms,
+        "help_system": {
+            "pages": help_system.pages,
+            "current_page": help_system.current_page
+        },
+        "locked_spells": locked_spells.copy(),  # Copy the dictionary of locked spells
+        "classes": classes.copy()  # Include class definitions
     }
     
     # Convert to JSON string
@@ -86,6 +92,7 @@ def load_game():
         
         # Load JSON
         global player, inventory, player_equipment, currentRoom, defeated_bosses, rooms
+        global help_system, locked_spells, classes
         game_state = json.loads(decoded_data)
         
         # Restore game state
@@ -96,12 +103,21 @@ def load_game():
         defeated_bosses = set(game_state["defeated_bosses"])
         rooms = game_state["rooms"]
         
+        # Restore help system
+        help_system.pages = game_state["help_system"]["pages"]
+        help_system.current_page = game_state["help_system"]["current_page"]
+        
+        # Restore spells and classes
+        global locked_spells, classes
+        locked_spells = game_state["locked_spells"]
+        classes = game_state["classes"]
+        
         print_slow("Game loaded successfully!")
         return True
     except Exception as e:
         print_slow(f"Error loading game: {str(e)}")
         return False
-
+    
 # Define armor tiers and their properties
 ARMOR_TIERS = {
     'leather': {'defense': 5, 'weight': 1},
@@ -1369,6 +1385,13 @@ while True:
                 showHelp(' '.join(move[1:]))
             else:
                 showHelp()
+            continue
+        # Add to the main game loop command handling
+        elif move[0] in ['save', 's']:
+            save_game()
+            continue
+        elif move[0] in ['load', 'l']:
+            load_game()
             continue
         # Handle movement - check "go direction", just "direction", or single letter direction
         elif move[0] == 'go' or move[0] in ['north', 'south', 'east', 'west', 'up', 'down', 'n', 's', 'e', 'w', 'u', 'd']:
