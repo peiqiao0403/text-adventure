@@ -152,16 +152,16 @@ MONSTER_TYPES = {
 }
 
 classes = {
-    "Warrior": {"health": 120, "armor": 0, "mana": 30, "spells": {"slash": [10, 10]}, "attack": 25},
+    "Warrior": {"health": 120, "armor": 0, "mana": 30, "spells": {"slash": [25, 40]}, "attack": 25},
     "Mage": {"health": 80, "armor": 0, "mana": 100, "spells": {"fireball": [30, 40]}, "attack": 20},
-    "Rogue": {"health": 100, "armor": 0, "mana": 50, "spells": {"shadow strike": [20, 25]}, "attack": 20},
+    "Rogue": {"health": 100, "armor": 0, "mana": 50, "spells": {"back stab": [20, 25]}, "attack": 20},
     "Healer": {"health": 150, "armor": 0, "mana": 45, "spells": {"circle heal": [30, 35]}, "attack": 12},
     "Ranger": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
 }
 locked_spells = {
-    "Warrior": {'finishing blow': [20, 10], 'stun strike': [15, 15]},
+    "Warrior": {'finishing blow': [20, 30], 'stun strike': [15, 20]},
     "Mage": {'water bolt': [15, 10], 'thunder zapper': [20, 15]},
-    "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 15]},
+    "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 20]},
     "Healer": {'great heal': [40, 25], 'divine shield': [0, 15], "minor heal": [20, 15]},
     "Ranger": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]}
 }
@@ -170,7 +170,7 @@ class HelpSystem:
     def __init__(self):
         self.pages = {
             'commands': '''\nCommands Reference\n=================\nBasic Commands:\n- go [direction]     - Move character\n- get [item]         - Pick up items\n- use [item]         - Use items\n- help              - Show this menu\n- remove [slot]      - Remove armor from slot\n- equip [type] [slot]- Equip armor in slot\n- list              - Show market items\n- buy [item]        - Buy from market\n- sell [item]       - Sell to market\n''',
-            'classes': '''\nCharacter Classes\n================\n┌─────────┬───────┬────┬────┬───────────────┬────────┬──────────────┐\n│ Class   │Health │Mana│Atk │Spell          │Effect  │Spell Cost    │\n├─────────┼───────┼────┼────┼───────────────┼────────┼──────────────┤\n│ Warrior │ 120   │ 30 │ 25 │ Slash         │ +10 dmg│ 10 Mana      │\n│ Mage    │ 80    │100 │ 20 │ Fireball      │ +30 dmg│ 40 Mana      │\n│ Rogue   │ 100   │ 50 │ 20 │ Shadow Strike │ +20 dmg│ 25 Mana      │\n│ Healer  │ 150   │ 45 │ 12 │ Circle Heal   │ +30 HP │ 35 Mana      │\n│ Ranger  │ 110   │ 20 │ 20 │ Bleeding Arrow│ +25 dmg│ 25 Mana      │\n└─────────┴───────┴────┴────┴───────────────┴────────┴──────────────┘\n''',
+            'classes': '''\nCharacter Classes\n================\n┌─────────┬───────┬────┬────┬───────────────┬────────┬──────────────┐\n│ Class   │Health │Mana│Atk │Spell          │Effect  │Spell Cost    │\n├─────────┼───────┼────┼────┼───────────────┼────────┼──────────────┤\n│ Warrior │ 120   │ 30 │ 25 │ Slash         │ +10 dmg│ 10 Mana      │\n│ Mage    │ 80    │100 │ 20 │ Fireball      │ +30 dmg│ 40 Mana      │\n│ Rogue   │ 100   │ 50 │ 20 │ back stab │ +20 dmg│ 25 Mana      │\n│ Healer  │ 150   │ 45 │ 12 │ Circle Heal   │ +30 HP │ 35 Mana      │\n│ Ranger  │ 110   │ 20 │ 20 │ Bleeding Arrow│ +25 dmg│ 25 Mana      │\n└─────────┴───────┴────┴────┴───────────────┴────────┴──────────────┘\n''',
             'help': '''\nThe help system provides detailed information about different aspects of the game.\nAvailable commands:\n- help              : Shows this help menu\n- help commands     : Shows basic game commands\n- help classes      : Shows character class information\n- help market       : Shows market commands\nNavigation:\n- Use 'help' alone to see this menu\n- Use 'help <page>' to view a specific page\n- Type 'help' at any time to access the help system\n''',
             'market': '''\nMarket Commands\n==============\n- buy [item]    : Purchase an item from the market\n- sell [item]   : Sell an item to the market\n- list          : Show available items and prices\n'''
         }
@@ -873,9 +873,9 @@ def get_spell_description(spell_name):
         "fireball": "Causes burning for 3 turns",
         "water bolt": "Basic water attack, low cost",
         "thunder zapper": "Chance to stun enemy",
-        "shadow strike": "Basic rogue attack",
+        "back stab": "Basic rogue attack",
         "stealth": "Allows you to exit the battle",
-        "stealth strike": "Attack from stealth for bonus",
+        "stealth strike": "Attack from stealth confusing the enemy",
         "circle heal": "Group healing spell",
         "great heal": "Powerful single target heal",
         "divine shield": "Block damage for 3 rounds",
@@ -956,7 +956,7 @@ while True:
             show_inventory()
             print(GREEN)
             print_slow("---------------------------")
-            print_slow("Choose an action: fight, defend, cast [spell], use [item]")
+            print_slow("Choose an action: fight, defend, cast [spell], use [item], flee")
             action = input(GREEN + "> ").lower().split()
             clear_lines(100)  # Clear the screen for the new combat turn
             turn += 1
@@ -998,7 +998,7 @@ while True:
                             }
                             player["mana"] = 0  # Use all mana for the shield
                             turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
-                        elif spell_name in ['stun strike', 'thunder zapper']:
+                        elif spell_name in ['stun strike', 'thunder zapper', 'binding shot']:
                             stun_chance = spell_percent / 100
                             damage = 0
                             if random.random() < stun_chance:
@@ -1010,17 +1010,31 @@ while True:
                                 continue
                             else:
                                 turn_log += f"You cast {spell_name} but the enemy resisted!\n"
+                        elif spell_name == 'stealth strike':
+                            stun_chance = spell_percent / 100
+                            damage = 0
+                            if random.random() < stun_chance:
+                                confusion_duration = random.randint(2, 5)
+                                recovery_chance = random.randint(10, 30)
+                                enemy["confused"] = [confusion_duration, recovery_chance]
+                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and confused the enemy for {confusion_duration} turns!\n"
+                                # Skip enemy's next turn
+                                
+                                print(turn_log)
+                                continue
+                            else:
+                                turn_log += f"You cast {spell_name} but the enemy resisted!\n"
                         elif spell_name == "fireball":
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
                             burn_duration = 3  # Burns for 3 turns
-                            burn_damage = int(damage * 0.2)  # 20% of initial damage per turn
+                            burn_damage = int(damage * 0.5)  # 20% of initial damage per turn
                             enemy["burning"] = {
                                 "duration": burn_duration,
                                 "damage": burn_damage
                             }
                             turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
-                        elif spell_name == "shadow strike":
+                        elif spell_name == "back stab":
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
                             turn_log += f"You cast {spell_name} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
@@ -1051,93 +1065,141 @@ while True:
                             # Adjust damage based on enemy health percentage
                             if current_health_percent < 25:
                                 # Enemy is below 25% health - deal maximum damage
-                                damage_multiplier = 3.5  # 70 damage from base 20
-                                turn_log += f"CRITICAL FINISHING BLOW! The enemy is weakened! "
+                                damage_multiplier = 4  # 400% damage from base 20
+                                turn_log += f"CRITICAL FINISHING BLOW! The enemy is weakened! \n"
                             elif current_health_percent < 50:
                                 # Enemy is between 25-50% health - deal high damage
-                                damage_multiplier = 2.5  # 50 damage from base 20
-                                turn_log += f"Strong finishing blow! "
+                                damage_multiplier = 2  # 200% damage from base 20
+                                turn_log += f"Strong finishing blow! \n"
                             elif current_health_percent < 75:
                                 # Enemy is between 50-75% health - deal moderate damage
-                                damage_multiplier = 1.5  # 30 damage from base 20
-                                turn_log += f"Effective finishing blow! "
+                                damage_multiplier = 1  # 100% damage from base 20
+                                turn_log += f"Effective finishing blow! \n"
                             else:
                                 # Enemy is above 75% health - deal reduced damage
-                                damage_multiplier = 0.5  # 10 damage from base 20
-                                turn_log += f"Weak finishing blow! The enemy is too healthy! "
+                                damage_multiplier = 0.25  # 25% damage from base 20
+                                turn_log += f"Weak finishing blow! The enemy is too healthy! \n"
                             
                             # Calculate final damage with spell efficiency and health-based multiplier
                             damage = int(base_damage * (spell_percent / 100) * damage_multiplier)
                             
                             turn_log += f"You deal {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
 
-                        enemy["health"] -= damage
-                        player["mana"] -= player["spells"][spell_name][1]
-                    else:
-                        turn_log += "Not enough mana or invalid spell!\n"
-                elif action[0] == "use" and len(action) > 1:
-                    valid_action = True
-                    item_name = " ".join(action[1:])
-                    item_result = use_item_during_combat(item_name)
-                    if item_result:
-                        turn_log += item_result + "\n"
-                    else:
-                        turn_log += "Invalid action!\n"
+                        elif spell_name == "stealth":
+                            # Stealth spell focused on escaping combat
+                            # Calculate escape chance (50-80% based on spell efficiency)
+                            escape_base = 50
+                            escape_bonus = min(30, spell_percent // 5)  # Up to +30% based on spell efficiency
+                            escape_chance = escape_base + escape_bonus
+                            
+                            turn_log += f"You attempt to vanish into the shadows with {spell_percent}% efficiency...\n"
+                            
+                            # Roll for escape
+                            escape_roll = random.randint(1, 100)
+                            if escape_roll <= escape_chance:
+                                # Successful escape
+                                turn_log += f"{BLUE}Success! You slip away from combat! ({escape_chance}% chance){RESET}\n"
+                                print_slow(turn_log)
+                                player["armor"] = original_armor  # Reset armor
+                                player["mana"] -= player["spells"][spell_name][1]  # Deduct mana cost
+                                
+                                # Get all adjacent rooms
+                                adjacent_rooms = []
+                                for direction in ['north', 'south', 'east', 'west', 'up', 'down']:
+                                    if direction in rooms[currentRoom]:
+                                        adjacent_room = rooms[currentRoom][direction]
+                                        # Skip special rooms
+                                        if not adjacent_room.startswith('dungeon') and adjacent_room != '1-17' and adjacent_room != '1-13':
+                                            adjacent_rooms.append(adjacent_room)
+                                
+                                # Teleport to random adjacent room if available
+                                if adjacent_rooms:
+                                    currentRoom = random.choice(adjacent_rooms)
+                                    turn_log += f"{BLUE}You slip away to room {currentRoom}!{RESET}\n"
+                                    print_slow(turn_log)
+                                else:
+                                    turn_log += f"{BLUE}You hide in the shadows, but there's nowhere to escape to!{RESET}\n"
+                                    print_slow(turn_log)
+                                
+                                break  # Exit combat loop
+                            else:
+                                # Failed escape
+                                turn_log += f"{RED}Failed! The enemy spotted you! ({escape_roll} > {escape_chance}){RESET}\n"
+                                player["mana"] -= player["spells"][spell_name][1]  # Deduct mana cost
 
-            else:
-                turn_log += "Invalid action!\n"
-                continue
-            if valid_action:
-                if enemy["health"] == 0 or enemy["health"] < 0:
-                    clear_lines(100)
-                    print_slow(turn_log)  # Show the combat efficiency/results first
-                    
-                    gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
-                                                enemy_type['gold_drop_range'][1])
-                    
-                    # Special drops for specific bosses
-                    if currentRoom == 'dungeon-3':  # Vampire boss
-                        inventory.append("vampire pendant")
-                        print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
-                    
-                    if random.random() < enemy_type['item_drop_chance']:
-                        # Drop a random armor piece
-                        slot = random.choice(list(ARMOR_SLOTS.keys()))
-                        tier = random.choice(['leather', 'chainmail', 'iron'])
-                        dropped_item = f"{tier} {slot}"
-                        inventory.append(dropped_item)
-                        print_slow(f"{RESET}{enemy['name']} dropped {ITEM_COLOR}{dropped_item}{RESET}!")
-                    
-                    # Add key fragment drop chance
-                    chance = random.random()
-                    if chance < player['key_fragment_chance']:
-                        inventory.append("key fragment")
-                        print_slow(f"{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
-                    
-                    # Show gold drop last
-                    print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
-                    player["gold"] = player.get("gold", 0) + gold_dropped
-                    
-                    player["armor"] = original_armor
-                    del rooms[currentRoom]["item"]
-                    print_slow("---------------------------")
-                    break
-            # Monster's turn to attack
-            
-            # Check if enemy is stunned first
-            if "stunned" in enemy and enemy["stunned"] > 0:
-                enemy["stunned"] -= 1
-                turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
-                if enemy["stunned"] <= 0:
-                    del enemy["stunned"]
-                    turn_log += f"{enemy['name']} recovers from being stunned!\n"
-            else:
-                # Only proceed with enemy attack if not stunned
-                if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
-                    lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
-                    lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
-                    enemy["health"] += lifesteal_amount
-                    turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+                        else:
+                            turn_log += f"Not enough mana or invalid spell! (Spell: {spell_name})\n"
+                    elif action[0] == "use" and len(action) > 1:
+                        valid_action = True
+                        item_name = " ".join(action[1:])
+                        item_result = use_item_during_combat(item_name)
+                        if item_result:
+                            turn_log += item_result + "\n"
+                        else:
+                            turn_log += "Invalid action!\n"
+
+                else:
+                    turn_log += "Invalid action!\n"
+                    continue
+                if valid_action:
+                    if enemy["health"] == 0 or enemy["health"] < 0:
+                        clear_lines(100)
+                        print_slow(turn_log)  # Show the combat efficiency/results first
+                        
+                        gold_dropped = random.randint(enemy_type['gold_drop_range'][0],
+                                                    enemy_type['gold_drop_range'][1])
+                        
+                        # Special drops for specific bosses
+                        if currentRoom == 'dungeon-3':  # Vampire boss
+                            inventory.append("vampire pendant")
+                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                        
+                        if random.random() < enemy_type['item_drop_chance']:
+                            # Drop a random armor piece
+                            slot = random.choice(list(ARMOR_SLOTS.keys()))
+                            tier = random.choice(['leather', 'chainmail', 'iron'])
+                            dropped_item = f"{tier} {slot}"
+                            inventory.append(dropped_item)
+                            print_slow(f"{RESET}{enemy['name']} dropped {ITEM_COLOR}{dropped_item}{RESET}!")
+                        
+                        # Add key fragment drop chance
+                        chance = random.random()
+                        if chance < player['key_fragment_chance']:
+                            inventory.append("key fragment")
+                            print_slow(f"{RESET}The monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                        
+                        # Show gold drop last
+                        print_slow(f"You defeated the {enemy['name']} and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                        player["gold"] = player.get("gold", 0) + gold_dropped
+                        
+                        player["armor"] = original_armor
+                        del rooms[currentRoom]["item"]
+                        print_slow("---------------------------")
+                        break
+                # Monster's turn to attack
+                
+                # Check if enemy is stunned first
+                if "stunned" in enemy and enemy["stunned"] > 0:
+                    enemy["stunned"] -= 1
+                    turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
+                    if enemy["stunned"] <= 0:
+                        del enemy["stunned"]
+                        turn_log += f"{enemy['name']} recovers from being stunned!\n"
+                if "confused" in enemy and enemy["confused"][0] > 0:
+                    enemy["confused"][0] -= 1
+                    turn_log += f"{enemy['name']} is confused and cannot attack! ({enemy['confused'][0]} turns remaining)\n"
+                    recovery_chance = enemy["confused"][1]
+                    recovery_roll = random.randint(1, 100)
+                    if enemy["confused"][0] <= 0 or recovery_roll <= recovery_chance:
+                        del enemy["confused"]
+                        turn_log += f"{enemy['name']} recovers from being confused!\n"
+                else:
+                    # Only proceed with enemy attack if not stunned
+                    if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
+                        lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
+                        lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
+                        enemy["health"] += lifesteal_amount
+                        turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
 
                 # Regular enemy attack (only happens if not stunned)
                 enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
@@ -1159,14 +1221,14 @@ while True:
                     
                 player["health"] -= enemy_attack
                 turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
-
-            if player["health"] <= 0:
-                turn_log += "You died! Game over.\n"
+                
+                if player["health"] <= 0:
+                    turn_log += "You died! Game over.\n"
+                    print_slow(turn_log)
+                    exit()
+                last_turn_log = turn_log
                 print_slow(turn_log)
-                exit()
-            last_turn_log = turn_log
-            print_slow(turn_log)
-            continue
+                continue
     # Show current status
     if currentRoom == '1-17':
         print_slow('Shop')
@@ -1378,5 +1440,7 @@ while True:
             print_slow("Invalid command!")
     else:
         print_slow("Invalid command!")
+        
+        
         
         
