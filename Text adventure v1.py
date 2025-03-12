@@ -982,8 +982,8 @@ while True:
                     defense_percent = random.randint(40, 140)
                     plus_armor = round((10 * defense_percent) / 100)
                     mana_regen = round((20 * defense_percent) / 100)
-                    player["armor"] += plus_armor
-                    player["mana"] += mana_regen
+                    player["armor"] = min(player["armor"] + plus_armor, 80)
+                    player["mana"] += max(0, mana_regen)
                     turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armor} armor and {mana_regen} mana!\n"
 
                 elif action[0] == "cast" and len(action) > 1:
@@ -1205,26 +1205,26 @@ while True:
                         enemy["health"] += lifesteal_amount
                         turn_log += f"{RED}Count Dracula drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
 
-                # Regular enemy attack (only happens if not stunned)
-                enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
+                    # Regular enemy attack (only happens if not stunned)
+                    enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
                 
-                # Handle divine shield damage reduction
-                if hasattr(player, "divine_shield") and player["divine_shield"]:
-                    shield = player["divine_shield"]
-                    if shield["rounds"] > 0:
-                        damage_blocked = min(shield["strength"], enemy_attack)
-                        enemy_attack -= damage_blocked
-                        shield["strength"] -= damage_blocked
-                        shield["rounds"] -= 1
-                        turn_log += f"Divine shield blocks {damage_blocked} damage! ({shield['rounds']} rounds remaining)\n"
-                        
-                        # Remove shield if expired or depleted
-                        if shield["rounds"] <= 0 or shield["strength"] <= 0:
-                            turn_log += "Divine shield fades away!\n"
-                            player["divine_shield"] = None
-                    
-                player["health"] -= enemy_attack
-                turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
+                    # Handle divine shield damage reduction
+                    if hasattr(player, "divine_shield") and player["divine_shield"]:
+                        shield = player["divine_shield"]
+                        if shield["rounds"] > 0:
+                            damage_blocked = min(shield["strength"], enemy_attack)
+                            enemy_attack -= damage_blocked
+                            shield["strength"] -= damage_blocked
+                            shield["rounds"] -= 1
+                            turn_log += f"Divine shield blocks {damage_blocked} damage! ({shield['rounds']} rounds remaining)\n"
+
+                            # Remove shield if expired or depleted
+                            if shield["rounds"] <= 0 or shield["strength"] <= 0:
+                                turn_log += "Divine shield fades away!\n"
+                                player["divine_shield"] = None
+
+                    player["health"] -= enemy_attack
+                    turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
                 
                 if player["health"] <= 0:
                     turn_log += "You died! Game over.\n"
