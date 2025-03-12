@@ -3,6 +3,8 @@ import random
 import math
 import time
 from threading import Thread
+import base64
+import json
 
 GREEN = "\033[38;2;0;255;0m"
 ITEM_COLOR = "\033[38;2;255;255;0m"  # Yellow
@@ -48,6 +50,57 @@ def run_slider(scale: int, offset: int, delay = 0.02):
     print()
     return round(100 * (1 - abs(main.result - 15) / (100 / scale))) + offset
 
+def save_game():
+    """Save the current game state to a file"""
+    # Create game state dictionary
+    game_state = {
+        "player": player,
+        "inventory": inventory,
+        "player_equipment": player_equipment,
+        "currentRoom": currentRoom,
+        "defeated_bosses": list(defeated_bosses),
+        "rooms": rooms  # Include room state
+    }
+    
+    # Convert to JSON string
+    game_data = json.dumps(game_state, indent=2)
+    
+    # Encode to base64
+    encoded_data = base64.b64encode(game_data.encode()).decode()
+    
+    # Save to file
+    with open("savegame.txt", "w") as f:
+        f.write(encoded_data)
+    
+    print_slow("Game saved successfully!")
+
+def load_game():
+    """Load a saved game state from file"""
+    try:
+        # Read from file
+        with open("savegame.txt", "r") as f:
+            encoded_data = f.read()
+        
+        # Decode base64
+        decoded_data = base64.b64decode(encoded_data.encode()).decode()
+        
+        # Load JSON
+        global player, inventory, player_equipment, currentRoom, defeated_bosses, rooms
+        game_state = json.loads(decoded_data)
+        
+        # Restore game state
+        player = game_state["player"]
+        inventory = game_state["inventory"]
+        player_equipment = game_state["player_equipment"]
+        currentRoom = game_state["currentRoom"]
+        defeated_bosses = set(game_state["defeated_bosses"])
+        rooms = game_state["rooms"]
+        
+        print_slow("Game loaded successfully!")
+        return True
+    except Exception as e:
+        print_slow(f"Error loading game: {str(e)}")
+        return False
 
 # Define armor tiers and their properties
 ARMOR_TIERS = {
