@@ -418,7 +418,7 @@ rooms = {
     '1-2': {
         'north': '1-3',
         'west': '1-1',
-        "item": "monster"
+        "monster": "normal"
     },
     '1-3': {
         'west': '1-4',
@@ -434,7 +434,7 @@ rooms = {
     '1-5': {
         'south': '1-4',
         'west': '1-6',
-        'item': 'monster'
+        'monster': "normal"
     },
     '1-6': {
         'west': '1-7',
@@ -445,7 +445,7 @@ rooms = {
         'east': '1-6',
         'west': '1-8',
         'south': '1-15',
-        'item': 'monster'
+        'monster': "normal"
     },
     '1-8': {
         'east': '1-7',
@@ -492,7 +492,7 @@ rooms = {
         'north': '1-14',
         'south': '1-17',
         'west': '1-13',
-        'item': 'monster'
+        'monster': "normal"
     },
     '1-17': {
         'west': '1-18',
@@ -505,7 +505,7 @@ rooms = {
     '1-19': {
         'west': '1-20',
         'east': '1-18',
-        'item': 'monster'
+        'monster': "boss"
     },
     '1-20': {
         'east': '1-19',
@@ -514,7 +514,7 @@ rooms = {
     'dungeon-1': {
         'up': '1-10',
         'east': 'dungeon-2',
-        'item': 'monster'
+        'monster': "normal"
     },
     'dungeon-2': {
         'west': 'dungeon-1',
@@ -523,7 +523,7 @@ rooms = {
     },
     'dungeon-3': {
         'north': 'dungeon-2',
-        'item': 'monster'
+        'monster': "vampire"
     },
     '2-1': {
         "north": '2-2',
@@ -548,7 +548,7 @@ rooms = {
     '2-5': {
         'north': '2-4',
         'south': '2-6',
-        'item': 'monster'
+        'monster': "normal"
     },
     '2-6': {
         'west': '2-7',
@@ -560,7 +560,7 @@ rooms = {
         'west': '2-8',
         'south': '2-13',
         'north': '2-15',
-        'item': 'monster'
+        'monster': "normal"
     },
     '2-8': {
         'east': '2-7',
@@ -581,11 +581,11 @@ rooms = {
     '2-11': {
         'north': '2-10',
         'south': '2-12',
-        "item": 'monster'
+        "monster": "normal"
     },
     '2-12': {
     'north': '2-11',
-    'item': 'monster'
+    'monster': "normal"
     },
     '2-13': {
         'east': '2-12',
@@ -605,11 +605,11 @@ rooms = {
         'west': '2-18',
         'south': '2-17',
         'east': '2-14',
-        'item': 'monster'
+        'monster': "normal"
     }, 
     '2-17': {
         'north': '2-16',
-        'item': 'monster'
+        'monster': "normal"
     },
     '2-18': {
         'west': '2-19',
@@ -916,16 +916,18 @@ def sell_item(item_name):
 
 while True:
     # Automatic combat initiation when a monster is present
-    if "item" in rooms[currentRoom] and rooms[currentRoom]["item"] == "monster":
+    if "monster" in rooms[currentRoom]:
         clear_lines(100)
         # Determine monster type
-        if currentRoom == '1-19':
+        monster_type = rooms[currentRoom]["monster"]
+        
+        if monster_type == 'boss':
             enemy_type = MONSTER_TYPES['boss']
             enemy_name = enemy_type['name']
-        elif currentRoom == 'dungeon-3':
+        elif monster_type == 'vampire':
             enemy_type = MONSTER_TYPES['vampire']
             enemy_name = enemy_type['name']
-        else:
+        else:  # normal monster
             enemy_type = MONSTER_TYPES['normal']
             enemy_name = random.choice(enemy_type['names'])  # Randomly select a monster name
         
@@ -938,11 +940,11 @@ while True:
         }
 
         # Add vampire-specific attributes if applicable
-        if currentRoom == 'dungeon-3':
+        if monster_type == 'vampire':
             enemy["lifesteal_range"] = enemy_type['lifesteal_range']
 
         last_turn_log = ""  # Initialize empty log for the first turn.
-        if currentRoom == 'dungeon-3' or currentRoom == '1-19':        
+        if monster_type in ['vampire', 'boss']:
             print_slow(f"{enemy['name']} appears!")
         else:
             print_slow(f"A {enemy['name']} appears!")
@@ -1155,7 +1157,7 @@ while True:
                                                     enemy_type['gold_drop_range'][1])
                         
                         # Special drops for specific bosses
-                        if currentRoom == 'dungeon-3':  # Vampire boss
+                        if monster_type == 'vampire':
                             inventory.append("vampire pendant")
                             print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
                         
@@ -1178,7 +1180,7 @@ while True:
                         player["gold"] = player.get("gold", 0) + gold_dropped
                         
                         player["armor"] = original_armor
-                        del rooms[currentRoom]["item"]
+                        del rooms[currentRoom]["monster"]
                         print_slow("---------------------------")
                         break
                 # Monster's turn to attack
@@ -1199,7 +1201,7 @@ while True:
                         turn_log += f"{enemy['name']} recovers from being confused!\n"
                 else:
                     # Only proceed with enemy attack if not stunned
-                    if currentRoom == 'dungeon-3' and "lifesteal_range" in enemy:
+                    if monster_type == 'vampire' and "lifesteal_range" in enemy:
                         lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
                         lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
                         enemy["health"] += lifesteal_amount
@@ -1444,6 +1446,7 @@ while True:
             print_slow("Invalid command!")
     else:
         print_slow("Invalid command!")
+        
         
         
         
