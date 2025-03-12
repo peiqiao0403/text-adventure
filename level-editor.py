@@ -97,13 +97,10 @@ rooms = {
     '1-20': {
         'east': '1-19',
         'north': '2-1'
-    }
-}
-
-
-rooms = {
+    },    
     '2-1': {
-        "north": '2-2',
+        'west': '1-20',
+        "north": '2-2'
     },
     '2-2': {
         'west': '2-3',
@@ -144,7 +141,7 @@ rooms = {
     },
     '2-9': {
         'south': '2-10',
-        'north': '1-13',
+        'north': '2-13',
         'east': '2-8',
         'west': '2-10',
         "item": "iron chestplate"
@@ -204,53 +201,267 @@ rooms = {
     '2-21': {
         'south': '2-20',
         'north': '2-22'
-        },
+    },
     '2-22': {
         'south': '2-21',
         'north': '2-23',
         'east': '2-26'
-        },
+    },
     '2-23': {
         'south': '2-22',
         'west': '2-24',
         'item': 'mana potion'
-        },
+    },
     '2-24': {
         'east': '2-23',
         'south': '2-25'
             
-        },
+    },
     '2-25': {
         'north': '2-24',
         'east': '2-28',
         'item': 'steel sword'
             
-        },
+    },
     '2-26': {
         'west': '2-23',
         'east': '2-27',
         'item': 'monster'
 
-         },
+    },
     '2-27': {
         'west': '2-26',
         'item': 'monster'
 
-        },
+    },
     '2-28': {
         'west': '2-25',
         'east': '2-29',
         'item': 'monster'
-        },
+    },
     '2-29': {
         'west': '2-28',
         'south': '2-30',
         'item': 'iron boots'
-        },
+    },
     '2-30': {
         'east': '2-29',
+        'west': '3-1',
         'item': 'health potion'
-    }
+
+    '3-1': {
+        'east': '2-29',
+        "north": '3-2'
+    },
+    '3-2': {
+        'east': '3-3',
+        'south': '3-1',
+        "item": "monster"
+    },
+    '3-3': {
+        'west': '3-2',
+        'east': '3-4',
+        'south': '3-7',
+        'item': 'mythril leggings'
+    },
+    '3-4': {
+        'west': '3-3',
+        'east': '3-5',
+        'item': 'monster'
+    },
+    '3-5': {
+        'west': '3-4',
+        'north': '3-6'
+    },
+    '3-6': {
+        'west': '3-31',
+        'south': '3-5',
+        'east': '3-8',
+        'north': '3-13',
+        "item": "health potion"
+    },
+    '3-7': {
+        'east': '3-10',
+        'west': '3-8',
+        'south': '3-16',
+        'north': '3-3',
+        'item': 'monster'
+    },
+    '3-8': {
+        'east': '3-7',
+        'west': '3-6',
+        'north': '3-9',
+        'item': 'iron boots'
+    },
+    '3-9': {
+        'south': '3-8',
+        'east': '3-11',
+        'west': '3-10',
+        "item": "monster"
+    },
+    '3-10': {
+        'east': '3-9',
+        "item": "health potion"
+    },
+    '3-11': {
+        'west': '3-9',
+        'south': '3-12',
+        "item": 'steel sword'
+    },
+    '3-12': {
+      'north': '3-11',
+      'item': 'monster'
+    },
+    '3-13': {
+        'south': '3-6',
+        'north': '3-14',
+    },
+    '3-14': {
+        'south': '3-13',
+        "west": "3-15",
+        "item": "monster"
+    },
+    '3-15': {
+        'east': '3-14',
+        'north': '3-16',
+        "item": "spell"
+    },
+    '3-16': {
+        'west': '3-26',
+        'south': '3-15',
+        'north': '3-7',
+        'item': 'monster'
+    },
+    '3-17': {
+        'north': '3-31',
+        'item': 'health potion'
+    },
+    '3-18': {
+        'south': '3-26',
+        'east': '3-19',
+        'item': 'health potion'
+   },
+    '3-19': {
+        'north': '3-22',
+        'west': '3-18',
+        'item': 'health potion'
+    },
+    '3-20': {
+        'south': '3-23',
+        'item': 'monster'
+    },
+    '3-21': {
+        'north': '3-22'
+    },
+    '3-22': {
+        'south': '3-19',
+        'north': '3-20',
+        'east': '3-32',
+        'west': '3-23'
+    },
+    '3-23': {
+        'east': '3-22',
+        'west': '3-24',
+        'north': '3-20',
+        'item': 'monster'
+    },
+    '3-24': {
+        'east': '3-23',
+        'south': '3-25'
+            
+    },
+    '3-25': {
+        'north': '3-24',
+        'east': '3-31',
+        'item': 'health potion'
+            
+    },
+    '3-26': {
+        'west': '3-33',
+        'item': 'monster'
+
+    },
+    '3-27': {
+        'west': '3-32',
+        'item': 'health potion'
+
+    },
+    '3-28': {
+        'north': '3-29',
+        'east': '3-34',
+        'item': 'health potion'
+    },
+    '3-29': {
+        'west': '3-28',
+        'south': '3-30',
+        'item': 'mana potion'
+    },
+    '3-30': {
+        'east': '3-29',
+        'item': 'health potion'
+            }
+    },
+    '3-31': {
+        'east': '3-6',
+        'west': '3-25',
+        'item': 'monster'
+            }
+    },
+    '3-32': {
+        'east': '3-27',
+        'west': '3-22',
+        'north': '3-33',
+        'item': 'health potion'
+            }
+    },
+    '3-33': {
+        'south': '3-32',
+        'north': '3-34',
+        'item': 'monster'
+            }
+    },
+    '3-34': {
+        'south': '3-33',
+        'west': '3-35',
+        'north': '3-36',
+        'item': 'monster'
+            }
+    },
+    '3-35': {
+        'south': '3-34',
+        'west': '3-38',
+        'item': 'steel helmet'
+            }
+    },
+    '3-36': {
+        'south': '3-34',
+        'east': '3-37',
+        'item': 'health potion'
+            }
+    },
+    '3-37': {
+        'east': '3-38',
+        'west': '3-36',
+        'item': 'steel boots'
+            }
+    },
+    '3-38': {
+        'east': '3-39',
+        'west': '3-37',
+        'item': 'health potion'
+            }
+    },
+    '3-39': {
+        'east': '3-40',
+        'west': '3-38',
+        'item': 'health potion'
+            }
+    },
+    '3-40': {
+        'east': '4-1',
+        'west': '3-39',
+        'item': 'monster'
+            }
 }
 
 # Mapping for reverse directions
