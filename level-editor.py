@@ -173,7 +173,7 @@ rooms = {
     '2-15': {
         'east': '2-4',
         'north': '2-7',
-        "item": "mythril boots"
+        "item": "mana potion"
     },
     '2-16': {
         'west': '2-18',
@@ -262,7 +262,7 @@ rooms = {
         'west': '3-2',
         'east': '3-4',
         'south': '3-7',
-        'item': 'mythril leggings'
+        'item': 'iron leggings'
     },
     '3-4': {
         'west': '3-3',
@@ -306,7 +306,7 @@ rooms = {
     '3-11': {
         'west': '3-9',
         'south': '3-12',
-        "item": 'steel sword'
+        "item": 'iron sword'
     },
     '3-12': {
       'north': '3-11',
@@ -430,7 +430,7 @@ rooms = {
     '3-35': {
         'south': '3-34',
         'west': '3-38',
-        'item': 'steel helmet'
+        'item': 'iron helmet'
             }
     },
     '3-36': {
@@ -442,7 +442,7 @@ rooms = {
     '3-37': {
         'east': '3-38',
         'west': '3-36',
-        'item': 'steel boots'
+        'item': 'iron boots'
             }
     },
     '3-38': {
