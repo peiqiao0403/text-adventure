@@ -3,8 +3,7 @@ import random
 import math
 import time
 from threading import Thread
-import base64
-import json
+
 
 GREEN = "\033[38;2;0;255;0m"
 ITEM_COLOR = "\033[38;2;255;255;0m"  # Yellow
@@ -50,6 +49,51 @@ def run_slider(scale: int, offset: int, delay = 0.02):
     print()
     return round(100 * (1 - abs(main.result - 15) / (100 / scale))) + offset
 
+def encode(data, shift=3):
+    """Custom rotating encoding function inspired by Enigma"""
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?"
+    result = ""
+    rotor_position = shift  # Initial rotor position
+    
+    for byte in data.encode():
+        rotated_chars = chars[rotor_position:] + chars[:rotor_position]  # Rotate dynamically
+        result += rotated_chars[byte >> 4] + rotated_chars[byte & 0x0F]
+        rotor_position = (rotor_position + 1) % len(chars)  # Move rotor
+    
+    return result
+
+def decode(data, shift=3):
+    """Custom rotating decoding function inspired by Enigma"""
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?"
+    result = bytearray()
+    rotor_position = shift  # Initial rotor position
+    
+    for i in range(0, len(data), 2):
+        rotated_chars = chars[rotor_position:] + chars[:rotor_position]  # Rotate dynamically
+        byte = (rotated_chars.index(data[i]) << 4) | rotated_chars.index(data[i+1])
+        result.append(byte)
+        rotor_position = (rotor_position + 1) % len(chars)  # Move rotor
+    
+    return bytes(result).decode()
+def encode_64(data):
+    """Custom encoding function without base64"""
+    # Use a simple substitution cipher with printable ASCII characters
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?"
+    result = ""
+    for byte in data.encode():
+        # Convert each byte to two characters using the character set
+        result += chars[byte >> 4] + chars[byte & 0x0F]
+    return result
+
+def decode_64(data):
+    """Custom decoding function without base64"""
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?"
+    result = bytearray()
+    for i in range(0, len(data), 2):
+        # Convert two characters back to one byte
+        byte = (chars.index(data[i]) << 4) | chars.index(data[i+1])
+        result.append(byte)
+    return bytes(result).decode()
 def save_game():
     """Save the current game state to a file"""
     # Create comprehensive game state dictionary
@@ -60,22 +104,17 @@ def save_game():
         "currentRoom": currentRoom,
         "defeated_bosses": list(defeated_bosses),
         "rooms": rooms,
-        "help_system": {
-            "pages": help_system.pages,
-            "current_page": help_system.current_page
-        },
-        "locked_spells": locked_spells.copy(),  # Copy the dictionary of locked spells
-        "classes": classes.copy()  # Include class definitions
+        "locked_spells": locked_spells.copy(),
     }
     
-    # Convert to JSON string
-    game_data = json.dumps(game_state, indent=2)
+    # Convert to string using custom serialization
+    game_data = str(game_state).replace('\\', '\\\\').replace('\n', '\\n')
     
-    # Encode to base64
-    encoded_data = base64.b64encode(game_data.encode()).decode()
+    # Encode using custom encoding
+    encoded_data = encode_64(encode(game_data))
     
     # Save to file
-    with open("savegame.txt", "w") as f:
+    with open("savegame.dat", "w") as f:
         f.write(encoded_data)
     
     print_slow("Game saved successfully!")
@@ -84,40 +123,119 @@ def load_game():
     """Load a saved game state from file"""
     try:
         # Read from file
-        with open("savegame.txt", "r") as f:
+        with open("savegame.dat", "r") as f:
             encoded_data = f.read()
         
-        # Decode base64
-        decoded_data = base64.b64decode(encoded_data.encode()).decode()
+        # Decode using custom decoding
+        decoded_data = decode(decode_64(encoded_data))
         
-        # Load JSON
-        global player, inventory, player_equipment, currentRoom, defeated_bosses, rooms
-        global help_system, locked_spells, classes
-        game_state = json.loads(decoded_data)
+        # Convert string back to dictionary
+        game_state = eval(decoded_data)
         
         # Restore game state
+        global player, inventory, player_equipment, currentRoom, defeated_bosses, rooms, locked_spells
         player = game_state["player"]
         inventory = game_state["inventory"]
         player_equipment = game_state["player_equipment"]
         currentRoom = game_state["currentRoom"]
         defeated_bosses = set(game_state["defeated_bosses"])
         rooms = game_state["rooms"]
-        
-        # Restore help system
-        help_system.pages = game_state["help_system"]["pages"]
-        help_system.current_page = game_state["help_system"]["current_page"]
-        
-        # Restore spells and classes
-        global locked_spells, classes
+        player["spells"] = game_state["player"]["spells"]
+        inventory = game_state["inventory"]
+        rooms = game_state["rooms"]
+        # Restore spells
         locked_spells = game_state["locked_spells"]
-        classes = game_state["classes"]
         
         print_slow("Game loaded successfully!")
         return True
     except Exception as e:
         print_slow(f"Error loading game: {str(e)}")
         return False
+
     
+
+
+
+def count_visible_chars(text):
+    count = 0
+    in_escape = False
+    for char in text:
+        if char == '\x1b':
+            in_escape = True
+        elif in_escape and char == 'm':
+            in_escape = False
+        elif not in_escape:
+            count += 1
+    return count
+
+
+
+def display_credits():
+    """Display the end credits when reaching the final room"""
+    clear_screen()
+    print_credits("\n" + "="*50+"\n")
+    print_credits(f"{GREEN}CONGRATULATIONS!{RESET}\n")
+    print_credits(f"You've completed Text Hero!\n")
+    print_credits("="*50 + "\n")
+    print_credits(r'''
+      _____         _      _   _
+     |_   _|____  _| |_   | | | | ___ _ __ ___
+       | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
+       | |  __/>  <| |_   |  _  |  __/ | | (_) |
+       |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/'''   
+    )
+    print()
+    # Credits scroll
+    credits = [
+        f"\n",
+        f"{BLUE}Development Team:{RESET}\n",
+        f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
+        f"Developer & Music Composer: {BLUE}Arnesito{RESET}\n",
+        f"Developer & Designer: {BLUE}Moltd{RESET}\n",
+        "\n",
+        f"{BLUE}Music Composition:{RESET}\n",
+        f"Tryangle\n",
+        f"Arnesito\n",
+        "\n",
+        f"{BLUE}Quality Assurance Team:{RESET}\n",
+        f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
+        "\n",
+        f"{BLUE}Playtesting Team:{RESET}\n",
+        f"{GREEN}David Sucks At Life{RESET}\n",
+        f"{GREEN}Bee1949{RESET}\n",
+        f"{GREEN}Not Guy Stew{RESET}\n",
+        f"{GREEN}Vroom Vroom Snail{RESET}\n",
+        "\n",
+        f"{BLUE}Game Features:{RESET}\n",
+        "5 Unique Classes\n",
+        "90+ Rooms to Explore\n",
+        "3+ Levels to Defeat\n",
+        "50+ Items to Collect\n",
+        "32+ Monsters to Battle\n",
+        "\n",
+        f"{BLUE}Technical Details:{RESET}\n",
+        "Custom ANSI Color System\n",
+        "Dynamic Combat Engine\n",
+        "Save/Load System\n",
+        "Crafting System\n",
+        "\n",
+        f"{BLUE}Thanks for Playing!{RESET}\n",
+        f"{BLUE}press enter to quit{RESET}"
+    ]
+    
+    screen_width = 50
+    for line in credits:
+        visible_length = count_visible_chars(line)
+        padding = " " * ((screen_width - visible_length) // 2)
+        centered_line = padding + line
+        print_credits(centered_line)
+        if line.strip() == "":
+            time.sleep(0.5)  # Longer pause for empty lines
+        else:
+            time.sleep(0.1)
+            
+    input()
+    quit()
 # Define armor tiers and their properties
 ARMOR_TIERS = {
     'leather': {'defense': 5, 'weight': 1},
@@ -132,7 +250,50 @@ SWORD_TIERS = {
     'steel': {'damage': 15},
     'mythril': {'damage': 30}
 }
-
+def print_credits(text):
+    
+    # Split text into parts that are either ANSI sequences or regular text
+    parts = []
+    current_part = ""
+    i = 0
+    
+    while i < len(text):
+        # Check if we're at the start of an ANSI sequence
+        if text[i:i+2] == "\033[":
+            # If we have regular text before this sequence, add it
+            if current_part:
+                parts.append(current_part)
+                current_part = ""
+            
+            # Find the end of the ANSI sequence
+            j = text.find("m", i)
+            if j != -1:
+                parts.append(text[i:j+1])
+                i = j + 1
+                continue
+        
+        # Add the current character to the regular text part
+        current_part += text[i]
+        i += 1
+    
+    # Add any remaining regular text
+    if current_part:
+        parts.append(current_part)
+    
+    # Print each part slowly, but keep ANSI sequences together
+    for part in parts:
+        if part.startswith("\033["):
+            # ANSI sequence - print all at once
+            sys.stdout.write(part)
+            sys.stdout.flush()
+        else:
+            # Regular text - print character by character with proper color
+            for char in part:
+                sys.stdout.write(char)  # Write the character first
+                sys.stdout.flush()
+                time.sleep(0.005)
+    
+    
 def print_slow(text):
     
     # Split text into parts that are either ANSI sequences or regular text
@@ -201,6 +362,7 @@ MONSTER_TYPES = {
         'attack_min': 5,
         'attack_max': 15,
         'gold_drop_range': (10, 30),
+        "exp_drop_range": (10, 15),
         'item_drop_chance': 0.2
     },
     'boss': {
@@ -209,6 +371,7 @@ MONSTER_TYPES = {
         'attack_min': 25,
         'attack_max': 35,
         'gold_drop_range': (100, 150),
+        "exp_drop_range": (25, 50),
         'item_drop_chance': 1
     },
     'vampire': {
@@ -217,9 +380,33 @@ MONSTER_TYPES = {
         'attack_min': 35,
         'attack_max': 45,
         'gold_drop_range': (500, 1000),
+        "exp_drop_range": (100, 100),
         'item_drop_chance': 1,
         'lifesteal_range': (5, 10)
     }
+}
+
+EXP_TO_GET_TO_LEVEL = {
+    "Level 1": 0,
+    "Level 2": 8,
+    "Level 3": 16,
+    "Level 4": 24,
+    "Level 5": 40,
+    "Level 6": 48,
+    "Level 7": 60,
+    "Level 8": 72,
+    "Level 9": 84,
+    "Level 10": 100,
+    "Level 11": 120,
+    "Level 12": 140,
+    "Level 13": 160,
+    "Level 14": 180,
+    "Level 15": 240,
+    "Level 16": 280,
+    "Level 17": 320,
+    "Level 18": 380,
+    "Level 19": 440,
+    "Level 20": 500,
 }
 
 classes = {
@@ -243,7 +430,7 @@ class HelpSystem:
     def __init__(self):
         self.pages = {
             'commands': '''\nCommands Reference\n=================\nBasic Commands:\n- go [direction]     - Move character\n- get [item]         - Pick up items\n- use [item]         - Use items\n- help              - Show this menu\n- remove [slot]      - Remove armor from slot\n- equip [type] [slot]- Equip armor in slot\n- list              - Show market items\n- buy [item]        - Buy from market\n- sell [item]       - Sell to market\n''',
-            'classes': '''\nCharacter Classes\n================\n┌─────────┬───────┬────┬────┬───────────────┬────────┬──────────────┐\n│ Class   │Health │Mana│Atk │Spell          │Effect  │Spell Cost    │\n├─────────┼───────┼────┼────┼───────────────┼────────┼──────────────┤\n│ Warrior │ 120   │ 30 │ 25 │ Slash         │ +10 dmg│ 10 Mana      │\n│ Mage    │ 80    │100 │ 20 │ Fireball      │ +30 dmg│ 40 Mana      │\n│ Rogue   │ 100   │ 50 │ 20 │ back stab │ +20 dmg│ 25 Mana      │\n│ Healer  │ 150   │ 45 │ 12 │ Circle Heal   │ +30 HP │ 35 Mana      │\n│ Ranger  │ 110   │ 20 │ 20 │ Bleeding Arrow│ +25 dmg│ 25 Mana      │\n└─────────┴───────┴────┴────┴───────────────┴────────┴──────────────┘\n''',
+            'classes': '''\nCharacter Classes\n================\n┌─────────┬───────┬────┬────┬───────────────┬────────┬──────────────┐\n│ Class   │Health │Mana│Atk │Spell          │Effect  │Spell Cost    │\n├─────────┼───────┼────┼────┼───────────────┼────────┼──────────────┤\n│ Warrior │ 120   │ 30 │ 25 │ Slash         │ +10 dmg│ 10 Mana      │\n│ Mage    │ 80    │100 │ 20 │ Fireball      │ +30 dmg│ 40 Mana      │\n│ Rogue   │ 100   │ 50 │ 20 │ back stab     │ +20 dmg│ 25 Mana      │\n│ Healer  │ 150   │ 45 │ 12 │ Circle Heal   │ +30 HP │ 35 Mana      │\n│ Ranger  │ 110   │ 20 │ 20 │ Bleeding Arrow│ +25 dmg│ 25 Mana      │\n└─────────┴───────┴────┴────┴───────────────┴────────┴──────────────┘\n''',
             'help': '''\nThe help system provides detailed information about different aspects of the game.\nAvailable commands:\n- help              : Shows this help menu\n- help commands     : Shows basic game commands\n- help classes      : Shows character class information\n- help market       : Shows market commands\nNavigation:\n- Use 'help' alone to see this menu\n- Use 'help <page>' to view a specific page\n- Type 'help' at any time to access the help system\n''',
             'market': '''\nMarket Commands\n==============\n- buy [item]    : Purchase an item from the market\n- sell [item]   : Sell an item to the market\n- list          : Show available items and prices\n'''
         }
@@ -265,11 +452,9 @@ class HelpSystem:
             print_slow("- Type 'help <page>' to view a different page")
             print_slow("=============================")
 
-def clear_lines(number):
+def clear_screen():
     sys.stdout.write("\033[2J\033[H")
-    for i in range(number):
-        sys.stdout.write("\033[F")
-    print("         " * 10, end="")
+
     print()
     sys.stdout.write("\033[F")
 
@@ -478,8 +663,21 @@ def remove_armor(slot=None):
     player_equipment[slot] = None
     return f"Removed {current_item} (-{defense_bonus} defense)"
 
-# Room layout with armor items
 rooms = {
+    'dungeon-1': {
+        'up': '1-10',
+        'east': 'dungeon-2',
+        'monster': "normal"
+    },
+    'dungeon-2': {
+        'west': 'dungeon-1',
+        'south': 'dungeon-3',
+        'item': 'iron sword'
+    },
+    'dungeon-3': {
+        'north': 'dungeon-2',
+        'monster': "vampire"
+    },
     '1-1': {
         "east": '1-2',
         "item": "health potion"
@@ -580,23 +778,10 @@ rooms = {
         'east': '1-19',
         'up': '2-1'
     },
-    'dungeon-1': {
-        'up': '1-10',
-        'east': 'dungeon-2',
-        'monster': "normal"
-    },
-    'dungeon-2': {
-        'west': 'dungeon-1',
-        'south': 'dungeon-3',
-        'item': 'iron sword'
-    },
-    'dungeon-3': {
-        'north': 'dungeon-2',
-        'monster': "vampire"
-    },
+
     '2-1': {
-        "north": '2-2',
-        "down":'1-20'
+        'west': '1-20',
+        "north": '2-2'
     },
     '2-2': {
         'west': '2-3',
@@ -617,7 +802,7 @@ rooms = {
     '2-5': {
         'north': '2-4',
         'south': '2-6',
-        'monster': "normal"
+        'monster': 'normal'
     },
     '2-6': {
         'west': '2-7',
@@ -629,7 +814,7 @@ rooms = {
         'west': '2-8',
         'south': '2-13',
         'north': '2-15',
-        'monster': "normal"
+        'monster': 'normal'
     },
     '2-8': {
         'east': '2-7',
@@ -637,7 +822,7 @@ rooms = {
     },
     '2-9': {
         'south': '2-10',
-        'north': '1-13',
+        'north': '2-13',
         'east': '2-8',
         'west': '2-10',
         "item": "iron chestplate"
@@ -650,11 +835,11 @@ rooms = {
     '2-11': {
         'north': '2-10',
         'south': '2-12',
-        "monster": "normal"
+        'monster': 'normal'
     },
     '2-12': {
-    'north': '2-11',
-    'monster': "normal"
+      'north': '2-11',
+      'monster': 'normal'
     },
     '2-13': {
         'east': '2-12',
@@ -668,23 +853,296 @@ rooms = {
     },
     '2-15': {
         'east': '2-4',
-        'north': '2-7'
+        'north': '2-7',
+        "item": "mana potion"
     },
     '2-16': {
         'west': '2-18',
         'south': '2-17',
         'east': '2-14',
-        'monster': "normal"
-    }, 
+        'monster': 'normal'
+    },
     '2-17': {
         'north': '2-16',
-        'monster': "normal"
+        'monster': 'normal'
     },
     '2-18': {
         'west': '2-19',
         'east': '2-16',
         'item': 'spell'
-    }
+   },
+    '2-19': {
+        'north': '2-20',
+        'east': '2-18',
+        'item': 'health potion'
+    },
+    '2-20': {
+        'south': '2-19'
+    },
+    '2-21': {
+        'south': '2-20',
+        'north': '2-22'
+    },
+    '2-22': {
+        'south': '2-21',
+        'north': '2-23',
+        'east': '2-26'
+    },
+    '2-23': {
+        'south': '2-22',
+        'west': '2-24',
+        'item': 'mana potion'
+    },
+    '2-24': {
+        'east': '2-23',
+        'south': '2-25'
+            
+    },
+    '2-25': {
+        'north': '2-24',
+        'east': '2-28',
+        'item': 'steel sword'
+            
+    },
+    '2-26': {
+        'west': '2-23',
+        'east': '2-27',
+        'monster': 'normal'
+
+    },
+    '2-27': {
+        'west': '2-26',
+        'monster': 'normal'
+
+    },
+    '2-28': {
+        'west': '2-25',
+        'east': '2-29',
+        'monster': 'normal'
+    },
+    '2-29': {
+        'west': '2-28',
+        'south': '2-30',
+        'item': 'iron boots'
+    },
+    '2-30': {
+        'east': '2-29',
+        'west': '3-1',
+        'item': 'health potion'
+    },
+    '3-1': {
+        'east': '2-29',
+        "north": '3-2'
+    },
+    '3-2': {
+        'east': '3-3',
+        'south': '3-1',
+        'monster': 'normal'
+    },
+    '3-3': {
+        'west': '3-2',
+        'east': '3-4',
+        'south': '3-7',
+        'item': 'iron leggings'
+    },
+    '3-4': {
+        'west': '3-3',
+        'east': '3-5',
+        'monster': 'normal'
+    },
+    '3-5': {
+        'west': '3-4',
+        'north': '3-6'
+    },
+    '3-6': {
+        'west': '3-31',
+        'south': '3-5',
+        'east': '3-8',
+        'north': '3-13',
+        "item": "health potion"
+    },
+    '3-7': {
+        'east': '3-10',
+        'west': '3-8',
+        'south': '3-16',
+        'north': '3-3',
+        'monster': 'normal'
+    },
+    '3-8': {
+        'east': '3-7',
+        'west': '3-6',
+        'north': '3-9',
+        'item': 'iron boots'
+    },
+    '3-9': {
+        'south': '3-8',
+        'east': '3-11',
+        'west': '3-10',
+        'monster': 'normal'
+    },
+    '3-10': {
+        'east': '3-9',
+        "item": "health potion"
+    },
+    '3-11': {
+        'west': '3-9',
+        'south': '3-12',
+        "item": 'iron sword'
+    },
+    '3-12': {
+      'north': '3-11',
+      'monster': 'normal'
+    },
+    '3-13': {
+        'south': '3-6',
+        'north': '3-14',
+    },
+    '3-14': {
+        'south': '3-13',
+        "west": "3-15",
+        'monster': 'normal'
+    },
+    '3-15': {
+        'east': '3-14',
+        'north': '3-16',
+        "item": "spell"
+    },
+    '3-16': {
+        'west': '3-26',
+        'south': '3-15',
+        'north': '3-7',
+        'monster': 'normal'
+    },
+    '3-17': {
+        'north': '3-31',
+        'item': 'health potion'
+    },
+    '3-18': {
+        'south': '3-26',
+        'east': '3-19',
+        'item': 'health potion'
+   },
+    '3-19': {
+        'north': '3-22',
+        'west': '3-18',
+        'item': 'health potion'
+    },
+    '3-20': {
+        'south': '3-23',
+        'monster': 'normal'
+    },
+    '3-21': {
+        'north': '3-22'
+    },
+    '3-22': {
+        'south': '3-19',
+        'north': '3-20',
+        'east': '3-32',
+        'west': '3-23'
+    },
+    '3-23': {
+        'east': '3-22',
+        'west': '3-24',
+        'north': '3-20',
+        'monster': 'normal'
+    },
+    '3-24': {
+        'east': '3-23',
+        'south': '3-25'
+            
+    },
+    '3-25': {
+        'north': '3-24',
+        'east': '3-31',
+        'item': 'health potion'
+            
+    },
+    '3-26': {
+        'west': '3-33',
+        'monster': 'normal'
+
+    },
+    '3-27': {
+        'west': '3-32',
+        'item': 'health potion'
+
+    },
+    '3-28': {
+        'north': '3-29',
+        'east': '3-34',
+        'item': 'health potion'
+    },
+    '3-29': {
+        'west': '3-28',
+        'south': '3-30',
+        'item': 'mana potion'
+    },
+    '3-30': {
+        'east': '3-29',
+        'item': 'health potion'
+            
+    },
+    '3-31': {
+        'east': '3-6',
+        'west': '3-25',
+        'monster': 'normal'
+            
+    },
+    '3-32': {
+        'east': '3-27',
+        'west': '3-22',
+        'north': '3-33',
+        'item': 'health potion'
+            
+    },
+    '3-33': {
+        'south': '3-32',
+        'north': '3-34',
+        'monster': 'normal'
+            
+    },
+    '3-34': {
+        'south': '3-33',
+        'west': '3-35',
+        'north': '3-36',
+        'monster': 'normal'
+            
+    },
+    '3-35': {
+        'south': '3-34',
+        'west': '3-38',
+        'item': 'iron helmet'
+            
+    },
+    '3-36': {
+        'south': '3-34',
+        'east': '3-37',
+        'item': 'health potion'
+            
+    },
+    '3-37': {
+        'east': '3-38',
+        'west': '3-36',
+        'item': 'iron boots'
+            
+    },
+    '3-38': {
+        'east': '3-39',
+        'west': '3-37',
+        'item': 'health potion'
+            
+    },
+    '3-39': {
+        'east': '3-40',
+        'west': '3-38',
+        'item': 'health potion'
+            
+    },
+    '3-40': {
+        'east': '4-1',
+        'west': '3-39',
+        'monster': 'normal'
+            }
 }
 
 # Add to the global variables section
@@ -727,7 +1185,7 @@ BLACKSMITH_RECIPES = {
 }
 
 # Game setup
-clear_lines(100)
+clear_screen()
 print(GREEN)
 print_slow(r"""
  _____         _      _   _
@@ -740,7 +1198,7 @@ print_slow(r"""
 print_slow("Welcome to the Text Hero!")
 print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Ranger")
 chosen_class = input(GREEN + "> ").capitalize()
-clear_lines(100)
+clear_screen()
 if chosen_class not in classes:
     chosen_class = "Warrior"
 def use_item_during_combat(item):
@@ -1001,9 +1459,15 @@ def generate_random_monster():
     }
 
 while True:
+    # Add this to your main game loop, right after the room check:
+    if currentRoom == '2-12':
+        display_credits()
+        exit()
     # Automatic combat initiation when a monster is present
+    if "hint" in rooms[currentRoom]:
+        print_slow(f"{BLUE}Hint: {rooms[currentRoom]['hint']}{RESET}")
     if "monster" in rooms[currentRoom]:
-        clear_lines(100)
+        clear_screen()
         # Determine monster type
         monster_type = rooms[currentRoom]["monster"]
         
@@ -1077,7 +1541,7 @@ while True:
                 print_slow("Choose an action: fight, defend, cast [spell], use [item]")
             
             action = input(GREEN + "> ").lower().split()
-            clear_lines(100)  # Clear the screen for the new combat turn
+            clear_screen()  # Clear the screen for the new combat turn
             turn += 1
             valid_action = False
             turn_log = ""  # Log for this turn
@@ -1244,7 +1708,7 @@ while True:
                 
                 # Check if all enemies are defeated
                 if len(enemies) == 0:
-                    clear_lines(100)
+                    clear_screen()
                     print_slow(turn_log)  # Show the combat results first
                     
                     # Handle monster drops and rewards
@@ -1377,7 +1841,7 @@ while True:
     showStatus()
 
     move = input(GREEN + "> ").lower().split()
-    clear_lines(100)
+    clear_screen()
     if len(move) > 0:
         # Handle help command
         if move[0] in ['help', 'h']:
@@ -1477,7 +1941,7 @@ while True:
                         elif item_name == "spell book":
                             display_spell_book(player["class"])
                             spell = input(GREEN + "> ").lower()
-                            clear_lines(100)
+                            clear_screen()
                             if spell == "exit":
                                 print_slow("You close the spell book.")
                             elif spell in locked_spells[player["class"]]:
@@ -1546,6 +2010,7 @@ while True:
             result = forge_item(item_name)
             print_slow(result)
             continue
+
         elif move[0] in ['drop']:
             if len(move) == 1:
                 # Drop all items
@@ -1582,8 +2047,3 @@ while True:
             print_slow("Invalid command!")
     else:
         print_slow("Invalid command!")
-        
-        
-        
-        
-        
