@@ -6,12 +6,12 @@ rooms = {
     '1-2': {
         'north': '1-3',
         'west': '1-1',
-        "item": "monster"
+        "monster": "normal"
     },
     '1-3': {
         'west': '1-4',
         'south': '1-2',
-        'item': 'iron helmet'
+        'item': 'wooden sword'
     },
     '1-4': {
         'east': '1-3',
@@ -22,7 +22,7 @@ rooms = {
     '1-5': {
         'south': '1-4',
         'west': '1-6',
-        'item': 'monster'
+        'monster': "normal"
     },
     '1-6': {
         'west': '1-7',
@@ -33,7 +33,7 @@ rooms = {
         'east': '1-6',
         'west': '1-8',
         'south': '1-15',
-        'item': 'monster'
+        'monster': "normal"
     },
     '1-8': {
         'east': '1-7',
@@ -45,12 +45,12 @@ rooms = {
         'west': '1-10',
         'south': '1-13',
         'east': '1-8',
-        "item": "key"
+        "item": "key fragment"
     },
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        "item": "sword"
+        "item": "monster"
     },
     '1-11': {
         'north': '1-10',
@@ -76,10 +76,11 @@ rooms = {
         "item": "health potion"
     },
     '1-16': {
+        'east': '1-1',
         'north': '1-14',
         'south': '1-17',
         'west': '1-13',
-        'item': 'monster'
+        'monster': "normal"
     },
     '1-17': {
         'west': '1-18',
@@ -92,12 +93,26 @@ rooms = {
     '1-19': {
         'west': '1-20',
         'east': '1-18',
-        'item': 'monster'
+        'monster': "boss"
     },
     '1-20': {
         'east': '1-19',
-        'north': '2-1'
-    },    
+        'up': '2-1'
+    },
+    'dungeon-1': {
+        'up': '1-10',
+        'east': 'dungeon-2',
+        'monster': "normal"
+    },
+    'dungeon-2': {
+        'west': 'dungeon-1',
+        'south': 'dungeon-3',
+        'item': 'iron sword'
+    },
+    'dungeon-3': {
+        'north': 'dungeon-2',
+        'monster': "vampire"
+    },
     '2-1': {
         'west': '1-20',
         "north": '2-2'
@@ -121,7 +136,7 @@ rooms = {
     '2-5': {
         'north': '2-4',
         'south': '2-6',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '2-6': {
         'west': '2-7',
@@ -133,7 +148,7 @@ rooms = {
         'west': '2-8',
         'south': '2-13',
         'north': '2-15',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '2-8': {
         'east': '2-7',
@@ -154,11 +169,11 @@ rooms = {
     '2-11': {
         'north': '2-10',
         'south': '2-12',
-        "item": 'monster'
+        'monster': 'normal'
     },
     '2-12': {
       'north': '2-11',
-      'item': 'monster'
+      'monster': 'normal'
     },
     '2-13': {
         'east': '2-12',
@@ -179,11 +194,11 @@ rooms = {
         'west': '2-18',
         'south': '2-17',
         'east': '2-14',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '2-17': {
         'north': '2-16',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '2-18': {
         'west': '2-19',
@@ -226,18 +241,18 @@ rooms = {
     '2-26': {
         'west': '2-23',
         'east': '2-27',
-        'item': 'monster'
+        'monster': 'normal'
 
     },
     '2-27': {
         'west': '2-26',
-        'item': 'monster'
+        'monster': 'normal'
 
     },
     '2-28': {
         'west': '2-25',
         'east': '2-29',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '2-29': {
         'west': '2-28',
@@ -248,7 +263,7 @@ rooms = {
         'east': '2-29',
         'west': '3-1',
         'item': 'health potion'
-
+    },
     '3-1': {
         'east': '2-29',
         "north": '3-2'
@@ -256,7 +271,7 @@ rooms = {
     '3-2': {
         'east': '3-3',
         'south': '3-1',
-        "item": "monster"
+        'monster': 'normal'
     },
     '3-3': {
         'west': '3-2',
@@ -267,7 +282,7 @@ rooms = {
     '3-4': {
         'west': '3-3',
         'east': '3-5',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '3-5': {
         'west': '3-4',
@@ -285,7 +300,7 @@ rooms = {
         'west': '3-8',
         'south': '3-16',
         'north': '3-3',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '3-8': {
         'east': '3-7',
@@ -297,7 +312,7 @@ rooms = {
         'south': '3-8',
         'east': '3-11',
         'west': '3-10',
-        "item": "monster"
+        'monster': 'normal'
     },
     '3-10': {
         'east': '3-9',
@@ -310,7 +325,7 @@ rooms = {
     },
     '3-12': {
       'north': '3-11',
-      'item': 'monster'
+      'monster': 'normal'
     },
     '3-13': {
         'south': '3-6',
@@ -319,7 +334,7 @@ rooms = {
     '3-14': {
         'south': '3-13',
         "west": "3-15",
-        "item": "monster"
+        'monster': 'normal'
     },
     '3-15': {
         'east': '3-14',
@@ -330,7 +345,7 @@ rooms = {
         'west': '3-26',
         'south': '3-15',
         'north': '3-7',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '3-17': {
         'north': '3-31',
@@ -348,7 +363,7 @@ rooms = {
     },
     '3-20': {
         'south': '3-23',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '3-21': {
         'north': '3-22'
@@ -363,7 +378,7 @@ rooms = {
         'east': '3-22',
         'west': '3-24',
         'north': '3-20',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '3-24': {
         'east': '3-23',
@@ -378,7 +393,7 @@ rooms = {
     },
     '3-26': {
         'west': '3-33',
-        'item': 'monster'
+        'monster': 'normal'
 
     },
     '3-27': {
@@ -399,68 +414,68 @@ rooms = {
     '3-30': {
         'east': '3-29',
         'item': 'health potion'
-            }
+            
     },
     '3-31': {
         'east': '3-6',
         'west': '3-25',
-        'item': 'monster'
-            }
+        'monster': 'normal'
+            
     },
     '3-32': {
         'east': '3-27',
         'west': '3-22',
         'north': '3-33',
         'item': 'health potion'
-            }
+            
     },
     '3-33': {
         'south': '3-32',
         'north': '3-34',
-        'item': 'monster'
-            }
+        'monster': 'normal'
+            
     },
     '3-34': {
         'south': '3-33',
         'west': '3-35',
         'north': '3-36',
-        'item': 'monster'
-            }
+        'monster': 'normal'
+            
     },
     '3-35': {
         'south': '3-34',
         'west': '3-38',
         'item': 'iron helmet'
-            }
+            
     },
     '3-36': {
         'south': '3-34',
         'east': '3-37',
         'item': 'health potion'
-            }
+            
     },
     '3-37': {
         'east': '3-38',
         'west': '3-36',
         'item': 'iron boots'
-            }
+            
     },
     '3-38': {
         'east': '3-39',
         'west': '3-37',
         'item': 'health potion'
-            }
+            
     },
     '3-39': {
         'east': '3-40',
         'west': '3-38',
         'item': 'health potion'
-            }
+            
     },
     '3-40': {
         'east': '4-1',
         'west': '3-39',
-        'item': 'monster'
+        'monster': 'normal'
             }
 }
 
