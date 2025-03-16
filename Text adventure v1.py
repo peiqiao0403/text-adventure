@@ -362,7 +362,7 @@ MONSTER_TYPES = {
         'attack_min': 5,
         'attack_max': 15,
         'gold_drop_range': (10, 30),
-        "exp_drop_range": (10, 15),
+        "exp_drop_range": (5, 10),
         'item_drop_chance': 0.2
     },
     'boss': {
@@ -380,33 +380,101 @@ MONSTER_TYPES = {
         'attack_min': 35,
         'attack_max': 45,
         'gold_drop_range': (500, 1000),
-        "exp_drop_range": (100, 100),
         'item_drop_chance': 1,
         'lifesteal_range': (5, 10)
     }
 }
 
+EXP_TO_GET_TO_LEVEL2 = {
+    1: 0,
+    2: 8,
+    3: 16,
+    4: 24,
+    5: 40,
+    6: 48,
+    7: 60,
+    8: 72,
+    9: 84,
+    10: 100,
+    11: 120,
+    12: 140,
+    13: 160,
+    14: 180,
+    15: 240,
+    16: 280,
+    17: 320,
+    18: 380,
+    19: 440,
+    20: 500
+}
+
 EXP_TO_GET_TO_LEVEL = {
-    "Level 1": 0,
-    "Level 2": 8,
-    "Level 3": 16,
-    "Level 4": 24,
-    "Level 5": 40,
-    "Level 6": 48,
-    "Level 7": 60,
-    "Level 8": 72,
-    "Level 9": 84,
-    "Level 10": 100,
-    "Level 11": 120,
-    "Level 12": 140,
-    "Level 13": 160,
-    "Level 14": 180,
-    "Level 15": 240,
-    "Level 16": 280,
-    "Level 17": 320,
-    "Level 18": 380,
-    "Level 19": 440,
-    "Level 20": 500,
+    0: 1,
+    8: 2,
+    16: 3,
+    26: 4,
+    37: 5,
+    48: 6,
+    60: 7,
+    72: 8,
+    84: 9,
+    100: 10,
+    120: 11,
+    140: 12,
+    160: 13,
+    180: 14,
+    240: 15,
+    280: 16,
+    320: 17,
+    380: 18,
+    440: 19,
+    500: 20
+}
+
+LEVEL_IMPROVEMENTS = {
+    1: 1,
+    2: 1.05,
+    3: 1.1,
+    4: 1.15,
+    5: 1.2,
+    6: 1.25,
+    7: 1.3,
+    8: 1.35,
+    9: 1.4,
+    10: 1.45,
+    11: 1.5,
+    12: 1.55,
+    13: 1.6,
+    14: 1.65,
+    15: 1.7,
+    16: 1.75,
+    17: 1.8,
+    18: 1.85,
+    19: 1.9,
+    20: 2
+}
+
+ARMOR_IMPROVEMENTS = {
+    1: 0,
+    2: 1,
+    3: 2,
+    4: 3,
+    5: 4,
+    6: 5,
+    7: 6,
+    8: 7,
+    9: 8,
+    10: 9,
+    11: 10,
+    12: 11,
+    13: 12,
+    14: 13,
+    15: 14,
+    16: 15,
+    17: 16,
+    18: 17,
+    19: 18,
+    20: 20
 }
 
 classes = {
@@ -1238,7 +1306,16 @@ player = {
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
+    "level": 1,
+    "exp": 0,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
+}
+
+BASE_STATS = {
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "attack": classes[chosen_class]["attack"],
 }
 
 player_equipment = {
@@ -1536,7 +1613,7 @@ while True:
             
             if len(enemies) > 1:
                 print_slow("Choose an action: fight [enemy#], defend, cast [spell] [enemy#], use [item]")
-                print_slow(f"Enemy numbers: {', '.join([f'{i+1}: {enemy['name']}' for i, enemy in enumerate(enemies)])}")
+                print_slow("Enemy numbers: " + ", ".join([f"{i+1}: {enemy['name']}" for i, enemy in enumerate(enemies)]))
             else:
                 print_slow("Choose an action: fight, defend, cast [spell], use [item]")
             
@@ -1714,23 +1791,74 @@ while True:
                     # Handle monster drops and rewards
                     if monster_type == 'boss':
                         # Boss rewards
-                        gold_dropped = random.randint(MONSTER_TYPES['boss']['gold_drop_range'][0],
-                                                     MONSTER_TYPES['boss']['gold_drop_range'][1])
-                        print_slow(f"You defeated the boss and earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                        gold_dropped = random.randint(
+                            MONSTER_TYPES['boss']['gold_drop_range'][0],
+                            MONSTER_TYPES['boss']['gold_drop_range'][1]
+                        )
+                        exp_earned = random.randint(
+                            MONSTER_TYPES['boss']['exp_drop_range'][0],
+                            MONSTER_TYPES['boss']['exp_drop_range'][1]
+                        )
+                        print_slow(f"You defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
                         player["gold"] += gold_dropped
+                        player["exp"] += exp_earned
+
+                        for i in range(2, 20):
+                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
+                                player["level"] = i
+                                player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
+                                player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                print_slow("Your stats have improved!")
+                                print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                            else:
+                                pass
+
                     elif monster_type == 'vampire':
                         # Vampire rewards
-                        gold_dropped = random.randint(MONSTER_TYPES['vampire']['gold_drop_range'][0],
-                                                     MONSTER_TYPES['vampire']['gold_drop_range'][1])
+                        gold_dropped = random.randint(
+                            MONSTER_TYPES['vampire']['gold_drop_range'][0],
+                            MONSTER_TYPES['vampire']['gold_drop_range'][1]
+                        )
+                        exp_earned = 100
                         inventory.append("vampire pendant")
                         print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
-                        print_slow(f"You earned{ITEM_COLOR} {gold_dropped} gold{RESET}!")
+                        print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
+                        
                         player["gold"] += gold_dropped
+                        player["exp"] += exp_earned
+
+                        for i in range(2, 20):
+                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
+                                player["level"] = i
+                                player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
+                                player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                print_slow("Your stats have improved!")
+                                print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                            else:
+                                pass
                     else:
                         # Normal monster rewards - based on how many were defeated
-                        gold_base = MONSTER_TYPES['normal']['gold_drop_range'][0]
-                        gold_max = MONSTER_TYPES['normal']['gold_drop_range'][1]
-                        total_gold = random.randint(gold_base, gold_max)
+                        gold_dropped = random.randint(
+                            MONSTER_TYPES['normal']['gold_drop_range'][0],
+                            MONSTER_TYPES['normal']['gold_drop_range'][1]
+                        )
+                        exp_earned = random.randint(
+                            MONSTER_TYPES['normal']['exp_drop_range'][0],
+                            MONSTER_TYPES['normal']['exp_drop_range'][1]
+                        )
+                        
                         
                         # Chance for armor drops
                         if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
@@ -1745,8 +1873,26 @@ while True:
                             inventory.append("key fragment")
                             print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
                         
-                        print_slow(f"You defeated all monsters and earned{ITEM_COLOR} {total_gold} gold{RESET}!")
-                        player["gold"] += total_gold
+                        print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
+                        
+                        player["gold"] += gold_dropped
+                        player["exp"] += exp_earned * num_monsters
+
+                        for i in range(2, 20):
+                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
+                                player["level"] = i
+                                player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                player["armor"] = ARMOR_IMPROVEMENTS[i]
+                                player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                print_slow("Your stats have improved!")
+                                print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                            else:
+                                pass
                     
                     player["armor"] = original_armor
                     del rooms[currentRoom]["monster"]
