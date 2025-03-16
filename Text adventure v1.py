@@ -554,7 +554,7 @@ def showAvailableDirections(room):
     return "\n".join(directions)
 
 def showStatus():
-    print_slow('You are in the ' + BLUE+currentRoom+RESET)
+    print_slow('You are in ' + BLUE+currentRoom+RESET)
     print_slow('Available directions:')
     print_slow(showAvailableDirections(rooms[currentRoom]))
     print_slow(f'Health: {player["health"]}')
@@ -562,6 +562,8 @@ def showStatus():
     print_slow(f'Mana: {player["mana"]}')
     print_slow(f'Gold: {player["gold"]}')
     print_slow(f'Class: {BLUE}{player["class"]}{RESET}')
+    print_slow(f'Level: {player["level"]}')
+    print_slow(f'Exp: {player["exp"]}')
     print_slow('Equipped Armor:')
     for slot, item in player_equipment.items():
         if item:
