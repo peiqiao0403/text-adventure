@@ -207,11 +207,12 @@ def display_credits():
         f"{GREEN}Vroom Vroom Snail{RESET}\n",
         "\n",
         f"{BLUE}Game Features:{RESET}\n",
-        "5 Unique Classes\n",
+        "10 Unique Classes\n",
         "90+ Rooms to Explore\n",
         "3+ Levels to Defeat\n",
         "50+ Items to Collect\n",
         "32+ Monsters to Battle\n",
+        "Leveling up system\n",
         "\n",
         f"{BLUE}Technical Details:{RESET}\n",
         "Custom ANSI Color System\n",
@@ -481,16 +482,45 @@ classes = {
     "Warrior": {"health": 120, "armor": 0, "mana": 30, "spells": {"slash": [25, 40]}, "attack": 25},
     "Mage": {"health": 80, "armor": 0, "mana": 100, "spells": {"fireball": [30, 40]}, "attack": 20},
     "Rogue": {"health": 100, "armor": 0, "mana": 50, "spells": {"back stab": [20, 25]}, "attack": 20},
-    "Healer": {"health": 150, "armor": 0, "mana": 45, "spells": {"circle heal": [30, 35]}, "attack": 12},
-    "Ranger": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
+    "Healer": {"health": 150, "armor": 0, "mana": 45, "spells": {"minor heal": [15, 20]}, "attack": 12},
+    "Archer": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
+}
+
+class_to_get_to_tier_2 = {
+    "Warrior": "Paladin",
+    "Mage": "Archmage",
+    "Rogue": "Assassin",
+    "Healer": "Priest",
+    "Archer": "Ranger"
+}
+
+class_tier_2 = {
+    "Paladin": "divine shield",
+    "Archmage": "infinity",
+    "Assassin": "supernova",
+    "Priest": "heal",
+    "Ranger": "phantasm"
+}
+
+spells_tier_2 = {
+    "Paladin": {"divine shield": [0, 15]},
+    "Archmage": {"infinity": [20, 45]},
+    "Assassin": {"supernova": [20, 25]},
+    "Priest": {"heal": [25, 50]},
+    "Ranger": {"phantasm": [10, 30]}
 }
 
 locked_spells = {
     "Warrior": {'finishing blow': [20, 30], 'stun strike': [15, 20]},
     "Mage": {'water bolt': [15, 10], 'thunder zapper': [20, 15]},
     "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 20]},
-    "Healer": {'great heal': [40, 25], 'divine shield': [0, 15], "minor heal": [20, 15]},
-    "Ranger": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]}
+    "Healer": {'divine shield': [0, 15], "circle heal": [20, 35]},
+    "Archer": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]},
+    "Paladin": {"holy strike": [25, 50], "healing pool": [10, 10]},
+    "Archmage": {"tidal wave": [15, 30], "kamehameha": [50, 125]},
+    "Assassin": {"Assassinate": [20, 40], "ultrakill": [40, 80]},
+    "Priest": {'great heal': [50, 75], "holy cleansing": [20, 10]},
+    "Ranger": {"arrow of light": [10, 25], "midas prime": [25, 60]}
 }
 
 class HelpSystem:
@@ -498,7 +528,7 @@ class HelpSystem:
     def __init__(self):
         self.pages = {
             'commands': '''\nCommands Reference\n=================\nBasic Commands:\n- go [direction]     - Move character\n- get [item]         - Pick up items\n- use [item]         - Use items\n- help              - Show this menu\n- remove [slot]      - Remove armor from slot\n- equip [type] [slot]- Equip armor in slot\n- list              - Show market items\n- buy [item]        - Buy from market\n- sell [item]       - Sell to market\n''',
-            'classes': '''\nCharacter Classes\n================\n┌─────────┬───────┬────┬────┬───────────────┬────────┬──────────────┐\n│ Class   │Health │Mana│Atk │Spell          │Effect  │Spell Cost    │\n├─────────┼───────┼────┼────┼───────────────┼────────┼──────────────┤\n│ Warrior │ 120   │ 30 │ 25 │ Slash         │ +10 dmg│ 10 Mana      │\n│ Mage    │ 80    │100 │ 20 │ Fireball      │ +30 dmg│ 40 Mana      │\n│ Rogue   │ 100   │ 50 │ 20 │ back stab     │ +20 dmg│ 25 Mana      │\n│ Healer  │ 150   │ 45 │ 12 │ Circle Heal   │ +30 HP │ 35 Mana      │\n│ Ranger  │ 110   │ 20 │ 20 │ Bleeding Arrow│ +25 dmg│ 25 Mana      │\n└─────────┴───────┴────┴────┴───────────────┴────────┴──────────────┘\n''',
+            'classes': '''\nCharacter Classes\n================\n┌─────────┬───────┬────┬────┬───────────────┬────────┬──────────────┐\n│ Class   │Health │Mana│Atk │Spell          │Effect  │Spell Cost    │\n├─────────┼───────┼────┼────┼───────────────┼────────┼──────────────┤\n│ Warrior │ 120   │ 30 │ 25 │ Slash         │ +10 dmg│ 10 Mana      │\n│ Mage    │ 80    │100 │ 20 │ Fireball      │ +30 dmg│ 40 Mana      │\n│ Rogue   │ 100   │ 50 │ 20 │ back stab     │ +20 dmg│ 25 Mana      │\n│ Healer  │ 150   │ 45 │ 12 │ Circle Heal   │ +30 HP │ 35 Mana      │\n│ Archer  │ 110   │ 20 │ 20 │ Bleeding Arrow│ +25 dmg│ 25 Mana      │\n└─────────┴───────┴────┴────┴───────────────┴────────┴──────────────┘\n''',
             'help': '''\nThe help system provides detailed information about different aspects of the game.\nAvailable commands:\n- help              : Shows this help menu\n- help commands     : Shows basic game commands\n- help classes      : Shows character class information\n- help market       : Shows market commands\nNavigation:\n- Use 'help' alone to see this menu\n- Use 'help <page>' to view a specific page\n- Type 'help' at any time to access the help system\n''',
             'market': '''\nMarket Commands\n==============\n- buy [item]    : Purchase an item from the market\n- sell [item]   : Sell an item to the market\n- list          : Show available items and prices\n'''
         }
@@ -562,6 +592,7 @@ def showStatus():
     print_slow(f'Mana: {player["mana"]}')
     print_slow(f'Gold: {player["gold"]}')
     print_slow(f'Class: {BLUE}{player["class"]}{RESET}')
+    print_slow(f'Secondary Class: {BLUE}{player["class 2"]}{RESET}')
     print_slow(f'Level: {player["level"]}')
     print_slow(f'Exp: {player["exp"]}')
     print_slow('Equipped Armor:')
@@ -1266,7 +1297,7 @@ print_slow(r"""
 """)
 
 print_slow("Welcome to the Text Hero!")
-print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Ranger")
+print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
 chosen_class = input(GREEN + "> ").capitalize()
 clear_screen()
 if chosen_class not in classes:
@@ -1305,11 +1336,12 @@ player = {
     "armor": classes[chosen_class]["armor"],
     "mana": classes[chosen_class]["mana"],
     "class": chosen_class,
+    "class 2": None,
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
     "level": 1,
-    "exp": 0,
+    "exp": 5000,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
 }
 
@@ -1437,7 +1469,7 @@ def show_inventory():
 currentRoom = '1-1'
 help_system = HelpSystem()
 
-def display_spell_book(player_class):
+def display_spell_book(player_class, player_class_2):
     """Display a formatted spellbook with all available spells for the class"""
     print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
     print_slow("\nCurrent Spells:")
@@ -1467,6 +1499,11 @@ def display_spell_book(player_class):
             cost = values[1]
             special = get_spell_description(spell)
             print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+        for spell, values in locked_spells[player_class_2].items():
+            effect = values[0]
+            cost = values[1]
+            special = get_spell_description(spell)
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
         
         print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
         print_slow("\nType the name of the spell you want to learn, or 'exit' to close the spellbook:")
@@ -1479,6 +1516,21 @@ def get_spell_description(spell_name):
     descriptions = {
         "slash": "Basic melee attack",
         "finishing blow": "Powerful finishing attack",
+        "stun strike": "Chance to stun enemy (2-5 turns)",
+        "fireball": "Causes burning for 3 turns",
+        "water bolt": "Basic water attack, low cost",
+        "thunder zapper": "Chance to stun enemy",
+        "back stab": "Basic rogue attack",
+        "stealth": "Allows you to exit the battle",
+        "stealth strike": "Attack from stealth confusing the enemy",
+        "circle heal": "Group healing spell",
+        "great heal": "Powerful single target heal",
+        "divine shield": "Block damage for 3 rounds",
+        "minor heal": "Small efficient heal",
+        "bleeding arrow": "Causes bleeding damage",
+        "binding shot": "Roots enemy in place",
+        "Holy Strike": "Imbue your sword with holy power",
+        "Healing Pool": "A",
         "stun strike": "Chance to stun enemy (2-5 turns)",
         "fireball": "Causes burning for 3 turns",
         "water bolt": "Basic water attack, low cost",
@@ -1768,9 +1820,6 @@ while True:
                     else:
                         turn_log += "Invalid action!\n"
                         valid_action = False
-
-
-
                 else:
                     turn_log += "Invalid action!\n"
                     valid_action = False
@@ -1805,7 +1854,7 @@ while True:
                         player["gold"] += gold_dropped
                         player["exp"] += exp_earned
 
-                        for i in range(2, 20):
+                        for i in range(2, 21):
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
@@ -1820,6 +1869,13 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
+                        if player["exp"] >= EXP_TO_GET_TO_LEVEL2[14]:
+                            player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                            player["spells"] = spells_tier_2[player]
+                            if player["class"] == "Rogue" or player["class"] == "Mage":
+                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                            else:
+                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
 
                     elif monster_type == 'vampire':
                         # Vampire rewards
@@ -1835,7 +1891,7 @@ while True:
                         player["gold"] += gold_dropped
                         player["exp"] += exp_earned
 
-                        for i in range(2, 20):
+                        for i in range(2, 21):
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
@@ -1850,6 +1906,13 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
+                        if player["exp"] >= EXP_TO_GET_TO_LEVEL2[14]:
+                            player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                            player["spells"] = spells_tier_2[player]
+                            if player["class"] == "Rogue" or player["class"] == "Mage":
+                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                            else:
+                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                     else:
                         # Normal monster rewards - based on how many were defeated
                         gold_dropped = random.randint(
@@ -1880,7 +1943,7 @@ while True:
                         player["gold"] += gold_dropped
                         player["exp"] += exp_earned * num_monsters
 
-                        for i in range(2, 20):
+                        for i in range(2, 21):
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
@@ -1895,6 +1958,13 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
+                        if player["exp"] >= EXP_TO_GET_TO_LEVEL2[14]:
+                            player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                            player["spells"] = spells_tier_2[player]
+                            if player["class"] == "Rogue" or player["class"] == "Mage":
+                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                            else:
+                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                     
                     player["armor"] = original_armor
                     del rooms[currentRoom]["monster"]
@@ -2087,7 +2157,7 @@ while True:
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
                         elif item_name == "spell book":
-                            display_spell_book(player["class"])
+                            display_spell_book(player["class"], player["class 2"])
                             spell = input(GREEN + "> ").lower()
                             clear_screen()
                             if spell == "exit":
