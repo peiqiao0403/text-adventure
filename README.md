@@ -28,11 +28,41 @@ The game offers five distinct character classes, each with unique abilities and 
     -   Attack: 12
     -   Spell: Circle Heal (+30 HP)
     -   Mana: 45
--   **Ranger**
+-   **Archer**
     -   Health: 110
     -   Attack: 20
     -   Spell: Bleeding Arrow (+25 damage)
     -   Mana: 20
+ 
+## Tier 2 Classes
+
+In addition to these classes, once you reach level 15, you will becom eone of these classes, depending on the class you first chose:
+
+-   **Paladin**
+    -   Health: 204
+    -   Attack: 43
+    -   Spell: Divine Shield
+    -   Mana: 60
+-   **Archmage**
+    -   Health: 136
+    -   Attack: 34
+    -   Spell: Infinity (+45 damage)
+    -   Mana: 170
+-   **Rogue**
+    -   Health: 170
+    -   Attack: 34
+    -   Spell: Supernova (+25 damage)
+    -   Mana: 85
+-   **Priest**
+    -   Health: 255
+    -   Attack: 20
+    -   Spell: CHeal (+50 HP)
+    -   Mana: 77
+-   **Ranger**
+    -   Health: 187
+    -   Attack: 34
+    -   Spell: Phantasm (+50 damage)
+    -   Mana: 34
 
 ## Combat Mechanics
 
