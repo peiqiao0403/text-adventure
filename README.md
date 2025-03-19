@@ -36,7 +36,7 @@ The game offers five distinct character classes, each with unique abilities and 
  
 ## Tier 2 Classes
 
-In addition to these classes, once you reach level 15, you will becom eone of these classes, depending on the class you first chose:
+In addition to these classes, once you reach level 15, you will become one of these classes, depending on the class you first chose:
 
 -   **Paladin**
     -   Health: 204
