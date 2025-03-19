@@ -48,7 +48,7 @@ In addition to these classes, once you reach level 15, you will become one of th
     -   Attack: 34
     -   Spell: Infinity (+45 damage)
     -   Mana: 170
--   **Rogue**
+-   **Assassin**
     -   Health: 170
     -   Attack: 34
     -   Spell: Supernova (+25 damage)
