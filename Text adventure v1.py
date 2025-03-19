@@ -1587,6 +1587,11 @@ def get_spell_description(spell_name):
         "holy cleansing": "Removes all status ailments and heals a minor amount of HP",
         "arrow of light": "Fire a holy arrow, blinding enemies",
         "midas prime": "A spell derived from the ultimate being of the lust level of hell",
+        "mordshlang": "An ancient technique used by masters to bash your enemy's skull in",
+        "boudler": "Throw a boulder at your enemies",
+        "knife throw": "Throw a knife",
+        "divine retribution": "The wrath of the gods will aid you in battle",
+        "double shot": "Shoot 2 arrows at once"
     }
     return descriptions.get(spell_name, "")
 
