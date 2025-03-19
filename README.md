@@ -92,6 +92,8 @@ Combat in the game is turn-based with timing-based elements for attacks and spel
         -   Can use health or mana potions during combat
         -   Multiple items can be used with "use [item] [quantity]"
         -   Items provide immediate effects
+3.  **Leveling Up**
+    -   You can level up after obtaining enough exp, your stats will increase and the exp required for the next level will too
 
 ## Inventory and Equipment System
 
