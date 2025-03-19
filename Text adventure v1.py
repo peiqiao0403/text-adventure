@@ -479,11 +479,60 @@ ARMOR_IMPROVEMENTS = {
 }
 
 classes = {
-    "Warrior": {"health": 120, "armor": 0, "mana": 30, "spells": {"slash": [25, 40]}, "attack": 25},
-    "Mage": {"health": 80, "armor": 0, "mana": 100, "spells": {"fireball": [30, 40]}, "attack": 20},
-    "Rogue": {"health": 100, "armor": 0, "mana": 50, "spells": {"back stab": [20, 25]}, "attack": 20},
-    "Healer": {"health": 150, "armor": 0, "mana": 45, "spells": {"minor heal": [15, 20]}, "attack": 12},
-    "Archer": {"health": 110, "armor": 0, "mana": 20, "spells": {"bleeding arrow": [25, 25]}, "attack": 20}
+    "Warrior": {
+        "health": 120, 
+        "armor": 0, 
+        "mana": 30, 
+        "spells": {
+            "slash": [15, 20], 
+            "mordschlang": [10, 15]
+            }, 
+        "attack": 25
+    },
+
+    "Mage": {
+        "health": 80, 
+        "armor": 0, 
+        "mana": 100, 
+        "spells": {
+            "fireball": [20, 30], 
+            "boulder": [25, 35]
+            }, 
+        "attack": 20
+    },
+
+    "Rogue": {
+        "health": 100, 
+        "armor": 0, 
+        "mana": 50, 
+        "spells": {
+            "back stab": [20, 25], 
+            "knife throw": [10, 15]
+            }, 
+        "attack": 20
+        },
+
+    "Healer": {
+        "health": 150, 
+        "armor": 0, 
+        "mana": 45, 
+        "spells": {
+            "minor heal": [15, 20], 
+            "divine retribution": [20, 30]
+            }, 
+        "attack": 12
+        },
+
+    "Archer": {
+        "health": 110, 
+        "armor": 0, 
+        "mana": 20, 
+        "spells": {
+            "bleeding arrow": [25, 25], 
+            "double shot": [40, 40]
+            }, 
+        "attack": 20
+        }
 }
 
 class_to_get_to_tier_2 = {
@@ -507,7 +556,7 @@ spells_tier_2 = {
     "Archmage": {"infinity": [20, 45]},
     "Assassin": {"supernova": [20, 25]},
     "Priest": {"heal": [25, 50]},
-    "Ranger": {"phantasm": [10, 30]}
+    "Ranger": {"phantasm": [20, 50]}
 }
 
 locked_spells = {
@@ -1341,7 +1390,7 @@ player = {
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
     "level": 1,
-    "exp": 5000,
+    "exp": 500,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
 }
 
@@ -1529,21 +1578,15 @@ def get_spell_description(spell_name):
         "minor heal": "Small efficient heal",
         "bleeding arrow": "Causes bleeding damage",
         "binding shot": "Roots enemy in place",
-        "Holy Strike": "Imbue your sword with holy power",
-        "Healing Pool": "A",
-        "stun strike": "Chance to stun enemy (2-5 turns)",
-        "fireball": "Causes burning for 3 turns",
-        "water bolt": "Basic water attack, low cost",
-        "thunder zapper": "Chance to stun enemy",
-        "back stab": "Basic rogue attack",
-        "stealth": "Allows you to exit the battle",
-        "stealth strike": "Attack from stealth confusing the enemy",
-        "circle heal": "Group healing spell",
-        "great heal": "Powerful single target heal",
-        "divine shield": "Block damage for 3 rounds",
-        "minor heal": "Small efficient heal",
-        "bleeding arrow": "Causes bleeding damage",
-        "binding shot": "Roots enemy in place"
+        "holy strike": "Imbue your sword with holy power",
+        "healing pool": "A small healing spell",
+        "tidal Wave": "Summon a powerful wave to decimate your enemies",
+        "kamehameha": "A legendary attack used by a Turtle Hermit",
+        "assassinate": "",
+        "ultrakill": "A truly overkill spell",
+        "holy cleansing": "Removes all status ailments and heals a minor amount of HP",
+        "arrow of light": "Fire a holy arrow, blinding enemies",
+        "midas prime": "A spell derived from the ultimate being of the lust level of hell",
     }
     return descriptions.get(spell_name, "")
 
@@ -1586,7 +1629,8 @@ def generate_random_monster():
         "name": enemy_name,
         "attack_min": int(enemy_type['attack_min'] * attack_variation),
         "attack_max": int(enemy_type['attack_max'] * attack_variation),
-        "stunned": 0
+        "stunned": 0,
+        "blinded": 0
     }
 
 while True:
@@ -1612,7 +1656,8 @@ while True:
                 "name": enemy_type['name'],
                 "attack_min": enemy_type['attack_min'],
                 "attack_max": enemy_type['attack_max'],
-                "stunned": 0
+                "stunned": 0,
+                "blinded": 0
             }
             enemies.append(enemy)
             print_slow(f"{enemy['name']} appears!")
@@ -1624,6 +1669,7 @@ while True:
                 "attack_min": enemy_type['attack_min'],
                 "attack_max": enemy_type['attack_max'],
                 "stunned": 0,
+                "blinded": 0,
                 "lifesteal_range": enemy_type['lifesteal_range']
             }
             enemies.append(enemy)
@@ -1775,6 +1821,15 @@ while True:
                             damage = int(base_damage * (spell_percent / 100))
                             turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
                             enemy["health"] -= damage
+                        elif spell_name == "arrow of light":
+                            blind_chance = spell_percent / 100
+                            damage = 25
+                            if random.random() < blind_chance:
+                                blind_duration = random.randint(2, 5)
+                                enemy["blind"] = blind_duration
+                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and blinded {enemy['name']} for {blind_duration} turns!\n"
+                            else:
+                                turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
                         elif spell_name == "circle heal":
                             base_healing = player["spells"][spell_name][0]
                             healing_amount = int(base_healing * (spell_percent / 100))
@@ -1852,10 +1907,10 @@ while True:
                         )
                         print_slow(f"You defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
                         player["gold"] += gold_dropped
-                        player["exp"] += exp_earned
+                        player["exp"] += exp_earned * int(currentRoom[0])
 
                         for i in range(2, 21):
-                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
+                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                 player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
@@ -1869,13 +1924,13 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
-                        if player["exp"] >= EXP_TO_GET_TO_LEVEL2[14]:
+                        if player["level"] >= 15 and player["class 2"] == None:
                             player["class 2"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player]
+                            player["spells"] = spells_tier_2[player["class 2"]]
                             if player["class"] == "Rogue" or player["class"] == "Mage":
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
-                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
 
                     elif monster_type == 'vampire':
                         # Vampire rewards
@@ -1889,10 +1944,10 @@ while True:
                         print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
                         
                         player["gold"] += gold_dropped
-                        player["exp"] += exp_earned
+                        player["exp"] += exp_earned * int(currentRoom[0])
 
                         for i in range(2, 21):
-                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
+                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                 player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
@@ -1906,13 +1961,13 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
-                        if player["exp"] >= EXP_TO_GET_TO_LEVEL2[14]:
+                        if player["level"] >= 15 and player["class 2"] == None:
                             player["class 2"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player]
+                            player["spells"] = spells_tier_2[player["class 2"]]
                             if player["class"] == "Rogue" or player["class"] == "Mage":
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
-                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                     else:
                         # Normal monster rewards - based on how many were defeated
                         gold_dropped = random.randint(
@@ -1941,13 +1996,13 @@ while True:
                         print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
                         
                         player["gold"] += gold_dropped
-                        player["exp"] += exp_earned * num_monsters
+                        player["exp"] += exp_earned * num_monsters * int(currentRoom[0])
 
                         for i in range(2, 21):
-                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i]:
+                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i]
+                                player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -1958,13 +2013,13 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
-                        if player["exp"] >= EXP_TO_GET_TO_LEVEL2[14]:
+                        if player["level"] >= 15 and player["class 2"] == None:
                             player["class 2"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player]
+                            player["spells"] = spells_tier_2[player["class 2"]]
                             if player["class"] == "Rogue" or player["class"] == "Mage":
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
-                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                     
                     player["armor"] = original_armor
                     del rooms[currentRoom]["monster"]
@@ -2007,6 +2062,8 @@ while True:
                                 del enemy["confused"]
                                 turn_log += f"{enemy['name']} recovers from being confused!\n"
                             continue
+
+
                         
                         # Handle vampire lifesteal
                         if monster_type == 'vampire' and "lifesteal_range" in enemy:
