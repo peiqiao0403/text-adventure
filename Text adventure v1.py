@@ -186,43 +186,82 @@ def display_credits():
     )
     print()
     # Credits scroll
-    credits = [
-        f"\n",
-        f"{BLUE}Development Team:{RESET}\n",
-        f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
-        f"Developer & Music Composer: {BLUE}Arnesito{RESET}\n",
-        f"Developer & Designer: {BLUE}Moltd{RESET}\n",
-        "\n",
-        f"{BLUE}Music Composition:{RESET}\n",
-        f"Tryangle\n",
-        f"Arnesito\n",
-        "\n",
-        f"{BLUE}Quality Assurance Team:{RESET}\n",
-        f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
-        "\n",
-        f"{BLUE}Playtesting Team:{RESET}\n",
-        f"{GREEN}David Sucks At Life{RESET}\n",
-        f"{GREEN}Bee1949{RESET}\n",
-        f"{GREEN}Not Guy Stew{RESET}\n",
-        f"{GREEN}Vroom Vroom Snail{RESET}\n",
-        "\n",
-        f"{BLUE}Game Features:{RESET}\n",
-        "10 Unique Classes\n",
-        "90+ Rooms to Explore\n",
-        "3+ Levels to Defeat\n",
-        "50+ Items to Collect\n",
-        "32+ Monsters to Battle\n",
-        "Leveling up system\n",
-        "\n",
-        f"{BLUE}Technical Details:{RESET}\n",
-        "Custom ANSI Color System\n",
-        "Dynamic Combat Engine\n",
-        "Save/Load System\n",
-        "Crafting System\n",
-        "\n",
-        f"{BLUE}Thanks for Playing!{RESET}\n",
-        f"{BLUE}press enter to quit{RESET}"
-    ]
+    if DLC_after_credits == "NO!":
+        credits = [
+            f"\n",
+            f"{BLUE}Development Team:{RESET}\n",
+            f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
+            f"Developer & Music Composer: {BLUE}Arnesito{RESET}\n",
+            f"Developer & Designer: {BLUE}Moltd{RESET}\n",
+            "\n",
+            f"{BLUE}Music Composition:{RESET}\n",
+            f"Tryangle\n",
+            f"Arnesito\n",
+            "\n",
+            f"{BLUE}Quality Assurance Team:{RESET}\n",
+            f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
+            "\n",
+            f"{BLUE}Playtesting Team:{RESET}\n",
+            f"{GREEN}David Sucks At Life{RESET}\n",
+            f"{GREEN}Bee1949{RESET}\n",
+            f"{GREEN}Not Guy Stew{RESET}\n",
+            f"{GREEN}Vroom Vroom Snail{RESET}\n",
+            "\n",
+            f"{BLUE}Game Features:{RESET}\n",
+            "10 Unique Classes\n",
+            "90+ Rooms to Explore\n",
+            "3+ Levels to Defeat\n",
+            "50+ Items to Collect\n",
+            "32+ Monsters to Battle\n",
+            "Leveling up system\n",
+            "\n",
+            f"{BLUE}Technical Details:{RESET}\n",
+            "Custom ANSI Color System\n",
+            "Dynamic Combat Engine\n",
+                "Save/Load System\n",
+            "Crafting System\n",
+            "\n",
+            f"{BLUE}Thanks for Playing!{RESET}\n",
+            f"{BLUE}press enter to quit{RESET}"
+        ]
+    elif DLC_after_credits == "GO!":
+        credits = [
+            f"\n",
+            f"{BLUE}Development Team:{RESET}\n",
+            f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
+            f"Developer & Music Composer: {BLUE}Arnesito{RESET}\n",
+            f"Developer & Designer: {BLUE}Moltd{RESET}\n",
+            "\n",
+            f"{BLUE}Music Composition:{RESET}\n",
+            f"Tryangle\n",
+            f"Arnesito\n",
+            "\n",
+            f"{BLUE}Quality Assurance Team:{RESET}\n",
+            f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
+            "\n",
+            f"{BLUE}Playtesting Team:{RESET}\n",
+            f"{GREEN}David Sucks At Life{RESET}\n",
+            f"{GREEN}Bee1949{RESET}\n",
+            f"{GREEN}Not Guy Stew{RESET}\n",
+            f"{GREEN}Vroom Vroom Snail{RESET}\n",
+            "\n",
+            f"{BLUE}Game Features:{RESET}\n",
+            "10 Unique Classes\n",
+            "90+ Rooms to Explore\n",
+            "3+ Levels to Defeat\n",
+            "50+ Items to Collect\n",
+            "32+ Monsters to Battle\n",
+            "Leveling up system\n",
+            "\n",
+            f"{BLUE}Technical Details:{RESET}\n",
+            "Custom ANSI Color System\n",
+            "Dynamic Combat Engine\n",
+                "Save/Load System\n",
+            "Crafting System\n",
+            "\n",
+            f"{BLUE}Thanks for Playing!{RESET}\n",
+            f"{BLUE}Press enter to start the DLC!{RESET}"
+        ]
     
     screen_width = 50
     for line in credits:
@@ -1292,7 +1331,7 @@ rooms = {
         'east': '4-1',
         'west': '3-39',
         'monster': 'normal'
-            }
+    }
 }
 
 # Add to the global variables section
@@ -1349,6 +1388,9 @@ print_slow("Welcome to the Text Hero!")
 print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
 chosen_class = input(GREEN + "> ").capitalize()
 clear_screen()
+DLC_unlocked = "yes"
+DLC_after_credits = "NO!"
+
 if chosen_class not in classes:
     chosen_class = "Warrior"
 def use_item_during_combat(item):
@@ -1390,7 +1432,7 @@ player = {
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
     "level": 1,
-    "exp": 500,
+    "exp": 0,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
 }
 
@@ -1640,7 +1682,7 @@ def generate_random_monster():
 
 while True:
     # Add this to your main game loop, right after the room check:
-    if currentRoom == '2-12':
+    if currentRoom == '5-60':
         display_credits()
         exit()
     # Automatic combat initiation when a monster is present
@@ -1936,6 +1978,8 @@ while True:
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
                                 print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                        #if currentRoom == "5-60" and DLC_unlocked == "yes":
+                            #DLC_after_credits = "GO!"
 
                     elif monster_type == 'vampire':
                         # Vampire rewards
