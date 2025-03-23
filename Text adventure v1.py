@@ -867,7 +867,6 @@ rooms = {
         'north': 'dungeon-2',
         'monster': "vampire"
     },
-    rooms = {
     '1-1': {
         "east": '1-2',
         "item": "health potion"
@@ -2036,8 +2035,8 @@ rooms = {
     '5-60': {
         'east': '5-59',
         'monster': 'boss'
+        }
     }
-}
 
 # Add to the global variables section
 BLACKSMITH_RECIPES = {
