@@ -867,6 +867,7 @@ rooms = {
         'north': 'dungeon-2',
         'monster': "vampire"
     },
+    rooms = {
     '1-1': {
         "east": '1-2',
         "item": "health potion"
@@ -967,7 +968,20 @@ rooms = {
         'east': '1-19',
         'up': '2-1'
     },
-
+    'dungeon-1': {
+        'up': '1-10',
+        'east': 'dungeon-2',
+        'monster': "normal"
+    },
+    'dungeon-2': {
+        'west': 'dungeon-1',
+        'south': 'dungeon-3',
+        'item': 'iron sword'
+    },
+    'dungeon-3': {
+        'north': 'dungeon-2',
+        'monster': "vampire"
+    },
     '2-1': {
         'west': '1-20',
         "north": '2-2'
@@ -1117,7 +1131,7 @@ rooms = {
     '2-30': {
         'east': '2-29',
         'west': '3-1',
-        'item': 'health potion'
+        'monster': 'boss'
     },
     '3-1': {
         'east': '2-29',
@@ -1330,7 +1344,698 @@ rooms = {
     '3-40': {
         'east': '4-1',
         'west': '3-39',
+        'monster': 'boss'
+
+    },
+    '4-1': {
+        'east': '3-40',
+        "west": '4-2'
+        
+    },
+    '4-2': {
+        'east': '4-1',
+        'north': '4-3',
+        'item': 'health potion'
+        
+    },
+    '4-3': {
+        'west': '4-5',
+        'north': '4-4',
+        'south': '4-2',
+        'item': 'mana potion'
+        
+    },
+    '4-4': {
+        'south': '4-3',
+        'east': '4-5',
         'monster': 'normal'
+        
+    },
+    '4-5': {
+        'west': '4-4',
+        'north': '4-6',
+        'south': '4-7'
+        
+    },
+    '4-6': {
+        'west': '4-47',
+        'south': '4-5',
+        'east': '4-8',
+        'north': '4-15',
+        "item": "health potion"
+        
+    },
+    '4-7': {
+        'east': '4-8',
+        'south': '4-16',
+        'north': '4-5',
+        'monster': 'normal'
+        
+    },
+    '4-8': {
+        'east': '4-10',
+        'north': '4-9',
+        'item': 'health potion'
+        
+    },
+    '4-9': {
+        'south': '4-8',
+        'east': '4-15',
+        'north': '4-10',
+        'monster': 'normal'
+        
+    },
+    '4-10': {
+        'south': '4-9',
+        'north': '4-11',
+        "item": "health potion"
+        
+    },
+    '4-11': {
+        'west': '4-12',
+        "item": 'iron chestplate'
+        
+    },
+    '4-12': {
+      'east': '4-11',
+        
+    },
+    '4-13': {
+        'south': '4-15',
+        'north': '3-14',
+        
+    },
+    '4-14': {
+        'south': '4-13',
+        'monster': 'normal'
+        
+    },
+    '4-15': {
+        'west': '4-9',
+        'north': '3-16',
+        'south': '4-6',
+        'east': '4-16',
+        "item": "health potion"
+        
+    },
+    '4-16': {
+        'west': '4-15',
+        'south': '4-17',
+        'north': '4-7',
+        'item': 'mana potion'
+        
+    },
+    '4-17': {
+        'north': '4-16',
+        'west': '4-18',
+        'item': 'health potion'
+        
+    },
+    '4-18': {
+        'south': '4-19',
+        'east': '4-17',
+        'monster': 'normal'
+        
+   },
+    '4-19': {
+        'north': '4-18',
+        'west': '4-20',
+        'item': 'health potion'
+        
+    },
+    '4-20': {
+        'east': '4-19',
+        'south': '4-21',
+        'monster': 'boss'
+        
+    },
+    '4-21': {
+        'north': '4-21',
+        'south': '4-22',
+        'monster': 'normal'
+        
+    },
+    '4-22': {
+        'south': '4-29',
+        'north': '4-25',
+        'east': '4-46',
+        'west': '4-23'
+        
+    },
+    '4-23': {
+        'east': '4-22',
+        'west': '4-24',
+        'north': '4-26',
+        'monster': 'normal'
+        
+    },
+    '4-24': {
+        'east': '4-23',
+        'south': '4-25'
+           
+    },
+    '4-25': {
+        'north': '4-24',
+        'south': '4-22',
+        'east': '4-26',
+        'west': '4-33',
+        'item': 'health potion'
+           
+    },
+    '4-26': {
+        'west': '4-25',
+        'east': '4-27',
+        'monster': 'normal'
+
+    },
+    '4-27': {
+        'west': '4-26',
+        'south': '4-28',
+        'item': 'health potion'
+
+    },
+    '4-28': {
+        'north': '4-27',
+        'east': '4-29',
+        'monster': 'normal'
+    },
+    '4-29': {
+        'west': '4-28',
+        'south': '4-30',
+        'item': 'mana potion'
+    },
+    '4-30': {
+        'east': '4-29',
+        'north': '4-31',
+        'item': 'health potion'
+           
+    },
+    '4-31': {
+        'south': '4-30',
+        'west': '4-32',
+        'monster': 'normal'
+           
+    },
+    '4-32': {
+        'east': '4-31',
+        'north': '4-33',
+        'item': 'health potion'
+           
+    },
+    '4-33': {
+        'south': '4-32',
+        'east': '4-25',
+        'north': '4-34',
+        'monster': 'normal'
+           
+    },
+    '4-34': {
+        'south': '4-33',
+        'west': '4-35',
+        'north': '4-36',
+        'monster': 'normal'
+           
+    },
+    '4-35': {
+        'east': '4-34',
+        'west': '4-38',
+        'item': 'iron helmet'
+           
+    },
+    '4-36': {
+        'south': '4-44',
+        'north': '4-38',
+        'item': 'health potion'
+           
+    },
+    '4-37': {
+        'east': '4-38',
+        'south': '4-36',
+        'monster': 'normal'
+           
+    },
+    '4-38': {
+        'east': '4-39',
+        'north': '4-37',
+        'item': 'health potion'
+           
+    },
+    '4-39': {
+        'east': '4-40',
+        'west': '4-38',
+        'monster': 'normal'
+           
+    },
+    '4-40': {
+        'east': '4-41',
+        'west': '4-39',
+        'monster': 'normal'           
+    },
+    '4-41': {
+        'east': '4-40',
+        'west': '4-42',
+        'item': 'mana potion'
+    },
+    '4-42': {
+        'east': '4-41',
+        'north': '4-44',
+        'west': '4-43',
+        'item': 'mana potion'
+            
+    },
+    '4-43': {
+        'east': '4-42',
+        'item': 'health potion'
+            
+               
+    },
+    '4-44': {
+        'east': '4-45',
+        'west': '4-43',
+        'monster': 'normal'
+            
+
+    },
+    '4-45': {
+        'south': '4-46',
+        'west': '4-44'
+            
+
+    },
+    '4-46': {
+        'east': '4-47',
+        'north': '4-45'
+            
+
+    },
+    '4-47': {
+        'east': '4-48',
+        'north': '4-46',
+        'south': '4-49'
+            
+
+    },
+    '4-48': {
+        'west': '4-48',
+        'monster': 'normal'
+            
+
+    },
+    '4-49': {
+        'north': '4-47',
+        'south': '4-50',
+        'item': 'health potion'
+            
+
+    },
+    '4-50': {
+        'north': '4-49',
+        'south': '5-1',
+        'monster': 'boss'
+            
+            
+    },
+    '5-1': {
+        'east': '4-50',
+        "north": '5-2'
+        
+    },
+    '5-2': {
+        'east': '5-1',
+        'south': '5-3',
+        'west': '5-12',
+        'monster': 'normal'
+        
+    },
+    '5-3': {
+        'west': '5-5',
+        'south': '5-4',
+        'north': '5-2',
+        'east': '5-17',
+        'item': 'health potion'
+        
+    },
+    '5-4': {
+        'south': '5-3',
+        'east': '5-6',
+        'monster': 'normal'
+        
+    },
+    '5-5': {
+        'east': '5-3',
+        'north': '5-10',
+        'monster': 'boss'
+        
+    },
+    '5-6': {
+        'west': '5-50',
+        'south': '5-7',
+        'north': '5-15',
+        "monster": "normal"
+        
+    },
+    '5-7': {
+        'east': '5-8',
+        'north': '5-6',
+        'item': 'health potion'
+        
+    },
+    '5-8': {
+        'west': '5-7',
+        'north': '5-9',
+        'monster': 'normal'
+        
+    },
+    '5-9': {
+        'south': '5-8',
+        'north': '5-10',
+        'monster': 'normal'
+        
+    },
+    '5-10': {
+        'south': '5-9',
+        'north': '5-11',
+        "monster": "boss"
+        
+    },
+    '5-11': {
+        'west': '5-12',
+        'south': '5-10',
+        "item": 'mana potion'
+        
+    },
+    '5-12': {
+      'east': '5-11',
+      'south': '5-13',
+      'item': 'health potion'
+        
+    },
+    '5-13': {
+        'south': '5-14',
+        'north': '5-12',
+        'monster': 'normal',
+        
+    },
+    '5-14': {
+        'north': '5-13',
+        'west': '5-15',
+        'monster': 'normal'
+        
+    },
+    '5-15': {
+        'south': '5-16',
+        'east': '5-14',
+        "item": "wooden sword"
+        
+    },
+    '5-16': {
+        'west': '4-16',
+        'south': '5-59',
+        'north': '5-15',
+        'east': '5-17',
+        'monster': 'normal'
+        
+    },
+    '5-17': {
+        'north': '5-18',
+        'west': '5-16',
+        'monster': 'normal'
+        
+    },
+    '5-18': {
+        'south': '5-17',
+        'east': '5-19',
+        'monster': 'normal'
+        
+   },
+    '5-19': {
+        'north': '5-18',
+        'west': '5-20',
+        'item': 'health potion'
+        
+    },
+    '5-20': {
+        'east': '5-19',
+        'south': '5-21',
+        'monster': 'boss'
+        
+    },
+    '5-21': {
+        'north': '5-20',
+        'east': '5-22',
+        'west': '5-23',
+        'monster': 'normal'
+        
+    },
+    '5-22': {
+        'south': '5-33',
+        'north': '5-32',
+        'east': '5-31',
+        'west': '5-21'
+        
+    },
+    '5-23': {
+        'east': '5-21',
+        'west': '5-24',
+        'monster': 'normal'
+        
+    },
+    '5-24': {
+        'east': '5-23',
+        'south': '5-25',
+           
+    },
+    '4-25': {
+        'north': '4-24',
+        'east': '4-26',
+        'monster': 'boss'
+           
+    },
+    '5-26': {
+        'west': '5-25',
+        'east': '5-27',
+        'monster': 'normal'
+
+    },
+    '5-27': {
+        'west': '5-26',
+        'south': '5-28',
+        'monster': 'normal'
+
+    },
+    '5-28': {
+        'north': '5-27',
+        'east': '5-29',
+        'monster': 'normal'
+    },
+    '5-29': {
+        'west': '5-28',
+        'south': '5-30',
+        'item': 'mana potion'
+    },
+    '5-30': {
+        'east': '5-29',
+        'monster': 'boss'
+        #print('wow you really went here and now you have to backtrack fucker.')
+           
+    },
+    '5-31': {
+        'west': '5-22',
+        'west': '5-32',
+        'item': 'health potion'
+           
+    },
+    '5-32': {
+        'east': '5-31',
+        'south': '5-22',
+        'north': '5-33',
+        'item': 'health potion'
+           
+    },
+    '5-33': {
+        'south': '5-32',
+        'east': '5-34',
+        'north': '5-22',
+        'monster': 'normal'
+           
+    },
+    '5-34': {
+        'south': '4-33',
+        'west': '4-35',
+        'monster': 'normal'
+           
+    },
+    '5-35': {
+        'easr': '5-34',
+        'west': '5-36',
+        'monster': 'boss'
+           
+    },
+    '5-36': {
+        'south': '5-45',
+        'north': '5-37',
+        'item': 'health potion'
+           
+    },
+    '5-37': {
+        'east': '5-38',
+        'south': '5-36',
+        'item': 'health potion'
+           
+    },
+    '5-38': {
+        'east': '5-39',
+        'west': '5-37',
+        'item': 'health potion'
+           
+    },
+    '5-39': {
+        'east': '5-40',
+        'west': '5-38',
+        'item': 'health potion'
+           
+    },
+    '5-40': {
+        'east': '5-41',
+        'west': '5-39',
+        'monster': 'boss'
+            
+           
+    },
+    '5-41': {
+        'east': '5-40',
+        'west': '5-42',
+        'item': 'mana potion'
+            
+               
+    },
+    '5-42': {
+        'east': '4-41',
+        'west': '4-43',
+        'item': 'mana potion'
+            
+    },
+    '5-43': {
+        'east': '4-42',
+        'north': '5-44',
+        'item': 'health potion'
+            
+               
+    },
+    '5-44': {
+        'east': '5-45',
+        'west': '5-43',
+        'monster': 'normal'
+            
+
+    },
+    '5-45': {
+        'south': '5-46',
+        'west': '5-44',
+        'monster': 'boss'
+            
+
+    },
+    '5-46': {
+        'east': '5-47',
+        'north': '5-45'
+            
+
+    },
+    '5-47': {
+        'east': '5-48',
+        'north': '5-46',
+        'monster': 'normal'
+            
+
+    },
+    '5-48': {
+        'west': '5-47',
+        'south': '5-49',
+        'monster': 'normal'
+            
+
+    },
+    '5-49': {
+        'north': '4-48',
+        'south': '4-50',
+        'item': 'health potion'
+            
+
+    },
+    '5-50': {
+        'north': '5-49',
+        'south': '5-51',
+        'monster': 'boss'
+            
+
+    },
+    '5-51': {
+        'north': '5-50',
+        'east': '5-52',
+        'monster': 'normal'
+            
+
+    },
+    '5-52': {
+        'west': '5-51',
+        'east': '5-53',
+        'north': '5-59',
+        'monster': 'normal'
+            
+
+    },
+    '5-53': {
+        'west': '5-52',
+        'south': '5-54',
+        'item': 'health potion'
+            
+
+    },
+    '5-54': {
+        'north': '5-53',
+        'west': '5-55',
+        'item': 'health potion'
+            
+
+    },
+    '5-55': {
+        'east': '5-54',
+        'west': '5-56',
+        'monster': 'boss'
+            
+
+    },
+    '5-56': {
+        'east': '5-55',
+        'west': '5-57',
+        'monster': 'normal'
+            
+
+    },
+    '5-57': {
+        'east': '5-56',
+        'west': '5-58',
+        'item': 'health potion'
+            
+
+    },
+    '5-58': {
+        'west': '5-57',
+        'item': 'health potion'
+            
+
+    },
+    '5-59': {
+        'north': '5-52',
+        'west': '5-60',
+        'item': 'health potion'
+            
+
+    },
+    '5-60': {
+        'east': '5-59',
+        'monster': 'boss'
     }
 }
 
