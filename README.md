@@ -56,7 +56,7 @@ In addition to these classes, once you reach level 15, you will become one of th
 -   **Priest**
     -   Health: 255
     -   Attack: 20
-    -   Spell: CHeal (+50 HP)
+    -   Spell: Heal (+50 HP)
     -   Mana: 77
 -   **Ranger**
     -   Health: 187
