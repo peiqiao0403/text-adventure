@@ -1174,6 +1174,113 @@ rooms = {
             }
 }
 
+DLC_rooms = {
+    '1-1': {
+        'north': '1-2',
+        'west': '5-60',
+        'item': 'health potion'
+    },
+    '1-2': {
+        'west': '1-3',
+        'south': '1-1',
+        'monster': 'demon'
+    },
+    '1-3': {
+        'west': '1-4',
+        'east': '1-2',
+        'south': '1-8',
+        'item': 'mythril leggings'
+    },
+    '1-4': {
+        'west': '1-5',
+        'east': '1-3',
+        'south': '1-7',
+        'monster': 'demon'
+    },
+    '1-5': {
+        'south': '1-6',
+        'east': '1-4',
+        'monster': 'demon'
+    },
+    '1-6': {
+        'east': '1-7',
+        'north': '1-5',
+        "item": "spell"
+    },
+    '1-7': {
+        'east': '1-8',
+        'west': '1-6',
+        'north': '1-4',
+        'monster': 'demon'
+    },
+    '1-8': {
+        'south': '1-9',
+        'west': '1-7',
+        'north': '1-3',
+        'item': 'mythril boots'
+    },
+    '1-9': {
+        'south': '1-10',
+        'north': '1-8',
+        'monster': 'demon'
+    },
+    '1-10': {
+        'east': '1-13',
+        'north': '1-9',
+        'south': '1-11',
+        "item": "health potion"
+    },
+    '1-11': {
+        'north': '1-10',
+        'south': '1-12',
+        "item": 'mythril sword'
+    },
+    '1-12': {
+      'north': '1-11',
+      'monster': 'demon'
+    },
+    '1-13': {
+        'west': '1-14',
+        'east': '1-10',
+        'monster': 'demon'
+    },
+    '1-14': {
+        'south': '1-15',
+        "east": "1-13",
+        'monster': 'demon'
+    },
+    '1-15': {
+        'west': '1-15',
+        'north': '1-14',
+        "item": "health potion"
+    },
+    '1-16': {
+        'east': '1-15',
+        'south': '1-18',
+        'north': '1-17',
+        "item": "health potion"
+    },
+    '1-17': {
+        'south': '1-16',
+        "item": "health potion"
+    },
+    '1-18': {
+        'north': '1-16',
+        'south': '1-19',
+        'monster': 'demon'
+   },
+    '1-19': {
+        'north': '1-18',
+        'south': '1-20',
+        'monster': 'demon'
+    },
+    '1-20': {
+        'north': '1-19',
+        'south': '2-1',
+        'monster': 'demon king asmodeus'
+    }
+}
+
 # Mapping for reverse directions
 reverse_direction = {"north": "south", "south": "north", "east": "west", "west": "east"}
 
