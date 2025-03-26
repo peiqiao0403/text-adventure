@@ -1,33 +1,41 @@
 rooms = {
     '1-1': {
         "east": '1-2',
-        "item": "health potion"
+        "item": "health potion",
+        'lore': 'Lord X-r--n has vanished. You need to get back to him.',
+        'hint': 'Welcome to text hero!'
     },
     '1-2': {
         'north': '1-3',
         'west': '1-1',
-        "monster": "normal"
+        'hint': 'In this game, you use cardinal directions to travel. There are some keyboard shortcuts. EG - n for north, s for south, e for east, w for west.'
     },
     '1-3': {
         'west': '1-4',
         'south': '1-2',
-        'item': 'wooden sword'
+        'item': 'wooden sword',
+        'hint': 'To equip something, you type in (equip (itemname))'
     },
     '1-4': {
         'east': '1-3',
         'west': '1-15',
         'north': '1-5',
-        'item': 'chainmail boots'
+        'item': 'chainmail boots',
+        'hint': 'if you have multiple items in your inventory to equip, you can type in (i) to equip the best ones possible'
     },
     '1-5': {
         'south': '1-4',
         'west': '1-6',
-        'monster': "normal"
+        'monster': "normal",
+        'hint': 'For combat, you have 3 options. Fight, Defend and Cast. Fight allows you to attack the monster, If you type in (fight) a slider will pop up. Try to hit the middle of the slider to most damage possible!',
+        'hint': 'Defend makes you take less damage from the monsters next attack and allows you to build up mana.',
+        'hint': 'Cast will cast a spell, which will require mana to do. However, you need to unlock the spell before being able to cast it. You can do this by using spellbooks. To cast a spell, you will type in (cast(spell name))'
     },
     '1-6': {
         'west': '1-7',
         'east': '1-5',
-        "item": "mana potion"
+        "item": "mana potion",
+        'hint': 'Mana potions instantly regain mana. You can use them inside our outside of combat by typing (use(mana potion))'
     },
     '1-7': {
         'east': '1-6',
@@ -45,12 +53,13 @@ rooms = {
         'west': '1-10',
         'south': '1-13',
         'east': '1-8',
-        "item": "key fragment"
+        "item": "key fragment",
+        'lore': 'The fragment made your mind go numb?'
     },
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        "item": "monster"
+        "monster": "normal"
     },
     '1-11': {
         'north': '1-10',
@@ -58,7 +67,7 @@ rooms = {
     },
     '1-12': {
         'south': '1-11',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '1-13': {
         'east': '1-16',
@@ -73,7 +82,8 @@ rooms = {
     '1-15': {
         'east': '1-4',
         'north': '1-7',
-        "item": "health potion"
+        "item": "health potion",
+        'hint': 'health potions are used the same way as mana potions, except for the fact that they give health instead of mana. Type in the same command, which was: (use (health potion))'
     },
     '1-16': {
         'east': '1-1',
@@ -93,7 +103,8 @@ rooms = {
     '1-19': {
         'west': '1-20',
         'east': '1-18',
-        'monster': "boss"
+        'monster': "boss",
+        'lore': 'You feel less violent'
     },
     '1-20': {
         'east': '1-19',
@@ -111,11 +122,13 @@ rooms = {
     },
     'dungeon-3': {
         'north': 'dungeon-2',
-        'monster': "vampire"
+        'monster': "vampire",
+        'lore': 'SOMETHING FEELS SUCCESFUL IN YOU.'
     },
     '2-1': {
         'west': '1-20',
-        "north": '2-2'
+        "north": '2-2',
+        'lore': 'Your sourroundings feel vague.'
     },
     '2-2': {
         'west': '2-3',
@@ -173,7 +186,9 @@ rooms = {
     },
     '2-12': {
       'north': '2-11',
-      'monster': 'normal'
+      'west': '2-13',
+      'monster': 'normal',
+      'lore': 'screams echo around you...'
     },
     '2-13': {
         'east': '2-12',
@@ -203,7 +218,7 @@ rooms = {
     '2-18': {
         'west': '2-19',
         'east': '2-16',
-        'item': 'spell'
+        'item': 'spellbook'
    },
     '2-19': {
         'north': '2-20',
@@ -262,7 +277,8 @@ rooms = {
     '2-30': {
         'east': '2-29',
         'west': '3-1',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'you feel less greedy'
     },
     '3-1': {
         'east': '2-29',
@@ -413,7 +429,8 @@ rooms = {
     },
     '3-30': {
         'east': '3-29',
-        'item': 'health potion'
+        'item': 'health potion',
+        'lore': 'Something is... corrupting you with laziness'
             
     },
     '3-31': {
@@ -475,12 +492,14 @@ rooms = {
     '3-40': {
         'east': '4-1',
         'west': '3-39',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'You feel tired...'
 
     },
     '4-1': {
         'east': '3-40',
-        "west": '4-2'
+        "west": '4-2',
+        'lore': 'The tiredness fades away instantly'
         
     },
     '4-2': {
@@ -597,13 +616,15 @@ rooms = {
     '4-20': {
         'east': '4-19',
         'south': '4-21',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'Lust is overwhelming you.'
         
     },
     '4-21': {
         'north': '4-21',
         'south': '4-22',
-        'monster': 'normal'
+        'monster': 'normal',
+        'lore': 'The lust is gone. Vanished from you instantly.'
         
     },
     '4-22': {
@@ -779,20 +800,23 @@ rooms = {
     '4-49': {
         'north': '4-47',
         'south': '4-50',
-        'item': 'health potion'
+        'item': 'health potion',
+        'lore': 'You feel if something terrible is coming...'
             }
 
     },
     '4-50': {
         'north': '4-49',
         'south': '5-1',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'You are taking pride in this fight. Maybe a bit TOO MUCH pride. Lord -y-o-n'
             }
             
     },
     '5-1': {
         'east': '4-50',
-        "north": '5-2'
+        "north": '5-2',
+        'lore': 'The pride has gone away'
         
     },
     '5-2': {
@@ -819,7 +843,8 @@ rooms = {
     '5-5': {
         'east': '5-3',
         'north': '5-10',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'This doesnt feel right.'
         
     },
     '5-6': {
@@ -970,8 +995,8 @@ rooms = {
     },
     '5-30': {
         'east': '5-29',
-        'monster': 'boss'
-        #print('wow you really went here and now you have to backtrack fucker.')
+        'monster': 'boss',
+        'lore': 'you feel sick.'
            
     },
     '5-31': {
@@ -1033,7 +1058,8 @@ rooms = {
     '5-40': {
         'east': '5-41',
         'west': '5-39',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'NOTHING IN THIS WORLD IS RIGHT'
             }
            
     },
@@ -1067,7 +1093,8 @@ rooms = {
     '5-45': {
         'south': '5-46',
         'west': '5-44',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'ALL YOUR EFFORTS ARE FOR NOTHING.'
             }
 
     },
@@ -1101,7 +1128,8 @@ rooms = {
     '5-50': {
         'north': '5-49',
         'south': '5-51',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'ITS NOT FAIR'
             }
 
     },
@@ -1170,7 +1198,8 @@ rooms = {
     },
     '5-60': {
         'east': '5-59',
-        'monster': 'boss'
+        'monster': 'boss',
+        "lore": 'You can escape. BUT ONLY IF YOU MAKE YOUR EFFORTS WORTH IT AND DEFEAT THAT BOSS.'
             }
 }
 
