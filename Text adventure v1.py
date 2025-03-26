@@ -168,7 +168,8 @@ def count_visible_chars(text):
             count += 1
     return count
 
-
+def clear_screen():
+    sys.stdout.write("\033[2J\033[H")
 
 def display_credits():
     """Display the end credits when reaching the final room"""
@@ -401,9 +402,18 @@ MONSTER_TYPES = {
         'health': 50,
         'attack_min': 5,
         'attack_max': 15,
-        'gold_drop_range': (10, 30),
-        "exp_drop_range": (5, 10),
+        'gold_drop_range': (30, 60),
+        "exp_drop_range": (3, 5),
         'item_drop_chance': 0.2
+    },
+    'demon': {
+        'names': 'Demon',  # List of possible monster names
+        'health': 100,
+        'attack_min': 5,
+        'attack_max': 15,
+        'gold_drop_range': (60, 90),
+        "exp_drop_range": (15, 30),
+        'item_drop_chance': 0
     },
     'boss': {
         'name': 'Boss Monster',
@@ -420,8 +430,45 @@ MONSTER_TYPES = {
         'attack_min': 35,
         'attack_max': 45,
         'gold_drop_range': (500, 1000),
+        'exp_drop_range': (50, 100),
         'item_drop_chance': 1,
         'lifesteal_range': (5, 10)
+    },
+    'demon king lucifer': {
+        'name': 'Demon King Lucifer',
+        'health': 300,
+        'attack_min': 50,
+        'attack_max': 60,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 150,
+        'item_drop_chance': 0
+    },
+    'demon king asmodeus': {
+        'name': 'Demon King Asmodeus',
+        'health': 500,
+        'attack_min': 30,
+        'attack_max': 40,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 150,
+        'item_drop_chance': 0
+    },
+    'demon king beelzebub': {
+        'name': 'Demon King Beelzebub',
+        'health': 750,
+        'attack_min': 10,
+        'attack_max': 20,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 150,
+        'item_drop_chance': 0
+    },
+    'demon king mammon': {
+        'name': 'Demon King Mammon',
+        'health': 1000,
+        'attack_min': 20,
+        'attack_max': 25,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 200,
+        'item_drop_chance': 0
     }
 }
 
@@ -571,7 +618,18 @@ classes = {
             "double shot": [40, 40]
             }, 
         "attack": 20
-        }
+        },
+    
+    "Vampire": {
+        "health": 99999,
+        "armor": 0,
+        "mana": 99999,
+        "spells": {
+            "lifesteal": [25, 30],
+            "blood bomb": [25, 50]
+        },
+        "attack": 30
+    }
 }
 
 class_to_get_to_tier_2 = {
@@ -584,7 +642,7 @@ class_to_get_to_tier_2 = {
 
 class_tier_2 = {
     "Paladin": "divine shield",
-    "Archmage": "infinity",
+    "Archmage": "eternity",
     "Assassin": "supernova",
     "Priest": "heal",
     "Ranger": "phantasm"
@@ -592,7 +650,7 @@ class_tier_2 = {
 
 spells_tier_2 = {
     "Paladin": {"divine shield": [0, 15]},
-    "Archmage": {"infinity": [20, 45]},
+    "Archmage": {"eternity": [20, 90]},
     "Assassin": {"supernova": [20, 25]},
     "Priest": {"heal": [25, 50]},
     "Ranger": {"phantasm": [20, 50]}
@@ -622,7 +680,6 @@ class HelpSystem:
         }
         self.current_page = 'help'
 
-
     def display_help(self, page=None):
         """Display the help system, optionally showing a specific page"""
         if page is None:
@@ -637,9 +694,6 @@ class HelpSystem:
                 print_slow(f"- [{status}] {p}")
             print_slow("- Type 'help <page>' to view a different page")
             print_slow("=============================")
-
-def clear_screen():
-    sys.stdout.write("\033[2J\033[H")
 
     print()
     sys.stdout.write("\033[F")
@@ -853,20 +907,6 @@ def remove_armor(slot=None):
     return f"Removed {current_item} (-{defense_bonus} defense)"
 
 rooms = {
-    'dungeon-1': {
-        'up': '1-10',
-        'east': 'dungeon-2',
-        'monster': "normal"
-    },
-    'dungeon-2': {
-        'west': 'dungeon-1',
-        'south': 'dungeon-3',
-        'item': 'iron sword'
-    },
-    'dungeon-3': {
-        'north': 'dungeon-2',
-        'monster': "vampire"
-    },
     '1-1': {
         "east": '1-2',
         "item": "health potion"
@@ -982,7 +1022,7 @@ rooms = {
         'monster': "vampire"
     },
     '2-1': {
-        'west': '1-20',
+        'down': '1-20',
         "north": '2-2'
     },
     '2-2': {
@@ -1026,7 +1066,6 @@ rooms = {
         'south': '2-10',
         'north': '2-13',
         'east': '2-8',
-        'west': '2-10',
         "item": "iron chestplate"
     },
     '2-10': {
@@ -1588,7 +1627,7 @@ rooms = {
     '4-40': {
         'east': '4-41',
         'west': '4-39',
-        'monster': 'normal'           
+        'monster': 'normal'
     },
     '4-41': {
         'east': '4-40',
@@ -1600,152 +1639,120 @@ rooms = {
         'north': '4-44',
         'west': '4-43',
         'item': 'mana potion'
-            
     },
     '4-43': {
         'east': '4-42',
         'item': 'health potion'
-            
-               
     },
     '4-44': {
         'east': '4-45',
         'west': '4-43',
         'monster': 'normal'
-            
-
     },
     '4-45': {
         'south': '4-46',
         'west': '4-44'
-            
-
     },
     '4-46': {
         'east': '4-47',
         'north': '4-45'
-            
-
     },
     '4-47': {
         'east': '4-48',
         'north': '4-46',
         'south': '4-49'
-            
-
     },
     '4-48': {
         'west': '4-48',
         'monster': 'normal'
-            
-
     },
     '4-49': {
         'north': '4-47',
         'south': '4-50',
         'item': 'health potion'
-            
-
     },
     '4-50': {
         'north': '4-49',
         'south': '5-1',
-        'monster': 'boss'
-            
-            
+        'monster': 'boss'          
     },
     '5-1': {
         'east': '4-50',
         "north": '5-2'
-        
     },
     '5-2': {
         'east': '5-1',
         'south': '5-3',
         'west': '5-12',
-        'monster': 'normal'
-        
+        'monster': 'normal'  
     },
     '5-3': {
         'west': '5-5',
         'south': '5-4',
         'north': '5-2',
         'east': '5-17',
-        'item': 'health potion'
-        
+        'item': 'health potion'   
     },
     '5-4': {
         'south': '5-3',
         'east': '5-6',
-        'monster': 'normal'
-        
+        'monster': 'normal'   
     },
     '5-5': {
         'east': '5-3',
         'north': '5-10',
         'monster': 'boss'
-        
     },
     '5-6': {
         'west': '5-50',
         'south': '5-7',
         'north': '5-15',
         "monster": "normal"
-        
     },
     '5-7': {
         'east': '5-8',
         'north': '5-6',
         'item': 'health potion'
-        
     },
     '5-8': {
         'west': '5-7',
         'north': '5-9',
         'monster': 'normal'
-        
     },
     '5-9': {
         'south': '5-8',
         'north': '5-10',
         'monster': 'normal'
-        
     },
     '5-10': {
         'south': '5-9',
         'north': '5-11',
         "monster": "boss"
-        
     },
     '5-11': {
         'west': '5-12',
         'south': '5-10',
         "item": 'mana potion'
-        
     },
     '5-12': {
       'east': '5-11',
       'south': '5-13',
       'item': 'health potion'
-        
     },
     '5-13': {
         'south': '5-14',
         'north': '5-12',
         'monster': 'normal',
-        
     },
     '5-14': {
         'north': '5-13',
         'west': '5-15',
         'monster': 'normal'
-        
     },
     '5-15': {
         'south': '5-16',
         'east': '5-14',
         "item": "wooden sword"
-        
     },
     '5-16': {
         'west': '4-16',
@@ -1753,74 +1760,62 @@ rooms = {
         'north': '5-15',
         'east': '5-17',
         'monster': 'normal'
-        
     },
     '5-17': {
         'north': '5-18',
         'west': '5-16',
         'monster': 'normal'
-        
     },
     '5-18': {
         'south': '5-17',
         'east': '5-19',
         'monster': 'normal'
-        
    },
     '5-19': {
         'north': '5-18',
         'west': '5-20',
         'item': 'health potion'
-        
     },
     '5-20': {
         'east': '5-19',
         'south': '5-21',
         'monster': 'boss'
-        
     },
     '5-21': {
         'north': '5-20',
         'east': '5-22',
         'west': '5-23',
         'monster': 'normal'
-        
     },
     '5-22': {
         'south': '5-33',
         'north': '5-32',
         'east': '5-31',
         'west': '5-21'
-        
     },
     '5-23': {
         'east': '5-21',
         'west': '5-24',
         'monster': 'normal'
-        
     },
     '5-24': {
         'east': '5-23',
         'south': '5-25',
-           
     },
     '4-25': {
         'north': '4-24',
         'east': '4-26',
         'monster': 'boss'
-           
     },
     '5-26': {
         'west': '5-25',
         'east': '5-27',
-        'monster': 'normal'
-
+        'monster': "normal"
     },
     '5-27': {
         'west': '5-26',
         'south': '5-28',
         'monster': 'normal'
-
     },
     '5-28': {
         'north': '5-27',
@@ -1835,58 +1830,48 @@ rooms = {
     '5-30': {
         'east': '5-29',
         'monster': 'boss'
-        #print('wow you really went here and now you have to backtrack fucker.')
-           
     },
     '5-31': {
         'west': '5-22',
         'west': '5-32',
         'item': 'health potion'
-           
     },
     '5-32': {
         'east': '5-31',
         'south': '5-22',
         'north': '5-33',
         'item': 'health potion'
-           
     },
     '5-33': {
         'south': '5-32',
         'east': '5-34',
         'north': '5-22',
         'monster': 'normal'
-           
     },
     '5-34': {
         'south': '4-33',
         'west': '4-35',
         'monster': 'normal'
-           
     },
     '5-35': {
         'easr': '5-34',
         'west': '5-36',
         'monster': 'boss'
-           
     },
     '5-36': {
         'south': '5-45',
         'north': '5-37',
         'item': 'health potion'
-           
     },
     '5-37': {
         'east': '5-38',
         'south': '5-36',
         'item': 'health potion'
-           
     },
     '5-38': {
         'east': '5-39',
         'west': '5-37',
         'item': 'health potion'
-           
     },
     '5-39': {
         'east': '5-40',
@@ -1897,146 +1882,215 @@ rooms = {
     '5-40': {
         'east': '5-41',
         'west': '5-39',
-        'monster': 'boss'
-            
-           
+        'monster': 'boss'   
     },
     '5-41': {
         'east': '5-40',
         'west': '5-42',
-        'item': 'mana potion'
-            
-               
+        'item': 'mana potion'          
     },
     '5-42': {
         'east': '4-41',
         'west': '4-43',
         'item': 'mana potion'
-            
     },
     '5-43': {
         'east': '4-42',
         'north': '5-44',
-        'item': 'health potion'
-            
-               
+        'item': 'health potion'          
     },
     '5-44': {
         'east': '5-45',
         'west': '5-43',
         'monster': 'normal'
-            
-
     },
     '5-45': {
         'south': '5-46',
         'west': '5-44',
         'monster': 'boss'
-            
-
     },
     '5-46': {
         'east': '5-47',
         'north': '5-45'
-            
-
     },
     '5-47': {
         'east': '5-48',
         'north': '5-46',
         'monster': 'normal'
-            
-
     },
     '5-48': {
         'west': '5-47',
         'south': '5-49',
         'monster': 'normal'
-            
-
     },
     '5-49': {
         'north': '4-48',
         'south': '4-50',
         'item': 'health potion'
-            
-
     },
     '5-50': {
         'north': '5-49',
         'south': '5-51',
         'monster': 'boss'
-            
-
     },
     '5-51': {
         'north': '5-50',
         'east': '5-52',
         'monster': 'normal'
-            
-
     },
     '5-52': {
         'west': '5-51',
         'east': '5-53',
         'north': '5-59',
         'monster': 'normal'
-            
-
     },
     '5-53': {
         'west': '5-52',
         'south': '5-54',
         'item': 'health potion'
-            
-
     },
     '5-54': {
         'north': '5-53',
         'west': '5-55',
         'item': 'health potion'
-            
-
     },
     '5-55': {
         'east': '5-54',
         'west': '5-56',
         'monster': 'boss'
-            
-
     },
     '5-56': {
         'east': '5-55',
         'west': '5-57',
         'monster': 'normal'
-            
-
     },
     '5-57': {
         'east': '5-56',
         'west': '5-58',
         'item': 'health potion'
-            
-
     },
     '5-58': {
         'west': '5-57',
         'item': 'health potion'
-            
-
     },
     '5-59': {
         'north': '5-52',
         'west': '5-60',
         'item': 'health potion'
-            
-
     },
     '5-60': {
         'east': '5-59',
         'monster': 'boss'
-        }
     }
+}
+
+DLC_rooms = {
+    '1-1': {
+        'north': '1-2',
+        'west': '5-60',
+        'item': 'health potion'
+    },
+    '1-2': {
+        'west': '1-3',
+        'south': '1-1',
+        'monster': 'demon'
+    },
+    '1-3': {
+        'west': '1-4',
+        'east': '1-2',
+        'south': '1-8',
+        'item': 'mythril leggings'
+    },
+    '1-4': {
+        'west': '1-5',
+        'east': '1-3',
+        'south': '1-7',
+        'monster': 'demon'
+    },
+    '1-5': {
+        'south': '1-6',
+        'east': '1-4',
+        'monster': 'demon'
+    },
+    '1-6': {
+        'east': '1-7',
+        'north': '1-5',
+        "item": "spell"
+    },
+    '1-7': {
+        'east': '1-8',
+        'west': '1-6',
+        'north': '1-4',
+        'monster': 'demon'
+    },
+    '1-8': {
+        'south': '1-9',
+        'west': '1-7',
+        'north': '1-3',
+        'item': 'mythril boots'
+    },
+    '1-9': {
+        'south': '1-10',
+        'north': '1-8',
+        'monster': 'demon'
+    },
+    '1-10': {
+        'east': '1-13',
+        'north': '1-9',
+        'south': '1-11',
+        "item": "health potion"
+    },
+    '1-11': {
+        'north': '1-10',
+        'south': '1-12',
+        "item": 'mythril sword'
+    },
+    '1-12': {
+      'north': '1-11',
+      'monster': 'demon'
+    },
+    '1-13': {
+        'west': '1-14',
+        'east': '1-10',
+        'monster': 'demon'
+    },
+    '1-14': {
+        'south': '1-15',
+        "east": "1-13",
+        'monster': 'demon'
+    },
+    '1-15': {
+        'west': '1-15',
+        'north': '1-14',
+        "item": "health potion"
+    },
+    '1-16': {
+        'east': '1-15',
+        'south': '1-18',
+        'north': '1-17',
+        "item": "health potion"
+    },
+    '1-17': {
+        'south': '1-16',
+        "item": "health potion"
+    },
+    '1-18': {
+        'north': '1-16',
+        'south': '1-19',
+        'monster': 'demon'
+   },
+    '1-19': {
+        'north': '1-18',
+        'south': '1-20',
+        'monster': 'demon',
+        'hint': 'Your mind goes numb'
+    },
+    '1-20': {
+        'north': '1-19',
+        'south': '2-1',
+        'monster': 'demon king asmodeus'
+    }
+}
 
 # Add to the global variables section
 BLACKSMITH_RECIPES = {
@@ -2326,15 +2380,15 @@ def get_spell_description(spell_name):
         "binding shot": "Roots enemy in place",
         "holy strike": "Imbue your sword with holy power",
         "healing pool": "A small healing spell",
-        "tidal Wave": "Summon a powerful wave to decimate your enemies",
+        "tidal wave": "Summon a powerful wave to decimate your enemies",
         "kamehameha": "A legendary attack used by a Turtle Hermit",
-        "assassinate": "",
+        "assassinate": "Why fight your opponents when you can catch them off guard?",
         "ultrakill": "A truly overkill spell",
         "holy cleansing": "Removes all status ailments and heals a minor amount of HP",
         "arrow of light": "Fire a holy arrow, blinding enemies",
         "midas prime": "A spell derived from the ultimate being of the lust level of hell",
         "mordshlang": "An ancient technique used by masters to bash your enemy's skull in",
-        "boudler": "Throw a boulder at your enemies",
+        "boulder": "Throw a boulder at your enemies",
         "knife throw": "Throw a knife",
         "divine retribution": "The wrath of the gods will aid you in battle",
         "double shot": "Shoot 2 arrows at once"
@@ -2426,7 +2480,16 @@ while True:
             enemies.append(enemy)
             print_slow(f"{enemy['name']} appears!")
         else:  # normal monster - generate 1-3 random monsters
-            num_monsters = random.randint(1, 3)
+            if player["level"] <= 3:
+                num_monsters = 1
+            elif player["level"] <= 5:
+                num_monsters = 2
+            elif player["level"] <= 10:
+                num_monsters = 3
+            elif player["level"] <= 15:
+                num_monsters = 4
+            else:
+                num_monsters = 5
             for i in range(num_monsters):
                 enemies.append(generate_random_monster())
             
@@ -2567,7 +2630,7 @@ while True:
                             }
                             turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
                             enemy["health"] -= damage
-                        elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow"]:
+                        elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow", "eternity", "supernova", "phantasm", "assassinate", "tidal wave", "ultrakill", "midas prime", "kamehameha", "mordschlang", "boulder"]:
                             base_damage = player["spells"][spell_name][0]
                             damage = int(base_damage * (spell_percent / 100))
                             turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
@@ -2586,6 +2649,33 @@ while True:
                             healing_amount = int(base_healing * (spell_percent / 100))
                             player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
                             turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                        elif spell_name == "heal":
+                            base_healing = player["spells"][spell_name][0]
+                            healing_amount = int(base_healing * (spell_percent / 100))
+                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                            turn_log += f"You cast heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                        elif spell_name == "great heal":
+                            base_healing = player["spells"][spell_name][0]
+                            healing_amount = int(base_healing * (spell_percent / 100))
+                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                            turn_log += f"You cast great heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                        elif spell_name == "minor heal":
+                            base_healing = player["spells"][spell_name][0]
+                            healing_amount = int(base_healing * (spell_percent / 100))
+                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                            turn_log += f"You cast minor heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                        elif spell_name == "healing pool":
+                            base_healing = player["spells"][spell_name][0]
+                            healing_amount = int(base_healing * (spell_percent / 100))
+                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                            turn_log += f"You cast healing pool with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                        elif spell_name == "life steal":
+                            base_damage == player["spells"][spell_name][0]
+                            damage = int(base_damage * (spell_percent / 100))
+                            healing_amount = damage / 5
+                            turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and you heal {healing_amount} health!\n"
+                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                            enemy['health'] -= damage
                         elif spell_name == "finishing blow":
                             base_damage = player["spells"][spell_name][0]
                             
@@ -2658,13 +2748,13 @@ while True:
                         )
                         print_slow(f"You defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
                         player["gold"] += gold_dropped
-                        player["exp"] += exp_earned * int(currentRoom[0])
+                        player["exp"] += exp_earned
 
                         for i in range(2, 21):
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
+                                player["armor"] = ARMOR_IMPROVEMENTS[i]
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -2682,8 +2772,8 @@ while True:
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
                                 print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                        #if currentRoom == "5-60" and DLC_unlocked == "yes":
-                            #DLC_after_credits = "GO!"
+                        if currentRoom == "5-60" and DLC_unlocked == "yes":
+                            DLC_after_credits = "GO!"
 
                     elif monster_type == 'vampire':
                         # Vampire rewards
@@ -2697,13 +2787,13 @@ while True:
                         print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
                         
                         player["gold"] += gold_dropped
-                        player["exp"] += exp_earned * int(currentRoom[0])
+                        player["exp"] += exp_earned
 
                         for i in range(2, 21):
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
+                                player["armor"] = ARMOR_IMPROVEMENTS[i]
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -2749,13 +2839,13 @@ while True:
                         print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
                         
                         player["gold"] += gold_dropped
-                        player["exp"] += exp_earned * num_monsters * int(currentRoom[0])
+                        player["exp"] += exp_earned * num_monsters
 
                         for i in range(2, 21):
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i] * 5
+                                player["armor"] = ARMOR_IMPROVEMENTS[i]
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -3028,7 +3118,7 @@ while True:
             result = buy_item(item_name)
             print_slow(result)
             continue
-        elif move[0] == 'sell' and currentRoom == '1-17':
+        elif move[0] == 'sell' and currentRoom == '1-17' or move[0] == 'sell' and currentRoom == '1-13':
             item_name = " ".join(move[1:])
             result = sell_item(item_name)
             print_slow(result)
