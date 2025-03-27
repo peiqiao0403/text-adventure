@@ -27,9 +27,7 @@ rooms = {
         'south': '1-4',
         'west': '1-6',
         'monster': "normal",
-        'hint': 'For combat, you have 3 options. Fight, Defend and Cast. Fight allows you to attack the monster, If you type in (fight) a slider will pop up. Try to hit the middle of the slider to most damage possible!',
-        'hint': 'Defend makes you take less damage from the monsters next attack and allows you to build up mana.',
-        'hint': 'Cast will cast a spell, which will require mana to do. However, you need to unlock the spell before being able to cast it. You can do this by using spellbooks. To cast a spell, you will type in (cast(spell name))'
+        'hint': 'For combat, you have 3 options. Fight, Defend and Cast. Fight allows you to attack the monster, If you type in (fight) a slider will pop up. Try to hit the middle of the slider to most damage possible!\nDefend makes you take less damage from the monsters next attack and allows you to build up mana.\nCast will cast a spell, which will require mana to do. However, you need to unlock the spell before being able to cast it. You can do this by using spellbooks. To cast a spell, you will type in (cast(spell name))'
     },
     '1-6': {
         'west': '1-7',
