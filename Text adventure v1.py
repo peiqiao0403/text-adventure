@@ -541,29 +541,6 @@ LEVEL_IMPROVEMENTS = {
     20: 2
 }
 
-ARMOR_IMPROVEMENTS = {
-    1: 0,
-    2: 1,
-    3: 2,
-    4: 3,
-    5: 4,
-    6: 5,
-    7: 6,
-    8: 7,
-    9: 8,
-    10: 9,
-    11: 10,
-    12: 11,
-    13: 12,
-    14: 13,
-    15: 14,
-    16: 15,
-    17: 16,
-    18: 17,
-    19: 18,
-    20: 20
-}
-
 classes = {
     "Warrior": {
         "health": 120, 
@@ -621,9 +598,9 @@ classes = {
         },
     
     "Vampire": {
-        "health": 99999,
+        "health": 999,
         "armor": 0,
-        "mana": 99999,
+        "mana": 9999,
         "spells": {
             "lifesteal": [25, 30],
             "blood bomb": [25, 50]
@@ -734,7 +711,7 @@ def showStatus():
     print_slow(f'Mana: {player["mana"]}')
     print_slow(f'Gold: {player["gold"]}')
     print_slow(f'Class: {BLUE}{player["class"]}{RESET}')
-    print_slow(f'Secondary Class: {BLUE}{player["class 2"]}{RESET}')
+    print_slow(f'Secondary Class: {BLUE}{player["class"]}{RESET}')
     print_slow(f'Level: {player["level"]}')
     print_slow(f'Exp: {player["exp"]}')
     print_slow('Equipped Armor:')
@@ -742,6 +719,10 @@ def showStatus():
         if item:
             print_slow(f'- {slot}: {ITEM_COLOR}{item}{RESET}')
     show_inventory()
+    if "lore" in rooms[currentRoom]:
+        print_slow(f"{rooms[currentRoom]['lore']}{RESET}\n")
+    if "hint" in rooms[currentRoom]:
+        print_slow(f"{BLUE}{rooms[currentRoom]['hint']}{RESET}")
     if "item" in rooms[currentRoom]:
         if isinstance(rooms[currentRoom]["item"], list):
             items = rooms[currentRoom]["item"]
@@ -909,33 +890,38 @@ def remove_armor(slot=None):
 rooms = {
     '1-1': {
         "east": '1-2',
-        "item": "health potion"
+        "item": "health potion",
+        'lore': 'Lord Xyron has vanished. You need to get back to him.',
+        'hint': 'In this game, you use cardinal directions to travel. There are some keyboard shortcuts. EG - n for north, s for south, e for east, w for west.'
     },
     '1-2': {
         'north': '1-3',
         'west': '1-1',
-        "monster": "normal"
     },
     '1-3': {
         'west': '1-4',
         'south': '1-2',
-        'item': 'wooden sword'
+        'item': 'wooden sword',
+        'hint': 'To equip something, you type in (equip (itemname))'
     },
     '1-4': {
         'east': '1-3',
         'west': '1-15',
         'north': '1-5',
-        'item': 'chainmail boots'
+        'item': 'chainmail boots',
+        'hint': 'if you have multiple items in your inventory to equip, you can type in (i) to equip the best ones possible'
     },
     '1-5': {
         'south': '1-4',
         'west': '1-6',
-        'monster': "normal"
+        'hint': 'For combat, you have 3 options. Fight, Defend and Cast.\nFight allows you to attack the monster, If you type in (fight) a slider will pop up.\nTry to hit the middle of the slider to most damage possible!\nDefend makes you take less damage from the monsters next attack and allows you to build up mana.\nCast will cast a spell, which will require mana to do.\nHowever, you need to unlock the spell before being able to cast it.\nYou can do this by using spellbooks. To cast a spell, you will type in (cast(spell name))'
     },
     '1-6': {
         'west': '1-7',
         'east': '1-5',
-        "item": "mana potion"
+        'monster': "normal",
+        "item": "mana potion",
+        'hint': 'Mana potions instantly regain mana. You can use them inside our outside of combat by typing (use(mana potion))'
     },
     '1-7': {
         'east': '1-6',
@@ -953,12 +939,13 @@ rooms = {
         'west': '1-10',
         'south': '1-13',
         'east': '1-8',
-        "item": "key fragment"
+        "item": "key fragment",
+        'lore': 'The fragment made your mind go numb?'
     },
     '1-10': {
         'south': '1-11',
         'east': '1-9',
-        "item": "monster"
+        "monster": "normal"
     },
     '1-11': {
         'north': '1-10',
@@ -966,7 +953,7 @@ rooms = {
     },
     '1-12': {
         'south': '1-11',
-        'item': 'monster'
+        'monster': 'normal'
     },
     '1-13': {
         'east': '1-16',
@@ -981,7 +968,8 @@ rooms = {
     '1-15': {
         'east': '1-4',
         'north': '1-7',
-        "item": "health potion"
+        "item": "health potion",
+        'hint': 'health potions are used the same way as mana potions, except for the fact that they give health instead of mana. Type in the same command, which was: (use (health potion))'
     },
     '1-16': {
         'east': '1-1',
@@ -1001,7 +989,8 @@ rooms = {
     '1-19': {
         'west': '1-20',
         'east': '1-18',
-        'monster': "boss"
+        'monster': "boss",
+        'lore': 'You feel less violent'
     },
     '1-20': {
         'east': '1-19',
@@ -1019,11 +1008,13 @@ rooms = {
     },
     'dungeon-3': {
         'north': 'dungeon-2',
-        'monster': "vampire"
+        'monster': "vampire",
+        'lore': 'SOMETHING FEELS SUCCESFUL IN YOU.'
     },
     '2-1': {
-        'down': '1-20',
-        "north": '2-2'
+        'west': '1-20',
+        "north": '2-2',
+        'lore': 'Your sourroundings feel vague.'
     },
     '2-2': {
         'west': '2-3',
@@ -1066,6 +1057,7 @@ rooms = {
         'south': '2-10',
         'north': '2-13',
         'east': '2-8',
+        'west': '2-10',
         "item": "iron chestplate"
     },
     '2-10': {
@@ -1080,7 +1072,9 @@ rooms = {
     },
     '2-12': {
       'north': '2-11',
-      'monster': 'normal'
+      'west': '2-13',
+      'monster': 'normal',
+      'lore': 'screams echo around you...'
     },
     '2-13': {
         'east': '2-12',
@@ -1110,7 +1104,7 @@ rooms = {
     '2-18': {
         'west': '2-19',
         'east': '2-16',
-        'item': 'spell'
+        'item': 'spellbook'
    },
     '2-19': {
         'north': '2-20',
@@ -1169,7 +1163,8 @@ rooms = {
     '2-30': {
         'east': '2-29',
         'west': '3-1',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'you feel less greedy'
     },
     '3-1': {
         'east': '2-29',
@@ -1320,7 +1315,8 @@ rooms = {
     },
     '3-30': {
         'east': '3-29',
-        'item': 'health potion'
+        'item': 'health potion',
+        'lore': 'Something is... corrupting you with laziness'
             
     },
     '3-31': {
@@ -1382,12 +1378,14 @@ rooms = {
     '3-40': {
         'east': '4-1',
         'west': '3-39',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'You feel tired...'
 
     },
     '4-1': {
         'east': '3-40',
-        "west": '4-2'
+        "west": '4-2',
+        'lore': 'The tiredness fades away instantly'
         
     },
     '4-2': {
@@ -1504,13 +1502,15 @@ rooms = {
     '4-20': {
         'east': '4-19',
         'south': '4-21',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'Lust is overwhelming you.'
         
     },
     '4-21': {
         'north': '4-21',
         'south': '4-22',
-        'monster': 'normal'
+        'monster': 'normal',
+        'lore': 'The lust is gone. Vanished from you instantly.'
         
     },
     '4-22': {
@@ -1628,131 +1628,171 @@ rooms = {
         'east': '4-41',
         'west': '4-39',
         'monster': 'normal'
+            
+           
     },
     '4-41': {
         'east': '4-40',
         'west': '4-42',
         'item': 'mana potion'
+            
+               
     },
     '4-42': {
         'east': '4-41',
         'north': '4-44',
         'west': '4-43',
         'item': 'mana potion'
+            
     },
     '4-43': {
         'east': '4-42',
         'item': 'health potion'
+            
+               
     },
     '4-44': {
         'east': '4-45',
         'west': '4-43',
         'monster': 'normal'
+            
+
     },
     '4-45': {
         'south': '4-46',
         'west': '4-44'
+            
+
     },
     '4-46': {
         'east': '4-47',
         'north': '4-45'
+            
+
     },
     '4-47': {
         'east': '4-48',
         'north': '4-46',
         'south': '4-49'
+            
+
     },
     '4-48': {
         'west': '4-48',
         'monster': 'normal'
+            
+
     },
     '4-49': {
         'north': '4-47',
         'south': '4-50',
-        'item': 'health potion'
+        'item': 'health potion',
+        'lore': 'You feel if something terrible is coming...'
+        
+
     },
     '4-50': {
         'north': '4-49',
         'south': '5-1',
-        'monster': 'boss'          
+        'monster': 'boss',
+        'lore': 'You are taking pride in this fight. Maybe a bit TOO MUCH pride. Lord -y-o-n'
+            
+            
     },
     '5-1': {
         'east': '4-50',
-        "north": '5-2'
+        "north": '5-2',
+        'lore': 'The pride has gone away'
+        
     },
     '5-2': {
         'east': '5-1',
         'south': '5-3',
         'west': '5-12',
-        'monster': 'normal'  
+        'monster': 'normal'
+        
     },
     '5-3': {
         'west': '5-5',
         'south': '5-4',
         'north': '5-2',
         'east': '5-17',
-        'item': 'health potion'   
+        'item': 'health potion'
+        
     },
     '5-4': {
         'south': '5-3',
         'east': '5-6',
-        'monster': 'normal'   
+        'monster': 'normal'
+        
     },
     '5-5': {
         'east': '5-3',
         'north': '5-10',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'This doesnt feel right.'
+        
     },
     '5-6': {
         'west': '5-50',
         'south': '5-7',
         'north': '5-15',
         "monster": "normal"
+        
     },
     '5-7': {
         'east': '5-8',
         'north': '5-6',
         'item': 'health potion'
+        
     },
     '5-8': {
         'west': '5-7',
         'north': '5-9',
         'monster': 'normal'
+        
     },
     '5-9': {
         'south': '5-8',
         'north': '5-10',
         'monster': 'normal'
+        
     },
     '5-10': {
         'south': '5-9',
         'north': '5-11',
         "monster": "boss"
+        
     },
     '5-11': {
         'west': '5-12',
         'south': '5-10',
         "item": 'mana potion'
+        
     },
     '5-12': {
       'east': '5-11',
       'south': '5-13',
       'item': 'health potion'
+        
     },
     '5-13': {
         'south': '5-14',
         'north': '5-12',
         'monster': 'normal',
+        
     },
     '5-14': {
         'north': '5-13',
         'west': '5-15',
         'monster': 'normal'
+        
     },
     '5-15': {
         'south': '5-16',
         'east': '5-14',
         "item": "wooden sword"
+        
     },
     '5-16': {
         'west': '4-16',
@@ -1760,62 +1800,74 @@ rooms = {
         'north': '5-15',
         'east': '5-17',
         'monster': 'normal'
+        
     },
     '5-17': {
         'north': '5-18',
         'west': '5-16',
         'monster': 'normal'
+        
     },
     '5-18': {
         'south': '5-17',
         'east': '5-19',
         'monster': 'normal'
+        
    },
     '5-19': {
         'north': '5-18',
         'west': '5-20',
         'item': 'health potion'
+        
     },
     '5-20': {
         'east': '5-19',
         'south': '5-21',
         'monster': 'boss'
+        
     },
     '5-21': {
         'north': '5-20',
         'east': '5-22',
         'west': '5-23',
         'monster': 'normal'
+        
     },
     '5-22': {
         'south': '5-33',
         'north': '5-32',
         'east': '5-31',
         'west': '5-21'
+        
     },
     '5-23': {
         'east': '5-21',
         'west': '5-24',
         'monster': 'normal'
+        
     },
     '5-24': {
         'east': '5-23',
         'south': '5-25',
+           
     },
     '4-25': {
         'north': '4-24',
         'east': '4-26',
         'monster': 'boss'
+           
     },
     '5-26': {
         'west': '5-25',
         'east': '5-27',
-        'monster': "normal"
+        'monster': 'normal'
+
     },
     '5-27': {
         'west': '5-26',
         'south': '5-28',
         'monster': 'normal'
+
     },
     '5-28': {
         'north': '5-27',
@@ -1829,49 +1881,59 @@ rooms = {
     },
     '5-30': {
         'east': '5-29',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'you feel sick.'
+           
     },
     '5-31': {
         'west': '5-22',
         'west': '5-32',
         'item': 'health potion'
+           
     },
     '5-32': {
         'east': '5-31',
         'south': '5-22',
         'north': '5-33',
         'item': 'health potion'
+           
     },
     '5-33': {
         'south': '5-32',
         'east': '5-34',
         'north': '5-22',
         'monster': 'normal'
+           
     },
     '5-34': {
         'south': '4-33',
         'west': '4-35',
         'monster': 'normal'
+           
     },
     '5-35': {
         'easr': '5-34',
         'west': '5-36',
         'monster': 'boss'
+           
     },
     '5-36': {
         'south': '5-45',
         'north': '5-37',
         'item': 'health potion'
+           
     },
     '5-37': {
         'east': '5-38',
         'south': '5-36',
         'item': 'health potion'
+           
     },
     '5-38': {
         'east': '5-39',
         'west': '5-37',
         'item': 'health potion'
+           
     },
     '5-39': {
         'east': '5-40',
@@ -1882,105 +1944,149 @@ rooms = {
     '5-40': {
         'east': '5-41',
         'west': '5-39',
-        'monster': 'boss'   
+        'monster': 'boss',
+        'lore': 'NOTHING IN THIS WORLD IS RIGHT'
+            
+           
     },
     '5-41': {
         'east': '5-40',
         'west': '5-42',
-        'item': 'mana potion'          
+        'item': 'mana potion'
+            
+               
     },
     '5-42': {
         'east': '4-41',
         'west': '4-43',
         'item': 'mana potion'
+            
     },
     '5-43': {
         'east': '4-42',
         'north': '5-44',
-        'item': 'health potion'          
+        'item': 'health potion'
+            
+               
     },
     '5-44': {
         'east': '5-45',
         'west': '5-43',
         'monster': 'normal'
+            
+
     },
     '5-45': {
         'south': '5-46',
         'west': '5-44',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'ALL YOUR EFFORTS ARE FOR NOTHING.'
+            
+
     },
     '5-46': {
         'east': '5-47',
         'north': '5-45'
+            
+
     },
     '5-47': {
         'east': '5-48',
         'north': '5-46',
         'monster': 'normal'
+            
+
     },
     '5-48': {
         'west': '5-47',
         'south': '5-49',
         'monster': 'normal'
+            
+
     },
     '5-49': {
         'north': '4-48',
         'south': '4-50',
         'item': 'health potion'
+            
+
     },
     '5-50': {
         'north': '5-49',
         'south': '5-51',
-        'monster': 'boss'
+        'monster': 'boss',
+        'lore': 'ITS NOT FAIR'
+            
+
     },
     '5-51': {
         'north': '5-50',
         'east': '5-52',
         'monster': 'normal'
+            
+
     },
     '5-52': {
         'west': '5-51',
         'east': '5-53',
         'north': '5-59',
         'monster': 'normal'
+            
+
     },
     '5-53': {
         'west': '5-52',
         'south': '5-54',
         'item': 'health potion'
+            
+
     },
     '5-54': {
         'north': '5-53',
         'west': '5-55',
         'item': 'health potion'
+            
+
     },
     '5-55': {
         'east': '5-54',
         'west': '5-56',
         'monster': 'boss'
+            
+
     },
     '5-56': {
         'east': '5-55',
         'west': '5-57',
         'monster': 'normal'
+            
+
     },
     '5-57': {
         'east': '5-56',
         'west': '5-58',
         'item': 'health potion'
+            
+
     },
     '5-58': {
         'west': '5-57',
         'item': 'health potion'
+            
+
     },
     '5-59': {
         'north': '5-52',
         'west': '5-60',
         'item': 'health potion'
+            
+
     },
     '5-60': {
         'east': '5-59',
-        'monster': 'boss'
+        'monster': 'boss',
+        "lore": 'You can escape. BUT ONLY IF YOU MAKE YOUR EFFORTS WORTH IT AND DEFEAT THAT BOSS.'
+            
     }
 }
 
@@ -2082,53 +2188,14 @@ DLC_rooms = {
     '1-19': {
         'north': '1-18',
         'south': '1-20',
-        'monster': 'demon',
-        'hint': 'Your mind goes numb'
+        'monster': 'demon'
     },
     '1-20': {
         'north': '1-19',
         'south': '2-1',
         'monster': 'demon king asmodeus'
     }
-}
 
-# Add to the global variables section
-BLACKSMITH_RECIPES = {
-    'bleeding key': {
-        'materials': {'key fragment': 3},
-        'price': 0,
-        'description': 'Opens the dungeon entrance'
-    },
-    'iron sword': {
-        'materials': {},
-        'price': 200,
-        'description': '+10 attack damage'
-    },
-    'steel sword': {
-        'materials': {},
-        'price': 300,
-        'description': '+15 attack damage'
-    },
-    'iron helmet': {
-        'materials': {},
-        'price': 150,
-        'description': '+15 defense'
-    },
-    'iron chestplate': {
-        'materials': {},
-        'price': 200,
-        'description': '+15 defense'
-    },
-    'iron pants': {
-        'materials': {},
-        'price': 180,
-        'description': '+15 defense'
-    },
-    'iron boots': {
-        'materials': {},
-        'price': 120,
-        'description': '+15 defense'
-    }
 }
 
 # Game setup
@@ -2146,7 +2213,7 @@ print_slow("Welcome to the Text Hero!")
 print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
 chosen_class = input(GREEN + "> ").capitalize()
 clear_screen()
-DLC_unlocked = "yes"
+DLC_unlocked = "no"
 DLC_after_credits = "NO!"
 
 if chosen_class not in classes:
@@ -2185,7 +2252,7 @@ player = {
     "armor": classes[chosen_class]["armor"],
     "mana": classes[chosen_class]["mana"],
     "class": chosen_class,
-    "class 2": None,
+    "class": None,
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
@@ -2210,7 +2277,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['spell book','spell book','spell book']
+inventory = ['spell book','spell book','spell book','vampire pendant']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -2443,9 +2510,7 @@ while True:
     if currentRoom == '5-60':
         display_credits()
         exit()
-    # Automatic combat initiation when a monster is present
-    if "hint" in rooms[currentRoom]:
-        print_slow(f"{BLUE}Hint: {rooms[currentRoom]['hint']}{RESET}")
+
     if "monster" in rooms[currentRoom]:
         clear_screen()
         # Determine monster type
@@ -2754,7 +2819,6 @@ while True:
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i]
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -2762,12 +2826,11 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
                                 print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
                                 print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
-                        if player["level"] >= 15 and player["class 2"] == None:
-                            player["class 2"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player["class 2"]]
+                        if player["level"] >= 15 and player["class"] == None:
+                            player["class"] = class_to_get_to_tier_2[player["class"]]
+                            player["spells"] = spells_tier_2[player["class"]]
                             if player["class"] == "Rogue" or player["class"] == "Mage":
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
@@ -2793,7 +2856,6 @@ while True:
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i]
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -2801,12 +2863,11 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
                                 print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
                                 print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
-                        if player["level"] >= 15 and player["class 2"] == None:
-                            player["class 2"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player["class 2"]]
+                        if player["level"] >= 15 and player["class"] == None:
+                            player["class"] = class_to_get_to_tier_2[player["class"]]
+                            player["spells"] = spells_tier_2[player["class"]]
                             if player["class"] == "Rogue" or player["class"] == "Mage":
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
@@ -2845,7 +2906,6 @@ while True:
                             if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
                                 player["level"] = i
                                 player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["armor"] = ARMOR_IMPROVEMENTS[i]
                                 player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
                                 player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
                                 print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
@@ -2853,12 +2913,11 @@ while True:
                                 print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
                                 print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
                                 print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
                             else:
                                 pass
-                        if player["level"] >= 15 and player["class 2"] == None:
-                            player["class 2"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player["class 2"]]
+                        if player["level"] >= 15 and player["class"] == None:
+                            player["class"] = class_to_get_to_tier_2[player["class"]]
+                            player["spells"] = spells_tier_2[player["class"]]
                             if player["class"] == "Rogue" or player["class"] == "Mage":
                                 print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                             else:
@@ -2969,7 +3028,7 @@ while True:
                 showHelp()
             continue
         # Add to the main game loop command handling
-        elif move[0] in ['save', 's']:
+        elif move[0] in ['save']:
             save_game()
             continue
         elif move[0] in ['load', 'l']:
@@ -3045,9 +3104,10 @@ while True:
                 
                 # Count how many of the item we have
                 item_count = inventory.count(item_name)
-                
+
                 if item_count >= quantity:
                     for _ in range(quantity):
+
                         if item_name == "health potion":
                             player["health"] = min(classes[player["class"]]["health"], player["health"] + 30)
                             inventory.remove("health potion")
@@ -3057,7 +3117,7 @@ while True:
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
                         elif item_name == "spell book":
-                            display_spell_book(player["class"], player["class 2"])
+                            display_spell_book(player["class"], player["class"])
                             spell = input(GREEN + "> ").lower()
                             clear_screen()
                             if spell == "exit":
