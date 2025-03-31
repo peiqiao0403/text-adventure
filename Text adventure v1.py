@@ -192,12 +192,15 @@ def display_credits():
             f"\n",
             f"{BLUE}Development Team:{RESET}\n",
             f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
-            f"Developer & Music Composer: {BLUE}Arnesito{RESET}\n",
+            f"Developer & Music Composer: {BLUE}arnesito{RESET}\n",
             f"Developer & Designer: {BLUE}Moltd{RESET}\n",
             "\n",
+            f"{BLUE}DLC Development Team:{RESET}\n",
+            f"DLC Developer & Music Composer: {BLUE}arnesito{RESET}\n",
+            "\n"
             f"{BLUE}Music Composition:{RESET}\n",
             f"Tryangle\n",
-            f"Arnesito\n",
+            f"arnesito\n",
             "\n",
             f"{BLUE}Quality Assurance Team:{RESET}\n",
             f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
@@ -225,44 +228,8 @@ def display_credits():
             f"{BLUE}Thanks for Playing!{RESET}\n",
             f"{BLUE}press enter to quit{RESET}"
         ]
-    elif DLC_after_credits == "GO!":
-        credits = [
-            f"\n",
-            f"{BLUE}Development Team:{RESET}\n",
-            f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
-            f"Developer & Music Composer: {BLUE}Arnesito{RESET}\n",
-            f"Developer & Designer: {BLUE}Moltd{RESET}\n",
-            "\n",
-            f"{BLUE}Music Composition:{RESET}\n",
-            f"Tryangle\n",
-            f"Arnesito\n",
-            "\n",
-            f"{BLUE}Quality Assurance Team:{RESET}\n",
-            f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
-            "\n",
-            f"{BLUE}Playtesting Team:{RESET}\n",
-            f"{GREEN}David Sucks At Life{RESET}\n",
-            f"{GREEN}Bee1949{RESET}\n",
-            f"{GREEN}Not Guy Stew{RESET}\n",
-            f"{GREEN}Vroom Vroom Snail{RESET}\n",
-            "\n",
-            f"{BLUE}Game Features:{RESET}\n",
-            "10 Unique Classes\n",
-            "90+ Rooms to Explore\n",
-            "3+ Levels to Defeat\n",
-            "50+ Items to Collect\n",
-            "32+ Monsters to Battle\n",
-            "Leveling up system\n",
-            "\n",
-            f"{BLUE}Technical Details:{RESET}\n",
-            "Custom ANSI Color System\n",
-            "Dynamic Combat Engine\n",
-                "Save/Load System\n",
-            "Crafting System\n",
-            "\n",
-            f"{BLUE}Thanks for Playing!{RESET}\n",
-            f"{BLUE}Press enter to start the DLC!{RESET}"
-        ]
+        input()
+        quit()
     
     screen_width = 50
     for line in credits:
@@ -274,14 +241,16 @@ def display_credits():
             time.sleep(0.5)  # Longer pause for empty lines
         else:
             time.sleep(0.1)
-            
-    input()
-    quit()
+        
 # Define armor tiers and their properties
 ARMOR_TIERS = {
-    'leather': {'defense': 5, 'weight': 1},
-    'chainmail': {'defense': 10, 'weight': 2},
-    'iron': {'defense': 15, 'weight': 3}
+    'leather': {'defense': 1},
+    'chainmail': {'defense': 3},
+    'iron': {'defense': 5},
+    'mythril': {'defense': 7},
+    'adamantite': {'defense': 10},
+    'hallowed': {'defense': 12},
+    'god slayer': {'defense': 15}
 }
 
 # Add sword tiers
@@ -289,7 +258,10 @@ SWORD_TIERS = {
     'wooden': {'damage': 5},
     'iron': {'damage': 10},
     'steel': {'damage': 15},
-    'mythril': {'damage': 30}
+    'mythril': {'damage': 20},
+    'adamantite': {'damage': 25},
+    'hallowed': {'damage': 35},
+    'god slayer': {'damage': 50}
 }
 def print_credits(text):
     
@@ -390,10 +362,10 @@ MARKET_ITEMS = {
 }
 # Define armor slots and their available items
 ARMOR_SLOTS = {
-    'helmet': ['leather', 'chainmail', 'iron'],
-    'chestplate': ['leather', 'chainmail', 'iron'],
-    'pants': ['leather', 'chainmail', 'iron'],
-    'boots': ['leather', 'chainmail', 'iron']
+    'helmet': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer'],
+    'chestplate': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer'],
+    'pants': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer'],
+    'boots': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer']
 }
 
 MONSTER_TYPES = {
@@ -440,34 +412,61 @@ MONSTER_TYPES = {
         'attack_min': 50,
         'attack_max': 60,
         'gold_drop_range': 1000,
-        "exp_drop_range": 150,
+        "exp_drop_range": 500,
         'item_drop_chance': 0
     },
     'demon king asmodeus': {
         'name': 'Demon King Asmodeus',
-        'health': 500,
+        'health': 400,
         'attack_min': 30,
         'attack_max': 40,
         'gold_drop_range': 1000,
-        "exp_drop_range": 150,
+        "exp_drop_range": 500,
+        'item_drop_chance': 0
+    },
+    'demon king leviathan': {
+        'name': 'Demon King Leviathan',
+        'health': 500,
+        'attack_min': 40,
+        'attack_max': 50,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 500,
+        'item_drop_chance': 0
+    },
+    'demon king belphegor': {
+        'name': 'Demon King Belphegor',
+        'health': 600,
+        'attack_min': 30,
+        'attack_max': 45,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 500,
         'item_drop_chance': 0
     },
     'demon king beelzebub': {
         'name': 'Demon King Beelzebub',
         'health': 750,
-        'attack_min': 10,
-        'attack_max': 20,
+        'attack_min': 35,
+        'attack_max': 45,
         'gold_drop_range': 1000,
-        "exp_drop_range": 150,
+        "exp_drop_range": 500,
         'item_drop_chance': 0
     },
     'demon king mammon': {
         'name': 'Demon King Mammon',
         'health': 1000,
-        'attack_min': 20,
-        'attack_max': 25,
+        'attack_min': 25,
+        'attack_max': 35,
         'gold_drop_range': 1000,
-        "exp_drop_range": 200,
+        "exp_drop_range": 500,
+        'item_drop_chance': 0
+    },
+    'demon king satan': {
+        'name': 'Demon King Satan',
+        'health': 1000,
+        'attack_min': 50,
+        'attack_max': 75,
+        'gold_drop_range': 1000,
+        "exp_drop_range": 1000,
         'item_drop_chance': 0
     }
 }
@@ -492,7 +491,37 @@ EXP_TO_GET_TO_LEVEL2 = {
     17: 320,
     18: 380,
     19: 440,
-    20: 500
+    20: 500,
+    21: 600,
+    22: 700,
+    23: 800,
+    24: 900,
+    25: 1000,
+    26: 1100,
+    27: 1200,
+    28: 1300,
+    29: 1400,
+    30: 1500,
+    31: 1600,
+    32: 1700,
+    33: 1800,
+    34: 1900,
+    35: 2000,
+    36: 2100,
+    37: 2200,
+    38: 2300,
+    39: 2400,
+    40: 2500,
+    41: 2600,
+    42: 2700,
+    43: 2800,
+    44: 2900,
+    45: 3000,
+    46: 3200,
+    47: 3400,
+    48: 3600,
+    49: 3800,
+    50: 4000
 }
 
 EXP_TO_GET_TO_LEVEL = {
@@ -515,7 +544,37 @@ EXP_TO_GET_TO_LEVEL = {
     320: 17,
     380: 18,
     440: 19,
-    500: 20
+    500: 20,
+    600: 21,
+    700: 22,
+    800: 23,
+    900: 24,
+    1000: 25,
+    1100: 26,
+    1200: 27,
+    1300: 28,
+    1400: 29,
+    1500: 30,
+    1600: 31,
+    1700: 32,
+    1800: 33,
+    1900: 34,
+    2000: 35,
+    2100: 36,
+    2200: 37,
+    2300: 38,
+    2400: 39,
+    2500: 40,
+    2600: 41,
+    2700: 42,
+    2800: 43,
+    2900: 44,
+    3000: 45,
+    3200: 46,
+    3400: 47,
+    3600: 48,
+    3800: 49,
+    4000: 50
 }
 
 LEVEL_IMPROVEMENTS = {
@@ -538,7 +597,59 @@ LEVEL_IMPROVEMENTS = {
     17: 1.8,
     18: 1.85,
     19: 1.9,
-    20: 2
+    20: 2,
+    21: 2.1,
+    22: 2.2,
+    23: 2.3,
+    24: 2.4,
+    25: 2.5,
+    26: 2.6,
+    27: 2.7,
+    28: 2.8,
+    29: 2.9,
+    30: 3,
+    31: 3.1,
+    32: 3.2,
+    33: 3.3,
+    34: 3.4,
+    35: 3.5,
+    36: 3.6,
+    37: 3.7,
+    38: 3.8,
+    39: 3.9,
+    40: 4,
+    41: 4.1,
+    42: 4.2,
+    43: 4.3,
+    44: 4.4,
+    45: 4.5,
+    46: 4.6,
+    47: 4.7,
+    48: 4.8,
+    49: 4.9,
+    50: 5
+}
+
+ARMOR_IMPROVEMENTS = {
+    1: 0,
+    2: 1,
+    3: 2,
+    4: 3,
+    5: 4,
+    6: 5,
+    7: 6,
+    8: 7,
+    9: 8,
+    10: 9,
+    11: 10,
+    12: 11,
+    13: 12,
+    14: 13,
+    15: 14,
+    16: 15,
+    17: 16,
+    18: 17,
+    19: 18
 }
 
 classes = {
@@ -711,7 +822,7 @@ def showStatus():
     print_slow(f'Mana: {player["mana"]}')
     print_slow(f'Gold: {player["gold"]}')
     print_slow(f'Class: {BLUE}{player["class"]}{RESET}')
-    print_slow(f'Secondary Class: {BLUE}{player["class"]}{RESET}')
+    print_slow(f'Secondary Class: {BLUE}{player["class 2"]}{RESET}')
     print_slow(f'Level: {player["level"]}')
     print_slow(f'Exp: {player["exp"]}')
     print_slow('Equipped Armor:')
@@ -940,7 +1051,6 @@ rooms = {
         'south': '1-13',
         'east': '1-8',
         "item": "key fragment",
-        'lore': 'The fragment made your mind go numb?'
     },
     '1-10': {
         'south': '1-11',
@@ -990,7 +1100,6 @@ rooms = {
         'west': '1-20',
         'east': '1-18',
         'monster': "boss",
-        'lore': 'You feel less violent'
     },
     '1-20': {
         'east': '1-19',
@@ -1074,7 +1183,6 @@ rooms = {
       'north': '2-11',
       'west': '2-13',
       'monster': 'normal',
-      'lore': 'screams echo around you...'
     },
     '2-13': {
         'east': '2-12',
@@ -1084,7 +1192,7 @@ rooms = {
     '2-14': {
         'south': '2-13',
         "west": "2-16",
-        "item": "chainmail leggings"
+        "item": "chainmail pants"
     },
     '2-15': {
         'east': '2-4',
@@ -1105,7 +1213,7 @@ rooms = {
         'west': '2-19',
         'east': '2-16',
         'item': 'spellbook'
-   },
+    },
     '2-19': {
         'north': '2-20',
         'east': '2-18',
@@ -1179,7 +1287,7 @@ rooms = {
         'west': '3-2',
         'east': '3-4',
         'south': '3-7',
-        'item': 'iron leggings'
+        'item': 'iron pants'
     },
     '3-4': {
         'west': '3-3',
@@ -1315,9 +1423,7 @@ rooms = {
     },
     '3-30': {
         'east': '3-29',
-        'item': 'health potion',
-        'lore': 'Something is... corrupting you with laziness'
-            
+        'item': 'health potion',       
     },
     '3-31': {
         'east': '3-6',
@@ -1379,14 +1485,10 @@ rooms = {
         'east': '4-1',
         'west': '3-39',
         'monster': 'boss',
-        'lore': 'You feel tired...'
-
     },
     '4-1': {
         'east': '3-40',
         "west": '4-2',
-        'lore': 'The tiredness fades away instantly'
-        
     },
     '4-2': {
         'east': '4-1',
@@ -1492,7 +1594,7 @@ rooms = {
         'east': '4-17',
         'monster': 'normal'
         
-   },
+    },
     '4-19': {
         'north': '4-18',
         'west': '4-20',
@@ -1503,14 +1605,12 @@ rooms = {
         'east': '4-19',
         'south': '4-21',
         'monster': 'boss',
-        'lore': 'Lust is overwhelming you.'
         
     },
     '4-21': {
         'north': '4-21',
         'south': '4-22',
         'monster': 'normal',
-        'lore': 'The lust is gone. Vanished from you instantly.'
         
     },
     '4-22': {
@@ -1695,14 +1795,12 @@ rooms = {
         'north': '4-49',
         'south': '5-1',
         'monster': 'boss',
-        'lore': 'You are taking pride in this fight. Maybe a bit TOO MUCH pride. Lord -y-o-n'
             
             
     },
     '5-1': {
         'east': '4-50',
         "north": '5-2',
-        'lore': 'The pride has gone away'
         
     },
     '5-2': {
@@ -2087,115 +2185,441 @@ rooms = {
         'monster': 'boss',
         "lore": 'You can escape. BUT ONLY IF YOU MAKE YOUR EFFORTS WORTH IT AND DEFEAT THAT BOSS.'
             
+    },
+        '1~1': {
+        'north': '1~2',
+        'item': 'health potion',
+        'lore': 'hehe, lol jk'
+    },
+    '1~2': {
+        'west': '1~3',
+        'south': '1~1',
+        'monster': 'demon'
+    },
+    '1~3': {
+        'west': '1~4',
+        'east': '1~2',
+        'south': '1~8',
+        'item': 'mythril pants'
+    },
+    '1~4': {
+        'west': '1~5',
+        'east': '1~3',
+        'south': '1~7',
+        'monster': 'demon'
+    },
+    '1~5': {
+        'south': '1~6',
+        'east': '1~4',
+        'monster': 'demon'
+    },
+    '1~6': {
+        'east': '1~7',
+        'north': '1~5',
+        "item": "health potion"
+    },
+    '1~7': {
+        'east': '1~8',
+        'west': '1~6',
+        'north': '1~4',
+        'monster': 'demon'
+    },
+    '1~8': {
+        'south': '1~9',
+        'west': '1~7',
+        'north': '1~3',
+        'item': 'mythril boots'
+    },
+    '1~9': {
+        'south': '1~10',
+        'north': '1~8',
+        'monster': 'demon'
+    },
+    '1~10': {
+        'east': '1~13',
+        'north': '1~9',
+        'south': '1~11',
+        "item": "health potion"
+    },
+    '1~11': {
+        'north': '1~10',
+        'south': '1~12',
+        "item": 'mythril sword'
+    },
+    '1~12': {
+      'north': '1~11',
+      'monster': 'demon'
+    },
+    '1~13': {
+        'west': '1~14',
+        'east': '1~10',
+        'monster': 'demon'
+    },
+    '1~14': {
+        'south': '1~15',
+        "east": "1~13",
+        'monster': 'demon'
+    },
+    '1~15': {
+        'west': '1~15',
+        'north': '1~14',
+        "item": "health potion"
+    },
+    '1~16': {
+        'east': '1~15',
+        'south': '1~18',
+        'north': '1~17',
+        "item": "mythril helmet"
+    },
+    '1~17': {
+        'south': '1~16',
+        "item": "health potion"
+    },
+    '1~18': {
+        'north': '1~16',
+        'south': '1~19',
+        'monster': 'demon'
+    },
+    '1~19': {
+        'north': '1~18',
+        'south': '1~20',
+        'item': 'mythril chestplate',
+        'lore': "You feel an evil presence watching you..."
+    },
+    '1~20': {
+        'north': '1~19',
+        'up': '2~1',
+        'monster': 'demon king lucifer'
+    },
+    '2~1': {
+        'down': '1~20',
+        'west': '2~2',
+        'item': 'health potion',
+    },
+    '2~2': {
+        'east': '2~1',
+        'north': '2~3',
+        'monster': 'demon'
+    },
+    '2~3': {
+        'west': '2~4',
+        'south': '2~2',
+        'monster': 'demon'
+    },
+    '2~4': {
+        'west': '2~8',
+        'east': '2~3',
+        'north': '2~5',
+        'monster': 'demon'
+    },
+    '2~5': {
+        'south': '2~4',
+        'east': '2~6',
+        'monster': 'demon'
+    },
+    '2~6': {
+        'west': '2~5',
+        'north': '2~7',
+        "item": "health potion"
+    },
+    '2~7': {
+        'south': '2~6',
+        'monster': 'demon'
+    },
+    '2~8': {
+        'south': '2~9',
+        'east': '2~4',
+        'north': '2~14',
+        'monster': 'demon'
+    },
+    '2~9': {
+        'east': '2~10',
+        'north': '2~8',
+        'monster': 'demon'
+    },
+    '2~10': {
+        'east': '2~13',
+        'west': '2~9',
+        'north': '2~11',
+        'monster': 'demon'
+    },
+    '2~11': {
+        'east': '2~12',
+        'south': '2~10',
+        'item': 'health potion'
+    },
+    '2~12': {
+      'south': '2~13',
+      'monster': 'demon'
+    },
+    '2~13': {
+        'west': '2~10',
+        'north': '2~12',
+        'monster': 'demon'
+    },
+    '2~14': {
+        'south': '2~8',
+        "east": "2~15",
+        'monster': 'demon'
+    },
+    '2~15': {
+        'west': '2~14',
+        'north': '2~16',
+        'monster': 'demon'
+    },
+    '2~16': {
+        'north': '2~18',
+        'south': '2~15',
+        'west': '2~17',
+        'item': 'health potion'
+    },
+    '2~17': {
+        'west': '2~16',
+        'north': '2~19',
+        'monster': 'demon'
+    },
+    '2~18': {
+        'east': '2~20',
+        'south': '2~16',
+        'item': 'health potion',
+        'lore': "You feel vibrations from deep below..."
+    },
+    '2~19': {
+        'south': '2~17',
+        'monster': 'demon'
+    },
+    '2~20': {
+        'west': '2~18',
+        'up': '3~3',
+        'warp 1': '2~11',
+        'monster': 'demon king asmodeus'
+    },
+    '3~1': {
+        'north': '3~2',
+        'monster': 'demon'
+    },
+    '3~2': {
+        'south': '3~1',
+        'east': '3~3',
+        'monster': 'demon'
+    },
+    '3~3': {
+        'west': '3~2',
+        'down': '2~20',
+        'north': '3~4',
+        'east': '3~8',
+        'south': '3~16',
+        'monster': 'demon'
+    },
+    '3~4': {
+        'south': '3~3',
+        'east': '3~5',
+        'monster': 'demon'
+    },
+    '3~5': {
+        'south': '3~6',
+        'west': '3~4',
+        'monster': 'demon'
+    },
+    '3~6': {
+        'east': '3~7',
+        'north': '3~5',
+        'monster': 'demon'
+    },
+    '3~7': {
+        'west': '3~6',
+        'monster': 'demon'
+    },
+    '3~8': {
+        'east': '3~7',
+        'west': '3~7',
+        'monster': 'demon'
+    },
+    '3~9': {
+        'west': '3~10',
+        'monster': 'demon'
+    },
+    '3~10': {
+        'east': '3~16',
+        'north': '3~9',
+        'west': '3~11',
+        'monster': 'demon'
+    },
+    '3~11': {
+        'east': '3~10',
+        'item': 'health potion'
+    },
+    '3~12': {
+      'south': '3~18',
+      'north': '3~16',
+      'monster': 'demon'
+    },
+    '3~13': {
+        'west': '3~14',
+        'north': '3~19',
+        'monster': 'demon'
+    },
+    '3~14': {
+        'south': '3~15',
+        "east": "3~13",
+        'monster': 'demon'
+    },
+    '3~15': {
+        'north': '3~15',
+        'item': 'health potion'
+    },
+    '3~16': {
+        'north': '3~3',
+        'south': '3~12',
+        'west': '3~10',
+        'monster': 'demon'
+    },
+    '3~17': {
+        'west': '3~19',
+        'south': '3~20',
+        'item': 'health potion',
+        'lore': "This is going to be a terrible night..."
+    },
+    '3~18': {
+        'north': '3~12',
+        'monster': 'demon'
+    },
+    '3~19': {
+        'east': '3~17',
+        'south': '1~13',
+        'monster': 'demon'
+    },
+    '3~20': {
+        'north': '3~17',
+        'up': '4~2',
+        'monster': 'demon king leviathan'
     }
 }
 
-DLC_rooms = {
-    '1-1': {
-        'north': '1-2',
-        'west': '5-60',
-        'item': 'health potion'
+BLACKSMITH_RECIPES = {
+    'bleeding key': {
+        'materials': {'key fragment': 3},
+        'price': 0,
+        'description': 'Opens the dungeon entrance'
     },
-    '1-2': {
-        'west': '1-3',
-        'south': '1-1',
-        'monster': 'demon'
+    'iron sword': {
+        'materials': {},
+        'price': 200,
+        'description': '+10 attack damage'
     },
-    '1-3': {
-        'west': '1-4',
-        'east': '1-2',
-        'south': '1-8',
-        'item': 'mythril leggings'
+    'steel sword': {
+        'materials': {},
+        'price': 300,
+        'description': '+15 attack damage'
     },
-    '1-4': {
-        'west': '1-5',
-        'east': '1-3',
-        'south': '1-7',
-        'monster': 'demon'
+    'iron helmet': {
+        'materials': {},
+        'price': 150,
+        'description': '+15 defense'
     },
-    '1-5': {
-        'south': '1-6',
-        'east': '1-4',
-        'monster': 'demon'
+    'iron chestplate': {
+        'materials': {},
+        'price': 200,
+        'description': '+15 defense'
     },
-    '1-6': {
-        'east': '1-7',
-        'north': '1-5',
-        "item": "spell"
+    'iron pants': {
+        'materials': {},
+        'price': 180,
+        'description': '+15 defense'
     },
-    '1-7': {
-        'east': '1-8',
-        'west': '1-6',
-        'north': '1-4',
-        'monster': 'demon'
-    },
-    '1-8': {
-        'south': '1-9',
-        'west': '1-7',
-        'north': '1-3',
-        'item': 'mythril boots'
-    },
-    '1-9': {
-        'south': '1-10',
-        'north': '1-8',
-        'monster': 'demon'
-    },
-    '1-10': {
-        'east': '1-13',
-        'north': '1-9',
-        'south': '1-11',
-        "item": "health potion"
-    },
-    '1-11': {
-        'north': '1-10',
-        'south': '1-12',
-        "item": 'mythril sword'
-    },
-    '1-12': {
-      'north': '1-11',
-      'monster': 'demon'
-    },
-    '1-13': {
-        'west': '1-14',
-        'east': '1-10',
-        'monster': 'demon'
-    },
-    '1-14': {
-        'south': '1-15',
-        "east": "1-13",
-        'monster': 'demon'
-    },
-    '1-15': {
-        'west': '1-15',
-        'north': '1-14',
-        "item": "health potion"
-    },
-    '1-16': {
-        'east': '1-15',
-        'south': '1-18',
-        'north': '1-17',
-        "item": "health potion"
-    },
-    '1-17': {
-        'south': '1-16',
-        "item": "health potion"
-    },
-    '1-18': {
-        'north': '1-16',
-        'south': '1-19',
-        'monster': 'demon'
-   },
-    '1-19': {
-        'north': '1-18',
-        'south': '1-20',
-        'monster': 'demon'
-    },
-    '1-20': {
-        'north': '1-19',
-        'south': '2-1',
-        'monster': 'demon king asmodeus'
+    'iron boots': {
+        'materials': {},
+        'price': 120,
+        'description': '+15 defense'
     }
+}
 
+UPGRADED_BLACKSMITH_RECIPES = {
+    'adamantite sword': {
+        'materials': {'adamantite': 1},
+        'price': 300,
+        'description': '+25 attack damage'
+    },
+    'adamantite helmet': {
+        'materials': {'adamantite': 1},
+        'price': 225,
+        'description': '+10 defense'
+    },
+    'adamantite chestplate': {
+        'materials': {'adamantite': 1},
+        'price': 300,
+        'description': '+10 defense'
+    },
+    'adamantite pants': {
+        'materials': {'adamantite': 1},
+        'price': 250,
+        'description': '+10 defense'
+    },
+    'adamantite boots': {
+        'materials': {'adamantite': 1},
+        'price': 200,
+        'description': '+10 defense'
+    },
+    'hallowed sword': {
+        'materials': {"hallowed bar": 1},
+        'price': 400,
+        'description': '+35 attack damage'
+    },
+    'hallowed helmet': {
+        'materials': {"hallowed bar": 1},
+        'price': 300,
+        'description': '+12 defense'
+    },
+    'hallowed chestplate': {
+        'materials': {"hallowed bar": 1},
+        'price': 400,
+        'description': '+12 defense'
+    },
+    'hallowed pants': {
+        'materials': {"hallowed bar": 1},
+        'price': 300,
+        'description': '+12 defense'
+    },
+    'hallowed boots': {
+        'materials': {"hallowed bar": 1},
+        'price': 250,
+        'description': '+12 defense'
+    },
+    'god slayer sword': {
+        'materials': {'cosmilite bar': 1},
+        'price': 500,
+        'description': '+50 attack damage'
+    },
+    'god slayer helmet': {
+        'materials': {'cosmilite bar': 1},
+        'price': 350,
+        'description': '+15 defense'
+    },
+    'god slayer chestplate': {
+        'materials': {'cosmilite bar': 1},
+        'price': 500,
+        'description': '+15 defense'
+    },
+    'god slayer pants': {
+        'materials': {'cosmilite bar': 1},
+        'price': 350,
+        'description': '+15 defense'
+    },
+    'god slayer boots': {
+        'materials': {'cosmilite bar': 1},
+        'price': 300,
+        'description': '+15 defense'
+    },
+    'health potion': {
+        'materials': {},
+        'price': 30,
+        'description': 'Restores 30 health'
+    },
+    'mana potion': {
+        'materials': {},
+        'price': 30,
+        'description': 'Restores 30 health'
+    }
 }
 
 # Game setup
@@ -2211,10 +2635,10 @@ print_slow(r"""
 
 print_slow("Welcome to the Text Hero!")
 print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
-chosen_class = input(GREEN + "> ").capitalize()
+chosen_class = input(GREEN + "> ").capitalize() 
+
 clear_screen()
-DLC_unlocked = "no"
-DLC_after_credits = "NO!"
+DLC_unlocked = "yes"
 
 if chosen_class not in classes:
     chosen_class = "Warrior"
@@ -2252,7 +2676,7 @@ player = {
     "armor": classes[chosen_class]["armor"],
     "mana": classes[chosen_class]["mana"],
     "class": chosen_class,
-    "class": None,
+    "class 2": None,
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
@@ -2277,7 +2701,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['spell book','spell book','spell book','vampire pendant']
+inventory = ['spell book','spell book','spell book']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -2336,6 +2760,12 @@ def show_blacksmith_items():
     display_table(
         "Blacksmith Items",
         BLACKSMITH_RECIPES
+    )
+
+def show_mare_items():
+    display_table(
+        "Mare Items",
+        UPGRADED_BLACKSMITH_RECIPES
     )
 
 def forge_item(item_name):
@@ -2458,7 +2888,8 @@ def get_spell_description(spell_name):
         "boulder": "Throw a boulder at your enemies",
         "knife throw": "Throw a knife",
         "divine retribution": "The wrath of the gods will aid you in battle",
-        "double shot": "Shoot 2 arrows at once"
+        "double shot": "Shoot 2 arrows at once",
+        "blood bomb": "Release an explosive blood sack"
     }
     return descriptions.get(spell_name, "")
 
@@ -2508,502 +2939,785 @@ def generate_random_monster():
 while True:
     # Add this to your main game loop, right after the room check:
     if currentRoom == '5-60':
-        display_credits()
-        exit()
+        if DLC_unlocked == "yes":
+            currentRoom = '1~1'
+        else:
+            display_credits()
+            exit()
 
-    if "monster" in rooms[currentRoom]:
-        clear_screen()
-        # Determine monster type
-        monster_type = rooms[currentRoom]["monster"]
-        
-        # Initialize enemies list
-        enemies = []
-        
-        if monster_type == 'boss':
-            enemy_type = MONSTER_TYPES['boss']
-            enemy = {
-                "health": enemy_type['health'],
-                "name": enemy_type['name'],
-                "attack_min": enemy_type['attack_min'],
-                "attack_max": enemy_type['attack_max'],
-                "stunned": 0,
-                "blinded": 0
-            }
-            enemies.append(enemy)
-            print_slow(f"{enemy['name']} appears!")
-        elif monster_type == 'vampire':
-            enemy_type = MONSTER_TYPES['vampire']
-            enemy = {
-                "health": enemy_type['health'],
-                "name": enemy_type['name'],
-                "attack_min": enemy_type['attack_min'],
-                "attack_max": enemy_type['attack_max'],
-                "stunned": 0,
-                "blinded": 0,
-                "lifesteal_range": enemy_type['lifesteal_range']
-            }
-            enemies.append(enemy)
-            print_slow(f"{enemy['name']} appears!")
-        else:  # normal monster - generate 1-3 random monsters
-            if player["level"] <= 3:
-                num_monsters = 1
-            elif player["level"] <= 5:
-                num_monsters = 2
-            elif player["level"] <= 10:
-                num_monsters = 3
-            elif player["level"] <= 15:
-                num_monsters = 4
-            else:
-                num_monsters = 5
-            for i in range(num_monsters):
-                enemies.append(generate_random_monster())
+    if currentRoom in rooms:
+        if "monster" in rooms[currentRoom]:
+            clear_screen()
+            # Determine monster type
+            monster_type = rooms[currentRoom]["monster"]
             
-            # Announce the encounter
-            if num_monsters == 1:
-                print_slow(f"A {enemies[0]['name']} appears!")
-            else:
-                monster_names = [f"{enemy['name']}" for enemy in enemies]
-                if len(monster_names) == 2:
-                    print_slow(f"A {monster_names[0]} and a {monster_names[1]} appear!")
+            # Initialize enemies list
+            enemies = []
+            
+            if monster_type == 'boss':
+                enemy_type = MONSTER_TYPES['boss']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'vampire':
+                enemy_type = MONSTER_TYPES['vampire']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0,
+                    "lifesteal_range": enemy_type['lifesteal_range']
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            else:  # normal monster - generate 1-3 random monsters
+                if player["level"] <= 3:
+                    num_monsters = 1
+                elif player["level"] <= 5:
+                    num_monsters = 2
+                elif player["level"] <= 10:
+                    num_monsters = 3
+                elif player["level"] <= 15:
+                    num_monsters = 4
                 else:
-                    print_slow(f"A {', '.join(monster_names[:-1])}, and a {monster_names[-1]} appear!")
-
-        last_turn_log = ""  # Initialize empty log for the first turn
-        turn = 1
-        
-        # Combat loop
-        original_armor = player["armor"]
-        while len(enemies) > 0 and player["health"] > 0:
-            print_slow("---------------------------")
-            
-            # Display all enemy health
-            for i, enemy in enumerate(enemies):
-                print_slow(f"Enemy {i+1} ({enemy['name']}): {enemy['health']} HP")
-            
-            print_slow("---------------------------")
-            print_slow(f"Your Health: {player['health']}")
-            print_slow(f"Your Mana: {player['mana']}")
-            print_slow(f"Your armor: {player['armor']}")
-
-            # Display inventory
-            show_inventory()
-            print(GREEN)
-            print_slow("---------------------------")
-            
-            if len(enemies) > 1:
-                print_slow("Choose an action: fight [enemy#], defend, cast [spell] [enemy#], use [item]")
-                print_slow("Enemy numbers: " + ", ".join([f"{i+1}: {enemy['name']}" for i, enemy in enumerate(enemies)]))
-            else:
-                print_slow("Choose an action: fight, defend, cast [spell], use [item]")
-            
-            action = input(GREEN + "> ").lower().split()
-            clear_screen()  # Clear the screen for the new combat turn
-            turn += 1
-            valid_action = False
-            turn_log = ""  # Log for this turn
-            
-            # Parse target enemy if specified
-            target_idx = 0  # Default to first enemy
-            
-            if len(action) > 0:
-                # Handle targeting for multiple enemies
-                if len(enemies) > 1 and len(action) > 1:
-                    # Check if the last argument is a number for targeting
-                    if action[-1].isdigit() and 1 <= int(action[-1]) <= len(enemies):
-                        target_idx = int(action[-1]) - 1
-                        action = action[:-1]  # Remove the target from action
+                    num_monsters = 5
+                for i in range(num_monsters):
+                    enemies.append(generate_random_monster())
                 
-                if action[0] == "fight":
-                    valid_action = True
-                    print(GREEN + "Time your attack! The closer to the green center, the more damage you deal!")
-                    accuracy_percent = run_slider(7.5, 35)
-                    base_damage = player["attack"]
-                    attack_damage = int(base_damage * (accuracy_percent / 100))
-                    
-                    # Apply damage to targeted enemy
-                    enemy = enemies[target_idx]
-                    turn_log += f"{GREEN}You attack {enemy['name']} with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{RESET}\n"
-                    enemy["health"] -= attack_damage
-                    
-                    # Check if enemy is defeated
-                    if enemy["health"] <= 0:
-                        turn_log += f"You defeated {enemy['name']}!\n"
-                        # Don't remove enemy yet, do it after all enemies have attacked
-
-                elif action[0] == "defend":
-                    valid_action = True
-                    defense_percent = random.randint(40, 140)
-                    plus_armor = round((10 * defense_percent) / 100)
-                    mana_regen = round((20 * defense_percent) / 100)
-                    player["armor"] = min(player["armor"] + plus_armor, 80)
-                    player["mana"] += max(0, mana_regen)
-                    turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armor} armor and {mana_regen} mana!\n"
-
-                elif action[0] == "cast" and len(action) > 1:
-                    valid_action = True
-                    # Extract spell name - if target is included, it was already parsed above
-                    spell_parts = action[1:]
-                    if action[-1].isdigit() and len(enemies) > 1:
-                        spell_parts = action[1:-1]
-                    
-                    spell_name = " ".join(spell_parts)  # Join all remaining words into spell name
-                    
-                    if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
-                        spell_percent = random.randint(40,140)
-                        damage = 0  # Initialize damage to 0 by default
-                        
-                        # Get targeted enemy
-                        enemy = enemies[target_idx]
-
-                        # Handle spells - similar to before, but now targeting specific enemy
-                        if spell_name == 'divine shield':
-                            shield_strength = 2 * player["mana"]
-                            player["divine_shield"] = {
-                                "strength": shield_strength,
-                                "rounds": 3,
-                                "mana_cost": player["mana"]
-                            }
-                            player["mana"] = 0
-                            turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
-                        elif spell_name in ['stun strike', 'thunder zapper', 'binding shot']:
-                            stun_chance = spell_percent / 100
-                            damage = 0
-                            if random.random() < stun_chance:
-                                stun_duration = random.randint(2, 5)
-                                enemy["stunned"] = stun_duration
-                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and stunned {enemy['name']} for {stun_duration} turns!\n"
-                            else:
-                                turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
-                        elif spell_name == 'stealth strike':
-                            stun_chance = spell_percent / 100
-                            damage = 0
-                            if random.random() < stun_chance:
-                                confusion_duration = random.randint(2, 5)
-                                recovery_chance = random.randint(10, 30)
-                                enemy["confused"] = [confusion_duration, recovery_chance]
-                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and confused {enemy['name']} for {confusion_duration} turns!\n"
-                            else:
-                                turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
-                        elif spell_name == "fireball":
-                            base_damage = player["spells"][spell_name][0]
-                            damage = int(base_damage * (spell_percent / 100))
-                            burn_duration = 3
-                            burn_damage = int(damage * 0.5)
-                            enemy["burning"] = {
-                                "duration": burn_duration,
-                                "damage": burn_damage
-                            }
-                            turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
-                            enemy["health"] -= damage
-                        elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow", "eternity", "supernova", "phantasm", "assassinate", "tidal wave", "ultrakill", "midas prime", "kamehameha", "mordschlang", "boulder"]:
-                            base_damage = player["spells"][spell_name][0]
-                            damage = int(base_damage * (spell_percent / 100))
-                            turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
-                            enemy["health"] -= damage
-                        elif spell_name == "arrow of light":
-                            blind_chance = spell_percent / 100
-                            damage = 25
-                            if random.random() < blind_chance:
-                                blind_duration = random.randint(2, 5)
-                                enemy["blind"] = blind_duration
-                                turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and blinded {enemy['name']} for {blind_duration} turns!\n"
-                            else:
-                                turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
-                        elif spell_name == "circle heal":
-                            base_healing = player["spells"][spell_name][0]
-                            healing_amount = int(base_healing * (spell_percent / 100))
-                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                            turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                        elif spell_name == "heal":
-                            base_healing = player["spells"][spell_name][0]
-                            healing_amount = int(base_healing * (spell_percent / 100))
-                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                            turn_log += f"You cast heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                        elif spell_name == "great heal":
-                            base_healing = player["spells"][spell_name][0]
-                            healing_amount = int(base_healing * (spell_percent / 100))
-                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                            turn_log += f"You cast great heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                        elif spell_name == "minor heal":
-                            base_healing = player["spells"][spell_name][0]
-                            healing_amount = int(base_healing * (spell_percent / 100))
-                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                            turn_log += f"You cast minor heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                        elif spell_name == "healing pool":
-                            base_healing = player["spells"][spell_name][0]
-                            healing_amount = int(base_healing * (spell_percent / 100))
-                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                            turn_log += f"You cast healing pool with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
-                        elif spell_name == "life steal":
-                            base_damage == player["spells"][spell_name][0]
-                            damage = int(base_damage * (spell_percent / 100))
-                            healing_amount = damage / 5
-                            turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and you heal {healing_amount} health!\n"
-                            player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                            enemy['health'] -= damage
-                        elif spell_name == "finishing blow":
-                            base_damage = player["spells"][spell_name][0]
-                            
-                            # Get enemy's original max health
-                            max_enemy_health = MONSTER_TYPES[monster_type]['health'] if monster_type != 'normal' else MONSTER_TYPES['normal']['health']
-                            current_health_percent = (enemy["health"] / max_enemy_health) * 100
-                            
-                            if current_health_percent < 25:
-                                damage_multiplier = 4
-                                turn_log += f"CRITICAL FINISHING BLOW! {enemy['name']} is weakened! \n"
-                            elif current_health_percent < 50:
-                                damage_multiplier = 2
-                                turn_log += f"Strong finishing blow on {enemy['name']}! \n"
-                            elif current_health_percent < 75:
-                                damage_multiplier = 1
-                                turn_log += f"Effective finishing blow on {enemy['name']}! \n"
-                            else:
-                                damage_multiplier = 0.25
-                                turn_log += f"Weak finishing blow on {enemy['name']}! The enemy is too healthy! \n"
-                            
-                            damage = int(base_damage * (spell_percent / 100) * damage_multiplier)
-                            turn_log += f"You deal {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
-                            enemy["health"] -= damage
-                        
-                        # Deduct mana cost
-                        player["mana"] -= player["spells"][spell_name][1]
-                        
+                # Announce the encounter
+                if num_monsters == 1:
+                    print_slow(f"A {enemies[0]['name']} appears!")
+                else:
+                    monster_names = [f"{enemy['name']}" for enemy in enemies]
+                    if len(monster_names) == 2:
+                        print_slow(f"A {monster_names[0]} and a {monster_names[1]} appear!")
                     else:
-                        turn_log += f"Not enough mana or invalid spell! (Spell: {spell_name})\n"
-                        valid_action = False
+                        print_slow(f"A {', '.join(monster_names[:-1])}, and a {monster_names[-1]} appear!")
 
-                elif action[0] == "use" and len(action) > 1:
-                    valid_action = True
-                    item_name = " ".join(action[1:])
-                    item_result = use_item_during_combat(item_name)
-                    if item_result:
-                        turn_log += item_result + "\n"
+            last_turn_log = ""  # Initialize empty log for the first turn
+            turn = 1
+            
+            # Combat loop
+            original_armor = player["armor"]
+            while len(enemies) > 0 and player["health"] > 0:
+                print_slow("---------------------------")
+                
+                # Display all enemy health
+                for i, enemy in enumerate(enemies):
+                    print_slow(f"Enemy {i+1} ({enemy['name']}): {enemy['health']} HP")
+                
+                print_slow("---------------------------")
+                print_slow(f"Your Health: {player['health']}")
+                print_slow(f"Your Mana: {player['mana']}")
+                print_slow(f"Your armor: {player['armor']}")
+
+                # Display inventory
+                show_inventory()
+                print(GREEN)
+                print_slow("---------------------------")
+                
+                if len(enemies) > 1:
+                    print_slow("Choose an action: fight [enemy#], defend, cast [spell] [enemy#], use [item]")
+                    print_slow("Enemy numbers: " + ", ".join([f"{i+1}: {enemy['name']}" for i, enemy in enumerate(enemies)]))
+                else:
+                    print_slow("Choose an action: fight, defend, cast [spell], use [item]")
+                
+                action = input(GREEN + "> ").lower().split()
+                clear_screen()  # Clear the screen for the new combat turn
+                turn += 1
+                valid_action = False
+                turn_log = ""  # Log for this turn
+                
+                # Parse target enemy if specified
+                target_idx = 0  # Default to first enemy
+                
+                if len(action) > 0:
+                    # Handle targeting for multiple enemies
+                    if len(enemies) > 1 and len(action) > 1:
+                        # Check if the last argument is a number for targeting
+                        if action[-1].isdigit() and 1 <= int(action[-1]) <= len(enemies):
+                            target_idx = int(action[-1]) - 1
+                            action = action[:-1]  # Remove the target from action
+                    
+                    if action[0] == "fight":
+                        valid_action = True
+                        print(GREEN + "Time your attack! The closer to the green center, the more damage you deal!")
+                        accuracy_percent = run_slider(7.5, 35)
+                        base_damage = player["attack"]
+                        attack_damage = int(base_damage * (accuracy_percent / 100))
+                        
+                        # Apply damage to targeted enemy
+                        enemy = enemies[target_idx]
+                        turn_log += f"{GREEN}You attack {enemy['name']} with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{RESET}\n"
+                        enemy["health"] -= attack_damage
+                        
+                        # Check if enemy is defeated
+                        if enemy["health"] <= 0:
+                            turn_log += f"You defeated {enemy['name']}!\n"
+                            # Don't remove enemy yet, do it after all enemies have attacked
+
+                    elif action[0] == "defend":
+                        valid_action = True
+                        defense_percent = random.randint(40, 140)
+                        plus_armor = round((10 * defense_percent) / 100)
+                        mana_regen = round((20 * defense_percent) / 100)
+                        player["armor"] = min(player["armor"] + plus_armor, 80)
+                        player["mana"] += max(0, mana_regen)
+                        turn_log += f"You defend with {defense_percent}% efficiency, gaining {plus_armor} armor and {mana_regen} mana!\n"
+
+                    elif action[0] == "cast" and len(action) > 1:
+                        valid_action = True
+                        # Extract spell name - if target is included, it was already parsed above
+                        spell_parts = action[1:]
+                        if action[-1].isdigit() and len(enemies) > 1:
+                            spell_parts = action[1:-1]
+                        
+                        spell_name = " ".join(spell_parts)  # Join all remaining words into spell name
+                        
+                        if spell_name in player["spells"] and player["mana"] >= player["spells"][spell_name][1]:
+                            spell_percent = random.randint(40,140)
+                            damage = 0  # Initialize damage to 0 by default
+                            
+                            # Get targeted enemy
+                            enemy = enemies[target_idx]
+
+                            # Handle spells - similar to before, but now targeting specific enemy
+                            if spell_name == 'divine shield':
+                                shield_strength = 2 * player["mana"]
+                                player["divine_shield"] = {
+                                    "strength": shield_strength,
+                                    "rounds": 3,
+                                    "mana_cost": player["mana"]
+                                }
+                                player["mana"] = 0
+                                turn_log += f"You cast divine shield, blocking up to {shield_strength} damage for 3 rounds!\n"
+                            elif spell_name in ['stun strike', 'thunder zapper', 'binding shot']:
+                                stun_chance = spell_percent / 100
+                                damage = 0
+                                if random.random() < stun_chance:
+                                    stun_duration = random.randint(2, 5)
+                                    enemy["stunned"] = stun_duration
+                                    turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and stunned {enemy['name']} for {stun_duration} turns!\n"
+                                else:
+                                    turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
+                            elif spell_name == 'stealth strike':
+                                stun_chance = spell_percent / 100
+                                damage = 0
+                                if random.random() < stun_chance:
+                                    confusion_duration = random.randint(2, 5)
+                                    recovery_chance = random.randint(10, 30)
+                                    enemy["confused"] = [confusion_duration, recovery_chance]
+                                    turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and confused {enemy['name']} for {confusion_duration} turns!\n"
+                                else:
+                                    turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
+                            elif spell_name == "fireball":
+                                base_damage = player["spells"][spell_name][0]
+                                damage = int(base_damage * (spell_percent / 100))
+                                burn_duration = 3
+                                burn_damage = int(damage * 0.5)
+                                enemy["burning"] = {
+                                    "duration": burn_duration,
+                                    "damage": burn_damage
+                                }
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
+                                enemy["health"] -= damage
+                            elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow", "eternity", "supernova", "phantasm", "assassinate", "tidal wave", "ultrakill", "midas prime", "kamehameha", "mordschlang", "boulder", "blood bomb"]:
+                                base_damage = player["spells"][spell_name][0]
+                                damage = int(base_damage * (spell_percent / 100))
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                                enemy["health"] -= damage
+                            elif spell_name == "arrow of light":
+                                blind_chance = spell_percent / 100
+                                damage = 25
+                                if random.random() < blind_chance:
+                                    blind_duration = random.randint(2, 5)
+                                    enemy["blind"] = blind_duration
+                                    turn_log += f"You cast {spell_name} with {spell_percent}% efficiency and blinded {enemy['name']} for {blind_duration} turns!\n"
+                                else:
+                                    turn_log += f"You cast {spell_name} but {enemy['name']} resisted!\n"
+                            elif spell_name == "circle heal":
+                                base_healing = player["spells"][spell_name][0]
+                                healing_amount = int(base_healing * (spell_percent / 100))
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                turn_log += f"You cast circle heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                            elif spell_name == "heal":
+                                base_healing = player["spells"][spell_name][0]
+                                healing_amount = int(base_healing * (spell_percent / 100))
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                turn_log += f"You cast heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                            elif spell_name == "great heal":
+                                base_healing = player["spells"][spell_name][0]
+                                healing_amount = int(base_healing * (spell_percent / 100))
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                turn_log += f"You cast great heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                            elif spell_name == "minor heal":
+                                base_healing = player["spells"][spell_name][0]
+                                healing_amount = int(base_healing * (spell_percent / 100))
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                turn_log += f"You cast minor heal with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                            elif spell_name == "healing pool":
+                                base_healing = player["spells"][spell_name][0]
+                                healing_amount = int(base_healing * (spell_percent / 100))
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                turn_log += f"You cast healing pool with {spell_percent}% efficiency, restoring {healing_amount} health!\n"
+                            elif spell_name == "life steal":
+                                base_damage == player["spells"][spell_name][0]
+                                damage = int(base_damage * (spell_percent / 100))
+                                healing_amount = damage / 5
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and you heal {healing_amount} health!\n"
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                enemy['health'] -= damage
+                            elif spell_name == "finishing blow":
+                                base_damage = player["spells"][spell_name][0]
+                                
+                                # Get enemy's original max health
+                                max_enemy_health = MONSTER_TYPES[monster_type]['health'] if monster_type != 'normal' else MONSTER_TYPES['normal']['health']
+                                current_health_percent = (enemy["health"] / max_enemy_health) * 100
+                                
+                                if current_health_percent < 25:
+                                    damage_multiplier = 4
+                                    turn_log += f"CRITICAL FINISHING BLOW! {enemy['name']} is weakened! \n"
+                                elif current_health_percent < 50:
+                                    damage_multiplier = 2
+                                    turn_log += f"Strong finishing blow on {enemy['name']}! \n"
+                                elif current_health_percent < 75:
+                                    damage_multiplier = 1
+                                    turn_log += f"Effective finishing blow on {enemy['name']}! \n"
+                                else:
+                                    damage_multiplier = 0.25
+                                    turn_log += f"Weak finishing blow on {enemy['name']}! The enemy is too healthy! \n"
+                                
+                                damage = int(base_damage * (spell_percent / 100) * damage_multiplier)
+                                turn_log += f"You deal {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                                enemy["health"] -= damage
+                            
+                            # Deduct mana cost
+                            player["mana"] -= player["spells"][spell_name][1]
+                            
+                        else:
+                            turn_log += f"Not enough mana or invalid spell! (Spell: {spell_name})\n"
+                            valid_action = False
+
+                    elif action[0] == "use" and len(action) > 1:
+                        valid_action = True
+                        item_name = " ".join(action[1:])
+                        item_result = use_item_during_combat(item_name)
+                        if item_result:
+                            turn_log += item_result + "\n"
+                        else:
+                            turn_log += "Invalid action!\n"
+                            valid_action = False
                     else:
                         turn_log += "Invalid action!\n"
                         valid_action = False
-                else:
-                    turn_log += "Invalid action!\n"
-                    valid_action = False
-                    
-                # Remove any defeated enemies
-                defeated_indices = []
-                for i, enemy in enumerate(enemies):
-                    if enemy["health"] <= 0:
-                        defeated_indices.append(i)
-                
-                # Remove from highest index to lowest to avoid index issues
-                for idx in sorted(defeated_indices, reverse=True):
-                    del enemies[idx]
-                
-                # Check if all enemies are defeated
-                if len(enemies) == 0:
-                    clear_screen()
-                    print_slow(turn_log)  # Show the combat results first
-                    
-                    # Handle monster drops and rewards
-                    if monster_type == 'boss':
-                        # Boss rewards
-                        gold_dropped = random.randint(
-                            MONSTER_TYPES['boss']['gold_drop_range'][0],
-                            MONSTER_TYPES['boss']['gold_drop_range'][1]
-                        )
-                        exp_earned = random.randint(
-                            MONSTER_TYPES['boss']['exp_drop_range'][0],
-                            MONSTER_TYPES['boss']['exp_drop_range'][1]
-                        )
-                        print_slow(f"You defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
-                        player["gold"] += gold_dropped
-                        player["exp"] += exp_earned
-
-                        for i in range(2, 21):
-                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
-                                player["level"] = i
-                                player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
-                                player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
-                                print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
-                                print_slow("Your stats have improved!")
-                                print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
-                            else:
-                                pass
-                        if player["level"] >= 15 and player["class"] == None:
-                            player["class"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player["class"]]
-                            if player["class"] == "Rogue" or player["class"] == "Mage":
-                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                            else:
-                                print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                        if currentRoom == "5-60" and DLC_unlocked == "yes":
-                            DLC_after_credits = "GO!"
-
-                    elif monster_type == 'vampire':
-                        # Vampire rewards
-                        gold_dropped = random.randint(
-                            MONSTER_TYPES['vampire']['gold_drop_range'][0],
-                            MONSTER_TYPES['vampire']['gold_drop_range'][1]
-                        )
-                        exp_earned = 100
-                        inventory.append("vampire pendant")
-                        print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
-                        print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
                         
-                        player["gold"] += gold_dropped
-                        player["exp"] += exp_earned
-
-                        for i in range(2, 21):
-                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
-                                player["level"] = i
-                                player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
-                                player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
-                                print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
-                                print_slow("Your stats have improved!")
-                                print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
-                            else:
-                                pass
-                        if player["level"] >= 15 and player["class"] == None:
-                            player["class"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player["class"]]
-                            if player["class"] == "Rogue" or player["class"] == "Mage":
-                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                            else:
-                                print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                    else:
-                        # Normal monster rewards - based on how many were defeated
-                        gold_dropped = random.randint(
-                            MONSTER_TYPES['normal']['gold_drop_range'][0],
-                            MONSTER_TYPES['normal']['gold_drop_range'][1]
-                        )
-                        exp_earned = random.randint(
-                            MONSTER_TYPES['normal']['exp_drop_range'][0],
-                            MONSTER_TYPES['normal']['exp_drop_range'][1]
-                        )
-                        
-                        
-                        # Chance for armor drops
-                        if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
-                            slot = random.choice(list(ARMOR_SLOTS.keys()))
-                            tier = random.choice(['leather', 'chainmail', 'iron'])
-                            dropped_item = f"{tier} {slot}"
-                            inventory.append(dropped_item)
-                            print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
-                        
-                        # Key fragment drop chance
-                        if random.random() < player['key_fragment_chance']:
-                            inventory.append("key fragment")
-                            print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
-                        
-                        print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
-                        
-                        player["gold"] += gold_dropped
-                        player["exp"] += exp_earned * num_monsters
-
-                        for i in range(2, 21):
-                            if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
-                                player["level"] = i
-                                player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
-                                player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
-                                player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
-                                print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
-                                print_slow("Your stats have improved!")
-                                print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
-                            else:
-                                pass
-                        if player["level"] >= 15 and player["class"] == None:
-                            player["class"] = class_to_get_to_tier_2[player["class"]]
-                            player["spells"] = spells_tier_2[player["class"]]
-                            if player["class"] == "Rogue" or player["class"] == "Mage":
-                                print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                            else:
-                                print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
-                    
-                    player["armor"] = original_armor
-                    del rooms[currentRoom]["monster"]
-                    print_slow("---------------------------")
-                    break
-                
-                if valid_action:
-                    # All enemies attack if not stunned/confused
+                    # Remove any defeated enemies
+                    defeated_indices = []
                     for i, enemy in enumerate(enemies):
-                        # Skip defeated enemies
                         if enemy["health"] <= 0:
-                            continue
+                            defeated_indices.append(i)
+                    
+                    # Remove from highest index to lowest to avoid index issues
+                    for idx in sorted(defeated_indices, reverse=True):
+                        del enemies[idx]
+                    
+                    # Check if all enemies are defeated
+                    if len(enemies) == 0:
+                        clear_screen()
+                        print_slow(turn_log)  # Show the combat results first
+                        
+                        # Handle monster drops and rewards
+                        if monster_type == 'boss':
+                            # Boss rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['boss']['gold_drop_range'][0],
+                                MONSTER_TYPES['boss']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['boss']['exp_drop_range'][0],
+                                MONSTER_TYPES['boss']['exp_drop_range'][1]
+                            ) * int(currentRoom[0])
+                            print_slow(f"You defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] >= 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 15 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+
+                        elif monster_type == 'vampire':
+                            # Vampire rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['vampire']['gold_drop_range'][0],
+                                MONSTER_TYPES['vampire']['gold_drop_range'][1]
+                            )
+                            exp_earned = 100
+                            inventory.append("vampire pendant")
+                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
                             
-                        # Apply burning damage if active
-                        if "burning" in enemy:
-                            burn = enemy["burning"]
-                            if burn["duration"] > 0:
-                                enemy["health"] -= burn["damage"]
-                                turn_log += f"{enemy['name']} takes {burn['damage']} burning damage! ({burn['duration']} turns remaining)\n"
-                                burn["duration"] -= 1
-                                if burn["duration"] <= 0:
-                                    del enemy["burning"]
-                                    turn_log += f"The fire consuming {enemy['name']} dies out.\n"
-                        
-                        # Check if enemy is stunned
-                        if enemy["stunned"] > 0:
-                            enemy["stunned"] -= 1
-                            turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
-                            if enemy["stunned"] <= 0:
-                                turn_log += f"{enemy['name']} recovers from being stunned!\n"
-                            continue
-                        
-                        # Check if enemy is confused
-                        if "confused" in enemy and enemy["confused"][0] > 0:
-                            enemy["confused"][0] -= 1
-                            turn_log += f"{enemy['name']} is confused and cannot attack! ({enemy['confused'][0]} turns remaining)\n"
-                            recovery_chance = enemy["confused"][1]
-                            recovery_roll = random.randint(1, 100)
-                            if enemy["confused"][0] <= 0 or recovery_roll <= recovery_chance:
-                                del enemy["confused"]
-                                turn_log += f"{enemy['name']} recovers from being confused!\n"
-                            continue
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
 
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                        
+                        elif monster_type == 'demon king lucifer':
+                            # Vampire rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['demon king lucifer']['gold_drop_range'][0],
+                                MONSTER_TYPES['demon king lucifer']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['lucifer']['exp_drop_range'][0],
+                                MONSTER_TYPES['lucifer']['exp_drop_range'][1]
+                            )
+                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
 
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+
+                        elif monster_type == 'demon king asmodeus':
+                            # Boss rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['demon king asmodeus']['gold_drop_range'][0],
+                                MONSTER_TYPES['demon king asmodeus']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['demon king asmodeus']['exp_drop_range'][0],
+                                MONSTER_TYPES['demon king asmodeus']['exp_drop_range'][1]
+                            ) * int(currentRoom[0])
+                            for i in range(5):
+                                inventory.append("adamantite bar")
+                            print_slow(f"{RESET}Demon King Asmodeus dropped 5 {ITEM_COLOR}Adamanmtite bars{RESET}!")
+                            print_slow(f"You defeated Demon King Asmodeus!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                         
-                        # Handle vampire lifesteal
-                        if monster_type == 'vampire' and "lifesteal_range" in enemy:
-                            lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
-                            lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
-                            enemy["health"] += lifesteal_amount
-                            turn_log += f"{RED}{enemy['name']} drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+                        elif monster_type == 'demon king leviathan':
+                            # Vampire rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['demon king leviathan']['gold_drop_range'][0],
+                                MONSTER_TYPES['demon king leviathan']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['leviathan']['exp_drop_range'][0],
+                                MONSTER_TYPES['leviathan']['exp_drop_range'][1]
+                            )
+                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+
+                        elif monster_type == 'demon king belphegor':
+                            # Boss rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['demon king belphegor']['gold_drop_range'][0],
+                                MONSTER_TYPES['demon king belphegor']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['demon king belphegor']['exp_drop_range'][0],
+                                MONSTER_TYPES['demon king belphegor']['exp_drop_range'][1]
+                            ) * int(currentRoom[0])
+                            for i in range(5):
+                                inventory.append("hallowed bar")
+                            print_slow(f"{RESET}Demon King Belphegor dropped 5 {ITEM_COLOR}Hallowed bars{RESET}!")
+                            print_slow(f"You defeated Demon King Belphegor!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                         
-                        # Normal enemy attack
-                        enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
+                        elif monster_type == 'demon king beelzebub':
+                            # Vampire rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['demon king beelzebub']['gold_drop_range'][0],
+                                MONSTER_TYPES['demon king beelzebub']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['beelzebub']['exp_drop_range'][0],
+                                MONSTER_TYPES['beelzebub']['exp_drop_range'][1]
+                            )
+                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                         
-                        # Handle divine shield
-                        if hasattr(player, "divine_shield") and player["divine_shield"]:
-                            shield = player["divine_shield"]
-                            if shield["rounds"] > 0:
-                                damage_blocked = min(shield["strength"], enemy_attack)
-                                enemy_attack -= damage_blocked
-                                shield["strength"] -= damage_blocked
-                                shield["rounds"] -= 1
-                                turn_log += f"Divine shield blocks {damage_blocked} damage from {enemy['name']}! ({shield['rounds']} rounds remaining)\n"
+                        elif monster_type == 'demon king mammon':
+                            # Boss rewards
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['demon king mammon']['gold_drop_range'][0],
+                                MONSTER_TYPES['demon king mammon']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['demon king mammon']['exp_drop_range'][0],
+                                MONSTER_TYPES['demon king mammon']['exp_drop_range'][1]
+                            ) * int(currentRoom[0])
+                            for i in range(5):
+                                inventory.append("cosmilite bar")
+                            print_slow(f"{RESET}Demon King Mammon dropped 5 {ITEM_COLOR}Cosmilite bars{RESET}!")
+                            print_slow(f"You defeated Demon King Mammon!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+
+                        else:
+                            # Normal monster rewards - based on how many were defeated
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['normal']['gold_drop_range'][0],
+                                MONSTER_TYPES['normal']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['normal']['exp_drop_range'][0],
+                                MONSTER_TYPES['normal']['exp_drop_range'][1]
+                            )* int(currentRoom[0])
+                            
+                            
+                            # Chance for armor drops
+                            if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
+                                slot = random.choice(list(ARMOR_SLOTS.keys()))
+                                tier = random.choice(['leather', 'chainmail', 'iron'])
+                                dropped_item = f"{tier} {slot}"
+                                inventory.append(dropped_item)
+                                print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
+                            
+                            # Key fragment drop chance
+                            if random.random() < player['key_fragment_chance']:
+                                inventory.append("key fragment")
+                                print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                            
+                            if not "d" in currentRoom:
+                                print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
+                                player["gold"] += gold_dropped
+                                player["exp"] += exp_earned * num_monsters
+                            elif "d" in currentRoom:
+                                print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters * 3} exp{RESET}!")
+                                player["gold"] += gold_dropped
+                                player["exp"] += exp_earned * num_monsters * 3
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                        
+                        player["armor"] = original_armor
+                        del rooms[currentRoom]["monster"]
+                        print_slow("---------------------------")
+                        break
+                    
+                    if valid_action:
+                        # All enemies attack if not stunned/confused
+                        for i, enemy in enumerate(enemies):
+                            # Skip defeated enemies
+                            if enemy["health"] <= 0:
+                                continue
                                 
-                                if shield["rounds"] <= 0 or shield["strength"] <= 0:
-                                    turn_log += "Divine shield fades away!\n"
-                                    player["divine_shield"] = None
+                            # Apply burning damage if active
+                            if "burning" in enemy:
+                                burn = enemy["burning"]
+                                if burn["duration"] > 0:
+                                    enemy["health"] -= burn["damage"]
+                                    turn_log += f"{enemy['name']} takes {burn['damage']} burning damage! ({burn['duration']} turns remaining)\n"
+                                    burn["duration"] -= 1
+                                    if burn["duration"] <= 0:
+                                        del enemy["burning"]
+                                        turn_log += f"The fire consuming {enemy['name']} dies out.\n"
+                            
+                            # Check if enemy is stunned
+                            if enemy["stunned"] > 0:
+                                enemy["stunned"] -= 1
+                                turn_log += f"{enemy['name']} is stunned and cannot attack! ({enemy['stunned']} turns remaining)\n"
+                                if enemy["stunned"] <= 0:
+                                    turn_log += f"{enemy['name']} recovers from being stunned!\n"
+                                continue
+                            
+                            # Check if enemy is confused
+                            if "confused" in enemy and enemy["confused"][0] > 0:
+                                enemy["confused"][0] -= 1
+                                turn_log += f"{enemy['name']} is confused and cannot attack! ({enemy['confused'][0]} turns remaining)\n"
+                                recovery_chance = enemy["confused"][1]
+                                recovery_roll = random.randint(1, 100)
+                                if enemy["confused"][0] <= 0 or recovery_roll <= recovery_chance:
+                                    del enemy["confused"]
+                                    turn_log += f"{enemy['name']} recovers from being confused!\n"
+                                continue
+
+
+                            
+                            # Handle vampire lifesteal
+                            if monster_type == 'vampire' and "lifesteal_range" in enemy:
+                                lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
+                                lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
+                                enemy["health"] += lifesteal_amount
+                                turn_log += f"{RED}{enemy['name']} drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+                            
+                            # Normal enemy attack
+                            enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
+                            
+                            # Handle divine shield
+                            if hasattr(player, "divine_shield") and player["divine_shield"]:
+                                shield = player["divine_shield"]
+                                if shield["rounds"] > 0:
+                                    damage_blocked = min(shield["strength"], enemy_attack)
+                                    enemy_attack -= damage_blocked
+                                    shield["strength"] -= damage_blocked
+                                    shield["rounds"] -= 1
+                                    turn_log += f"Divine shield blocks {damage_blocked} damage from {enemy['name']}! ({shield['rounds']} rounds remaining)\n"
+                                    
+                                    if shield["rounds"] <= 0 or shield["strength"] <= 0:
+                                        turn_log += "Divine shield fades away!\n"
+                                        player["divine_shield"] = None
+                            
+                            player["health"] -= enemy_attack
+                            turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
                         
-                        player["health"] -= enemy_attack
-                        turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
-                    
-                    # Check player death
-                    if player["health"] <= 0:
-                        turn_log += "You died! Game over.\n"
+                        # Check player death
+                        if player["health"] <= 0:
+                            turn_log += "You died! Game over.\n"
+                            print_slow(turn_log)
+                            exit()
+                        
+                        last_turn_log = turn_log
                         print_slow(turn_log)
-                        exit()
-                    
-                    last_turn_log = turn_log
-                    print_slow(turn_log)
-                else:
-                    print_slow("Invalid action! Try again.")
+                    else:
+                        print_slow("Invalid action! Try again.")
                     
     # Show current status
     if currentRoom == '1-17':
@@ -3015,7 +3729,13 @@ while True:
         print_slow("---------------------------")
         show_blacksmith_items()
         print_slow("Type 'forge [item]' to craft items")
+    if currentRoom == '2~11':
+        print_slow('Mare')
+        print_slow("---------------------------")
+        show_mare_items()
+        print_slow("Type 'forge [item]' to craft items")
     showStatus()
+
 
     move = input(GREEN + "> ").lower().split()
     clear_screen()
@@ -3178,12 +3898,12 @@ while True:
             result = buy_item(item_name)
             print_slow(result)
             continue
-        elif move[0] == 'sell' and currentRoom == '1-17' or move[0] == 'sell' and currentRoom == '1-13':
+        elif move[0] == 'sell' and currentRoom == '1-17' or move[0] == 'sell' and currentRoom == '1-13' or move[0] == 'sell' and currentRoom == '2~11':
             item_name = " ".join(move[1:])
             result = sell_item(item_name)
             print_slow(result)
             continue
-        elif move[0] == 'forge' and currentRoom == '1-13':
+        elif move[0] == 'forge' and currentRoom == '1-13' or move[0] == 'forge' and currentRoom == '2~11':
             item_name = " ".join(move[1:])
             result = forge_item(item_name)
             print_slow(result)
