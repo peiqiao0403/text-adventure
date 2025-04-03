@@ -114,7 +114,7 @@ def save_game():
     encoded_data = encode_64(encode(game_data))
     
     # Save to file
-    with open("savegame.dat", "w") as f:
+    with open("savegame.txt", "w") as f:
         f.write(encoded_data)
     
     print_slow("Game saved successfully!")
@@ -123,7 +123,7 @@ def load_game():
     """Load a saved game state from file"""
     try:
         # Read from file
-        with open("savegame.dat", "r") as f:
+        with open("savegame.txt", "r") as f:
             encoded_data = f.read()
         
         # Decode using custom decoding
@@ -187,49 +187,42 @@ def display_credits():
     )
     print()
     # Credits scroll
-    if DLC_after_credits == "NO!":
-        credits = [
-            f"\n",
-            f"{BLUE}Development Team:{RESET}\n",
-            f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
-            f"Developer & Music Composer: {BLUE}arnesito{RESET}\n",
-            f"Developer & Designer: {BLUE}Moltd{RESET}\n",
-            "\n",
-            f"{BLUE}DLC Development Team:{RESET}\n",
-            f"DLC Developer & Music Composer: {BLUE}arnesito{RESET}\n",
-            "\n"
-            f"{BLUE}Music Composition:{RESET}\n",
-            f"Tryangle\n",
-            f"arnesito\n",
-            "\n",
-            f"{BLUE}Quality Assurance Team:{RESET}\n",
-            f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
-            "\n",
-            f"{BLUE}Playtesting Team:{RESET}\n",
-            f"{GREEN}David Sucks At Life{RESET}\n",
-            f"{GREEN}Bee1949{RESET}\n",
-            f"{GREEN}Not Guy Stew{RESET}\n",
-            f"{GREEN}Vroom Vroom Snail{RESET}\n",
-            "\n",
-            f"{BLUE}Game Features:{RESET}\n",
-            "10 Unique Classes\n",
-            "90+ Rooms to Explore\n",
-            "3+ Levels to Defeat\n",
-            "50+ Items to Collect\n",
-            "32+ Monsters to Battle\n",
-            "Leveling up system\n",
-            "\n",
-            f"{BLUE}Technical Details:{RESET}\n",
-            "Custom ANSI Color System\n",
-            "Dynamic Combat Engine\n",
-                "Save/Load System\n",
-            "Crafting System\n",
-            "\n",
-            f"{BLUE}Thanks for Playing!{RESET}\n",
-            f"{BLUE}press enter to quit{RESET}"
-        ]
-        input()
-        quit()
+    f"\n",
+    f"{BLUE}Development Team:{RESET}\n",
+    f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
+    f"Developer: {BLUE}arnesito{RESET}\n",
+    f"Developer & Designer: {BLUE}Moltd{RESET}\n",
+    "\n",
+    f"{BLUE}DLC Development Team:{RESET}\n",
+    f"DLC Developer: {BLUE}arnesito{RESET}\n",
+    "\n"
+    f"{BLUE}Quality Assurance Team:{RESET}\n",
+    f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
+    "\n",
+    f"{BLUE}Playtesting Team:{RESET}\n",
+    f"{GREEN}David Sucks At Life{RESET}\n",
+    f"{GREEN}Bee1949{RESET}\n",
+    f"{GREEN}Not Guy Stew{RESET}\n",
+    f"{GREEN}Vroom Vroom Snail{RESET}\n",
+    "\n",
+    f"{BLUE}Game Features:{RESET}\n",
+    "10 Unique Classes\n",
+    "90+ Rooms to Explore\n",
+    "3+ Levels to Defeat\n",
+    "50+ Items to Collect\n",
+    "32+ Monsters to Battle\n",
+    "Leveling up system\n",
+    "\n",
+    f"{BLUE}Technical Details:{RESET}\n",
+    "Custom ANSI Color System\n",
+    "Dynamic Combat Engine\n",
+    "Save/Load System\n",
+    "Crafting System\n",
+    "\n",
+    f"{BLUE}Thanks for Playing!{RESET}\n",
+    f"{BLUE}press enter to quit{RESET}"
+    input()
+    quit()
     
     screen_width = 50
     for line in credits:
@@ -379,7 +372,7 @@ MONSTER_TYPES = {
         'item_drop_chance': 0.2
     },
     'demon': {
-        'names': 'Demon',  # List of possible monster names
+        'names': ['Demon'],
         'health': 100,
         'attack_min': 5,
         'attack_max': 15,
@@ -410,7 +403,7 @@ MONSTER_TYPES = {
         'name': 'Demon King Lucifer',
         'health': 300,
         'attack_min': 50,
-        'attack_max': 60,
+        'attack_max': 75,
         'gold_drop_range': 1000,
         "exp_drop_range": 500,
         'item_drop_chance': 0
@@ -418,8 +411,8 @@ MONSTER_TYPES = {
     'demon king asmodeus': {
         'name': 'Demon King Asmodeus',
         'health': 400,
-        'attack_min': 30,
-        'attack_max': 40,
+        'attack_min': 50,
+        'attack_max': 85,
         'gold_drop_range': 1000,
         "exp_drop_range": 500,
         'item_drop_chance': 0
@@ -427,8 +420,8 @@ MONSTER_TYPES = {
     'demon king leviathan': {
         'name': 'Demon King Leviathan',
         'health': 500,
-        'attack_min': 40,
-        'attack_max': 50,
+        'attack_min': 75,
+        'attack_max': 100,
         'gold_drop_range': 1000,
         "exp_drop_range": 500,
         'item_drop_chance': 0
@@ -436,8 +429,8 @@ MONSTER_TYPES = {
     'demon king belphegor': {
         'name': 'Demon King Belphegor',
         'health': 600,
-        'attack_min': 30,
-        'attack_max': 45,
+        'attack_min': 80,
+        'attack_max': 100,
         'gold_drop_range': 1000,
         "exp_drop_range": 500,
         'item_drop_chance': 0
@@ -445,8 +438,8 @@ MONSTER_TYPES = {
     'demon king beelzebub': {
         'name': 'Demon King Beelzebub',
         'health': 750,
-        'attack_min': 35,
-        'attack_max': 45,
+        'attack_min': 150,
+        'attack_max': 200,
         'gold_drop_range': 1000,
         "exp_drop_range": 500,
         'item_drop_chance': 0
@@ -454,8 +447,8 @@ MONSTER_TYPES = {
     'demon king mammon': {
         'name': 'Demon King Mammon',
         'health': 1000,
-        'attack_min': 25,
-        'attack_max': 35,
+        'attack_min': 175,
+        'attack_max': 225,
         'gold_drop_range': 1000,
         "exp_drop_range": 500,
         'item_drop_chance': 0
@@ -463,8 +456,8 @@ MONSTER_TYPES = {
     'demon king satan': {
         'name': 'Demon King Satan',
         'health': 1000,
-        'attack_min': 50,
-        'attack_max': 75,
+        'attack_min': 300,
+        'attack_max': 400,
         'gold_drop_range': 1000,
         "exp_drop_range": 1000,
         'item_drop_chance': 0
@@ -709,9 +702,9 @@ classes = {
         },
     
     "Vampire": {
-        "health": 999,
+        "health": 120,
         "armor": 0,
-        "mana": 9999,
+        "mana": 100,
         "spells": {
             "lifesteal": [25, 30],
             "blood bomb": [25, 50]
@@ -2346,6 +2339,9 @@ rooms = {
     '2~11': {
         'east': '2~12',
         'south': '2~10',
+        'warp 1': '2~20',
+        'warp 2': '4~20',
+        'warp 3': '6~20',
         'item': 'health potion'
     },
     '2~12': {
@@ -2491,8 +2487,434 @@ rooms = {
     },
     '3~20': {
         'north': '3~17',
-        'up': '4~2',
+        'up': '4~1',
         'monster': 'demon king leviathan'
+    },
+    '4~1': {
+        'east': '4~2',
+        'south': '4~10',
+        'monster': 'demon'
+    },
+    '4~2': {
+        'south': '4~9',
+        'west': '4~1',
+        'east': '4~3',
+        'monster': 'demon'
+    },
+    '4~3': {
+        'south': '4~8',
+        'west': '4~2',
+        'east': '4~4',
+        'monster': 'demon'
+    },
+    '4~4': {
+        'south': '4~7',
+        'west': '4~3',
+        'east': '4~5',
+        'monster': 'demon'
+    },
+    '4~5': {
+        'south': '4~6',
+        'west': '4~4',
+        'monster': 'demon'
+    },
+    '4~6': {
+        'south': '4~15',
+        'west': '4~7',
+        'north': '4~5',
+        'monster': 'demon'
+    },
+    '4~7': {
+        'west': '4~8',
+        'north': '4~4',
+        'east': '4~6',
+        'south': '4~14',
+        'monster': 'demon'
+    },
+    '4~8': {
+        'west': '4~9',
+        'north': '4~3',
+        'east': '4~7',
+        'south': '4~13',
+        'monster': 'demon'
+    },
+    '4~9': {
+        'west': '4~10',
+        'north': '4~2',
+        'east': '4~8',
+        'south': '4~12',
+        'monster': 'demon'
+    },
+    '4~10': {
+        'north': '4~1',
+        'east': '4~9',
+        'south': '4~11',
+        'monster': 'demon'
+    },
+    '4~11': {
+        'north': '4~10',
+        'east': '4~8',
+        'south': '4~20',
+        'monster': 'demon'
+    },
+    '4~12': {
+        'west': '4~11',
+        'north': '4~9',
+        'east': '4~13',
+        'south': '4~19',
+        'monster': 'demon'
+    },
+    '4~13': {
+        'west': '4~12',
+        'north': '4~8',
+        'east': '4~14',
+        'south': '4~18',
+        'monster': 'demon'
+    },
+    '4~14': {
+        'west': '4~13',
+        'north': '4~7',
+        'east': '4~15',
+        'south': '4~17',
+        'monster': 'demon'
+    },
+    '4~15': {
+        'west': '4~14',
+        'north': '4~6',
+        'south': '4~16',
+        'monster': 'demon'
+    },
+    '4~16': {
+        'north': '4~15',
+        'west': '4~17',
+        'monster': 'demon'
+    },
+    '4~17': {
+        'west': '4~18',
+        'north': '4~14',
+        'east': '4~16',
+        'item': 'health potion'
+    },
+    '4~18': {
+        'west': '4~19',
+        'north': '4~13',
+        'east': '4~17',
+        'monster': 'demon'
+    },
+    '4~19': {
+        'west': '4~20',
+        'north': '4~12',
+        'east': '4~18',
+        'warp 2': '2~11',
+        'item': 'health potion',
+        'lore': "The air is getting colder around you..."
+    },
+    '4~20': {
+        'north': '4~11',
+        'east': '4~19',
+        'up': '5~5',
+        'monster': 'demon king belphegor'
+    },
+    '5~1': {
+        'east': '5~5',
+        'north': '5~7',
+        'south': '5~16',
+        'monster': 'demon'
+    },
+    '5~2': {
+        'west': '5~18',
+        'monster': 'demon'
+    },
+    '5~3': {
+        'north': '5~17',
+        'south': '5~13',
+        'monster': 'demon'
+    },
+    '5~4': {
+        'south': '5~11',
+        'monster': 'demon'
+    },
+    '5~5': {
+        'west': '5~1',
+        'down': '4~20',
+        'north': '5~6',
+        'east': '5~11',
+        'south': '5~18',
+        'monster': 'demon'
+    },
+    '5~6': {
+        'west': '5~7',
+        'south': '5~5',
+        'monster': 'demon'
+    },
+    '5~7': {
+        'east': '5~6',
+        'west': '5~10',
+        'south': '5~1',
+        'monster': 'demon'
+    },
+    '5~8': {
+        'north': '5~19',
+        'monster': 'demon'
+    },
+    '5~9': {
+        'east': '5~16',
+        'monster': 'demon'
+    },
+    '5~10': {
+        'east': '5~7',
+        'south': '5~15',
+        'west': '5~14',
+        'monster': 'demon'
+    },
+    '5~11': {
+        'west': '5~5',
+        'north': '5~4',
+        'item': 'health potion'
+    },
+    '5~12': {
+      'north': '5~18',
+      'east': '5~17',
+      'west': '5~19',
+      'monster': 'demon'
+    },
+    '5~13': {
+        'north': '5~3',
+        'monster': 'demon'
+    },
+    '5~14': {
+        "east": "5~10",
+        'monster': 'demon'
+    },
+    '5~15': {
+        'north': '5~10',
+        'item': 'health potion'
+    },
+    '5~16': {
+        'north': '5~1',
+        'west': '5~9',
+        'monster': 'demon'
+    },
+    '5~17': {
+        'west': '5~12',
+        'south': '5~3',
+        'item': 'health potion'
+    },
+    '5~18': {
+        'north': '5~5',
+        'east': '5~2',
+        'south': '5~12',
+        'monster': 'demon'
+    },
+    '5~19': {
+        'west': '5~20',
+        'south': '5~8',
+        'east': '5~12',
+        'monster': 'demon',
+        'lore': 'What a horrible night to have a curse...'
+    },
+    '5~20': {
+        'east': '5~19',
+        'up': '6~1',
+        'monster': 'demon king beelzebub'
+    },
+    '6~1': {
+        'east': '6~13',
+        'north': '6~2',
+        'south': '6~19',
+        'monster': 'demon'
+    },
+    '6~2': {
+        'west': '6~3',
+        'south': '6~1',
+        'monster': 'demon'
+    },
+    '6~3': {
+        'west': '6~4',
+        'east': '6~2',
+        'monster': 'demon'
+    },
+    '6~4': {
+        'south': '6~5',
+        'east': '6~3',
+        'monster': 'demon'
+    },
+    '6~5': {
+        'west': '6~6',
+        'north': '6~4',
+        'monster': 'demon'
+    },
+    '6~6': {
+        'south': '6~7',
+        'east': '6~5',
+        'north': '6~8',
+        'monster': 'demon'
+    },
+    '6~7': {
+        'north': '6~6',
+        'monster': 'demon'
+    },
+    '6~8': {
+        'north': '6~9',
+        'south': '6~6',
+        'monster': 'demon'
+    },
+    '6~9': {
+        'south': '6~8',
+        'monster': 'demon'
+    },
+    '6~10': {
+        'south': '6~12',
+        'west': '6~11',
+        'monster': 'demon'
+    },
+    '6~11': {
+        'east': '6~10',
+        'item': 'health potion'
+    },
+    '6~12': {
+      'north': '6~10',
+      'south': '6~15',
+      'monster': 'demon'
+    },
+    '6~13': {
+        'west': '6~1',
+        'east': '6~15',
+        'monster': 'demon'
+    },
+    '6~14': {
+        "west": "6~17",
+        'monster': 'demon'
+    },
+    '6~15': {
+        'north': '6~12',
+        'west': '6~13',
+        'south': '6~16',
+        'item': 'health potion'
+    },
+    '6~16': {
+        'north': '6~17',
+        'monster': 'demon'
+    },
+    '6~17': {
+        'east': '6~14',
+        'south': '6~16',
+        'north': '6~15',
+        'item': 'health potion'
+    },
+    '6~18': {
+        'east': '6~1',
+        'monster': 'demon'
+    },
+    '6~19': {
+        'north': '6~1',
+        'south': '6~20',
+        'monster': 'demon',
+        'lore': 'Otherworldly voices linger around you...'
+    },
+    '6~20': {
+        'north': '6~19',
+        'up': '7~1',
+        'monster': 'demon king beelzebub'
+    },
+    '7~1': {
+        'west': '7~2',
+        'monster': 'demon'
+    },
+    '7~2': {
+        'south': '7~3',
+        'east': '7~1',
+        'monster': 'demon'
+    },
+    '7~3': {
+        'west': '7~4',
+        'north': '7~2',
+        'monster': 'demon'
+    },
+    '7~4': {
+        'south': '7~5',
+        'east': '7~3',
+        'monster': 'demon'
+    },
+    '7~5': {
+        'north': '7~4',
+        'west': '7~6',
+        'monster': 'demon'
+    },
+    '7~6': {
+        'south': '7~7',
+        'north': '7~5',
+        'monster': 'demon'
+    },
+    '7~7': {
+        'north': '7~6',
+        'west': '7~8',
+        'monster': 'demon'
+    },
+    '7~8': {
+        'east': '7~7',
+        'west': '7~9',
+        'monster': 'demon'
+    },
+    '7~9': {
+        'west': '7~10',
+        'east': '7~8',
+        'monster': 'demon'
+    },
+    '7~10': {
+        'east': '7~9',
+        'north': '7~11',
+        'monster': 'demon'
+    },
+    '7~11': {
+        'east': '7~12',
+        'south': '7~10',
+        'monster': 'demon'
+    },
+    '7~12': {
+      'south': '7~13',
+      'west': '7~11',
+      'monster': 'demon'
+    },
+    '7~13': {
+        'west': '7~14',
+        'north': '7~12',
+        'monster': 'demon'
+    },
+    '7~14': {
+        'west': '7~15',
+        "east": "7~13",
+        'monster': 'demon'
+    },
+    '7~15': {
+        'north': '7~16',
+        'east': '7~14',
+        'monster': 'demon'
+    },
+    '7~16': {
+        'south': '7~15',
+        'east': '7~17',
+        'monster': 'demon'
+    },
+    '7~17': {
+        'west': '7~16',
+        'south': '7~18',
+        'monster': 'demon',
+    },
+    '7~18': {
+        'west': '7~19',
+        'north': '7~17',
+        'monster': 'demon'
+    },
+    '7~19': {
+        'east': '7~19',
+        'south': '7~20',
+        'monster': 'demon',
+        'lore': "Impending doom approaches..."
+    },
+    '7~20': {
+        'north': '7~19',
+        'monster': 'demon king satan'
     }
 }
 
@@ -2714,7 +3136,7 @@ def display_table(title, items, columns=None):
     
     if columns is None:
         columns = [
-            ("Item Name", 22),
+            ("Item Name", 23),
             ("Price", 17),
             ("Description", 32)
         ]
@@ -2979,7 +3401,103 @@ while True:
                 }
                 enemies.append(enemy)
                 print_slow(f"{enemy['name']} appears!")
-            else:  # normal monster - generate 1-3 random monsters
+            elif monster_type == 'demon king lucifer':
+                enemy_type = MONSTER_TYPES['demon king lucife']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon king asmodeus':
+                enemy_type = MONSTER_TYPES['demon king asmodeus']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon king leviathan':
+                enemy_type = MONSTER_TYPES['demon king leviathan']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon king belphegor':
+                enemy_type = MONSTER_TYPES['demon king belphegor']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon king beelzebub':
+                enemy_type = MONSTER_TYPES['demon king beelzebub']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon king mammon':
+                enemy_type = MONSTER_TYPES['demon king mammon']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon king satan':
+                enemy_type = MONSTER_TYPES['demon king satans']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            elif monster_type == 'demon':
+                enemy_type = MONSTER_TYPES['demon']
+                enemy = {
+                    "health": enemy_type['health'],
+                    "name": enemy_type['name'],
+                    "attack_min": enemy_type['attack_min'],
+                    "attack_max": enemy_type['attack_max'],
+                    "stunned": 0,
+                    "blinded": 0
+                }
+                enemies.append(enemy)
+                print_slow(f"{enemy['name']} appears!")
+            else:  # normal monster - generate 1-5 random monsters
                 if player["level"] <= 3:
                     num_monsters = 1
                 elif player["level"] <= 5:
@@ -3575,7 +4093,60 @@ while True:
                                     print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                                 else:
                                     print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                        elif monster_type == "demon":
+                            # Normal monster rewards - based on how many were defeated
+                            gold_dropped = random.randint(
+                                MONSTER_TYPES['normal']['gold_drop_range'][0],
+                                MONSTER_TYPES['normal']['gold_drop_range'][1]
+                            )
+                            exp_earned = random.randint(
+                                MONSTER_TYPES['normal']['exp_drop_range'][0],
+                                MONSTER_TYPES['normal']['exp_drop_range'][1]
+                            )* int(currentRoom[0])
+                            
+                            # Chance for armor drops
+                            if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
+                                slot = random.choice(list(ARMOR_SLOTS.keys()))
+                                tier = random.choice(['leather', 'chainmail', 'iron'])
+                                dropped_item = f"{tier} {slot}"
+                                inventory.append(dropped_item)
+                                print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
+                            
+                            # Key fragment drop chance
+                            if random.random() < player['key_fragment_chance']:
+                                inventory.append("key fragment")
+                                print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                            
+                            print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned * num_monsters
 
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                         else:
                             # Normal monster rewards - based on how many were defeated
                             gold_dropped = random.randint(
@@ -3597,18 +4168,13 @@ while True:
                                 print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
                             
                             # Key fragment drop chance
-                            if random.random() < player['key_fragment_chance']:
+                            if random.random() < player['key_fragment_chance'] and not "bleeding key" in inventory and not inventory.count('key fragment') > 2:
                                 inventory.append("key fragment")
                                 print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
-                            
-                            if not "d" in currentRoom:
-                                print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
-                                player["gold"] += gold_dropped
-                                player["exp"] += exp_earned * num_monsters
-                            elif "d" in currentRoom:
-                                print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters * 3} exp{RESET}!")
-                                player["gold"] += gold_dropped
-                                player["exp"] += exp_earned * num_monsters * 3
+
+                            print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
+                            player["gold"] += gold_dropped
+                            player["exp"] += exp_earned * num_monsters
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
