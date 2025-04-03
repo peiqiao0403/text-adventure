@@ -192,5 +192,35 @@ Eleven types of enemies:
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
+-   **Demon King Belphegor**:
+    -   Health: 600
+    -   Attack range: 50-80
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
+-   **Demon King Beelzebub**:
+    -   Health: 600
+    -   Attack range: 50-80
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
+-   **Demon King **:
+    -   Health: 600
+    -   Attack range: 50-80
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
+-   **Demon King Mammon**:
+    -   Health: 600
+    -   Attack range: 50-80
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
+-   **Demon King Satan**:
+    -   Health: 1000
+    -   Attack range: 300-400
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
 
 This documentation covers all major aspects of the game. Please use the help system during gameplay for additional details about specific mechanics or commands.
