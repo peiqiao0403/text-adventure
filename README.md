@@ -36,7 +36,7 @@ The game offers five distinct character classes, each with unique abilities and 
  
 ## Tier 2 Classes
 
-In addition to these classes, once you reach level 15, you will become one of these classes, depending on the class you first chose:
+In addition to these classes, once you reach level 20, you will become one of these classes, depending on the class you first chose:
 
 -   **Paladin**
     -   Health: 204
@@ -153,23 +153,32 @@ The game world is divided into rooms, each with:
 
 ### Monster Types
 
-Three types of enemies:
+Eleven types of enemies:
 
 -   **Normal Monsters**:
     -   Health: 50
     -   Attack range: 5-15
     -   Gold drop: 10-30
+    -   EXP drop: 3-5
     -   Item drop chance: 20%
 -   **Boss Monsters**:
     -   Health: 200
     -   Attack range: 25-35
     -   Gold drop: 100-150
+    -   EXP drop: 5-10
     -   Item drop chance: 100%
 -   **Count Dracula**:
     -   Health: 250
     -   Attack range: 35-45
     -   Gold drop: 500-1000
+    -   EXP drop: 50-100
     -   Item drop chance: 100%
     -   Special: Life drain ability
+-   **Demon King Lucifer**
+    -   Health: 500
+    -   Attack range: 50-75
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
 
 This documentation covers all major aspects of the game. Please use the help system during gameplay for additional details about specific mechanics or commands.
