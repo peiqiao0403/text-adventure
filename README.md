@@ -181,38 +181,38 @@ Eleven types of enemies:
     -   EXP drop: 20-30
     -   Item drop chance: 0%
 -   **Demon King Lucifer**
-    -   Health: 500
+    -   Health: 300
     -   Attack range: 50-75
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
 -   **Demon King Asmodeus**:
-    -   Health: 600
-    -   Attack range: 50-80
+    -   Health: 400
+    -   Attack range: 50-85
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
+-   **Demon King Leviathan**:
+    -   Health: 500
+    -   Attack range: 75-100
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
 -   **Demon King Belphegor**:
     -   Health: 600
-    -   Attack range: 50-80
+    -   Attack range: 80-100
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
 -   **Demon King Beelzebub**:
-    -   Health: 600
-    -   Attack range: 50-80
-    -   Gold drop: 1000
-    -   EXP drop: 500
-    -   Item drop chance: 0%
--   **Demon King **:
-    -   Health: 600
-    -   Attack range: 50-80
+    -   Health: 750
+    -   Attack range: 150-200
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
 -   **Demon King Mammon**:
-    -   Health: 600
-    -   Attack range: 50-80
+    -   Health: 1000
+    -   Attack range: 175-225
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
