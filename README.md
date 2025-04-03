@@ -174,9 +174,21 @@ Eleven types of enemies:
     -   EXP drop: 50-100
     -   Item drop chance: 100%
     -   Special: Life drain ability
+-   **Demon**:
+    -   Health: 100
+    -   Attack range: 25-35
+    -   Gold drop: 50-100
+    -   EXP drop: 20-30
+    -   Item drop chance: 0%
 -   **Demon King Lucifer**
     -   Health: 500
     -   Attack range: 50-75
+    -   Gold drop: 1000
+    -   EXP drop: 500
+    -   Item drop chance: 0%
+-   **Demon King Asmodeus**:
+    -   Health: 600
+    -   Attack range: 50-80
     -   Gold drop: 1000
     -   EXP drop: 500
     -   Item drop chance: 0%
