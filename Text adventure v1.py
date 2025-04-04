@@ -152,10 +152,6 @@ def load_game():
         print_slow(f"Error loading game: {str(e)}")
         return False
 
-    
-
-
-
 def count_visible_chars(text):
     count = 0
     in_escape = False
@@ -208,9 +204,9 @@ def display_credits():
     f"{BLUE}Game Features:{RESET}\n",
     "10 Unique Classes\n",
     "340 Rooms to Explore\n",
-    "12 Levels to Defeat\n",
+    "11 Levels to Defeat\n",
     "50+ Items to Collect\n",
-    "200+ Monsters to Battle\n",
+    "200 Monsters to Battle\n",
     "Leveling up system\n",
     "\n",
     f"{BLUE}Technical Details:{RESET}\n",
@@ -235,6 +231,70 @@ def display_credits():
         else:
             time.sleep(0.1)
         
+def display_DLC_credits():
+    """Display the end credits when reaching the final room"""
+    clear_screen()
+    print_credits("\n" + "="*50+"\n")
+    print_credits(f"{GREEN}CONGRATULATIONS!{RESET}\n")
+    print_credits(f"You've completed Text Hero!\n")
+    print_credits("="*50 + "\n")
+    print_credits(r'''
+      _____         _      _   _
+     |_   _|____  _| |_   | | | | ___ _ __ ___
+       | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
+       | |  __/>  <| |_   |  _  |  __/ | | (_) |
+       |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/
+                  Salvation Edition'''   
+    )
+    # Credits scroll
+    print_credits(f"\n")
+    print_credits(f"{BLUE}Development Team:{RESET}\n")
+    print_credits(f"Lead Developer & Creator: {BLUE}Chales{RESET}\n")
+    print_credits(f"Developer: {BLUE}arnesito{RESET}\n")
+    print_credits(f"Developer & Designer: {BLUE}Moltd{RESET}\n")
+    print_credits("\n")
+    print_credits(f"{BLUE}DLC Development Team:{RESET}\n")
+    print_credits(f"DLC Developer: {BLUE}arnesito{RESET}\n")
+    print_credits("\n")
+    print_credits(f"{BLUE}Quality Assurance Team:{RESET}\n")
+    print_credits(f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n")
+    print_credits("\n")
+    print_credits(f"{BLUE}Playtesting Team:{RESET}\n")
+    print_credits(f"{GREEN}David Sucks At Life{RESET}\n")
+    print_credits(f"{GREEN}Bee1949{RESET}\n")
+    print_credits(f"{GREEN}Not Guy Stew{RESET}\n")
+    print_credits(f"{GREEN}Vroom Vroom Snail{RESET}\n")
+    print_credits("\n")
+    print_credits(f"{BLUE}Game Features:{RESET}\n")
+    print_credits("10 Unique Classes\n")
+    print_credits("340 Rooms to Explore\n")
+    print_credits("11 Levels to Defeat\n")
+    print_credits("50+ Items to Collect\n")
+    print_credits("200 Monsters to Battle\n")
+    print_credits("Leveling up system\n")
+    print_credits("\n")
+    print_credits(f"{BLUE}Technical Details:{RESET}\n")
+    print_credits("Custom ANSI Color System\n")
+    print_credits("Dynamic Combat Engine\n")
+    print_credits("Save/Load System\n")
+    print_credits("Crafting System\n")
+    print_credits("\n")
+    print_credits(f"{BLUE}Thanks for Playing!{RESET}\n")
+    print_credits(f"{BLUE}press enter to quit{RESET}")
+    input()
+    quit()
+    
+    screen_width = 50
+    for line in credits:
+        visible_length = count_visible_chars(line)
+        padding = " " * ((screen_width - visible_length) // 2)
+        centered_line = padding + line
+        print_credits(centered_line)
+        if line.strip() == "":
+            time.sleep(0.5)  # Longer pause for empty lines
+        else:
+            time.sleep(0.1)
+
 # Define armor tiers and their properties
 ARMOR_TIERS = {
     'leather': {'defense': 1},
@@ -642,7 +702,8 @@ ARMOR_IMPROVEMENTS = {
     16: 15,
     17: 16,
     18: 17,
-    19: 18
+    19: 18,
+    20: 20
 }
 
 classes = {
@@ -654,7 +715,7 @@ classes = {
             "slash": [15, 20], 
             "mordschlang": [10, 15]
             }, 
-        "attack": 25
+        "attack": 1000
     },
 
     "Mage": {
@@ -743,6 +804,7 @@ locked_spells = {
     "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 20]},
     "Healer": {'divine shield': [0, 15], "circle heal": [20, 35]},
     "Archer": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]},
+    "Vampire": {'blood spear': [30, 65], 'haemolacria': [50, 100]},
     "Paladin": {"holy strike": [25, 50], "healing pool": [10, 10]},
     "Archmage": {"tidal wave": [15, 30], "kamehameha": [50, 125]},
     "Assassin": {"Assassinate": [20, 40], "ultrakill": [40, 80]},
@@ -751,7 +813,6 @@ locked_spells = {
 }
 
 class HelpSystem:
-
     def __init__(self):
         self.pages = {
             'commands': '''\nCommands Reference\n=================\nBasic Commands:\n- go [direction]     - Move character\n- get [item]         - Pick up items\n- use [item]         - Use items\n- help              - Show this menu\n- remove [slot]      - Remove armor from slot\n- equip [type] [slot]- Equip armor in slot\n- list              - Show market items\n- buy [item]        - Buy from market\n- sell [item]       - Sell to market\n''',
@@ -995,7 +1056,7 @@ rooms = {
     '1-1': {
         "east": '1-2',
         "item": "health potion",
-        'lore': 'Lord Xyron has vanished. You need to get back to him.',
+        'lore': 'You have recieved a message: CLEANSE THE TOWER OF DEMONS',
         'hint': 'In this game, you use cardinal directions to travel. There are some keyboard shortcuts. EG - n for north, s for south, e for east, w for west.'
     },
     '1-2': {
@@ -2800,7 +2861,7 @@ rooms = {
         'east': '6~14',
         'south': '6~16',
         'north': '6~15',
-        'item': 'health potion'
+        'monster': 'demon'
     },
     '6~18': {
         'east': '6~1',
@@ -2914,8 +2975,10 @@ rooms = {
     },
     '7~20': {
         'north': '7~19',
+        'up': '?~??',
         'monster': 'demon king satan'
-    }
+    },
+    '?~??': {}
 }
 
 BLACKSMITH_RECIPES = {
@@ -3234,7 +3297,7 @@ def show_inventory():
             print_slow(f"{ITEM_COLOR} - {item}{GREEN}")
 
 # Main game loop
-currentRoom = '1-1'
+currentRoom = '7~20'
 help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
@@ -3307,11 +3370,14 @@ def get_spell_description(spell_name):
         "arrow of light": "Fire a holy arrow, blinding enemies",
         "midas prime": "A spell derived from the ultimate being of the lust level of hell",
         "mordshlang": "An ancient technique used by masters to bash your enemy's skull in",
-        "boulder": "Throw a boulder at your enemies",
+        "boulder": "Throw a boulder at the enemy",
         "knife throw": "Throw a knife",
         "divine retribution": "The wrath of the gods will aid you in battle",
         "double shot": "Shoot 2 arrows at once",
-        "blood bomb": "Release an explosive blood sack"
+        "blood bomb": "Release an explosive blood sack",
+        "lifesteal": "Drain the life force of the enemy", 
+        "blood spear": "Shoot a spear of blood at the enemy",
+        "haemolacria": "launch a giant bloody tear at the enemy"
     }
     return descriptions.get(spell_name, "")
 
@@ -3366,6 +3432,10 @@ while True:
         else:
             display_credits()
             exit()
+
+    if currentRoom == '?~??':
+        display_DLC_credits()
+        exit()
 
     if currentRoom in rooms:
         if "monster" in rooms[currentRoom]:
@@ -3474,7 +3544,7 @@ while True:
                 enemies.append(enemy)
                 print_slow(f"{enemy['name']} appears!")
             elif monster_type == 'demon king satan':
-                enemy_type = MONSTER_TYPES['demon king satans']
+                enemy_type = MONSTER_TYPES['demon king satan']
                 enemy = {
                     "health": enemy_type['health'],
                     "name": enemy_type['name'],
@@ -3846,10 +3916,10 @@ while True:
                                 MONSTER_TYPES['lucifer']['exp_drop_range'][0],
                                 MONSTER_TYPES['lucifer']['exp_drop_range'][1]
                             )
-                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
                             
-                            player["gold"] += gold_dropped
-                            player["exp"] += exp_earned
+                            player["gold"] += 1000
+                            player["exp"] += 500
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
@@ -3880,20 +3950,12 @@ while True:
 
                         elif monster_type == 'demon king asmodeus':
                             # Boss rewards
-                            gold_dropped = random.randint(
-                                MONSTER_TYPES['demon king asmodeus']['gold_drop_range'][0],
-                                MONSTER_TYPES['demon king asmodeus']['gold_drop_range'][1]
-                            )
-                            exp_earned = random.randint(
-                                MONSTER_TYPES['demon king asmodeus']['exp_drop_range'][0],
-                                MONSTER_TYPES['demon king asmodeus']['exp_drop_range'][1]
-                            ) * int(currentRoom[0])
                             for i in range(5):
                                 inventory.append("adamantite bar")
                             print_slow(f"{RESET}Demon King Asmodeus dropped 5 {ITEM_COLOR}Adamanmtite bars{RESET}!")
-                            print_slow(f"You defeated Demon King Asmodeus!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
-                            player["gold"] += gold_dropped
-                            player["exp"] += exp_earned
+                            print_slow(f"You defeated Demon King Asmodeus!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            player["gold"] += 1000
+                            player["exp"] += 500
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
@@ -3932,10 +3994,10 @@ while True:
                                 MONSTER_TYPES['leviathan']['exp_drop_range'][0],
                                 MONSTER_TYPES['leviathan']['exp_drop_range'][1]
                             )
-                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
                             
-                            player["gold"] += gold_dropped
-                            player["exp"] += exp_earned
+                            player["gold"] += 1000
+                            player["exp"] += 500
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
@@ -3966,20 +4028,12 @@ while True:
 
                         elif monster_type == 'demon king belphegor':
                             # Boss rewards
-                            gold_dropped = random.randint(
-                                MONSTER_TYPES['demon king belphegor']['gold_drop_range'][0],
-                                MONSTER_TYPES['demon king belphegor']['gold_drop_range'][1]
-                            )
-                            exp_earned = random.randint(
-                                MONSTER_TYPES['demon king belphegor']['exp_drop_range'][0],
-                                MONSTER_TYPES['demon king belphegor']['exp_drop_range'][1]
-                            ) * int(currentRoom[0])
                             for i in range(5):
                                 inventory.append("hallowed bar")
                             print_slow(f"{RESET}Demon King Belphegor dropped 5 {ITEM_COLOR}Hallowed bars{RESET}!")
-                            print_slow(f"You defeated Demon King Belphegor!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
-                            player["gold"] += gold_dropped
-                            player["exp"] += exp_earned
+                            print_slow(f"You defeated Demon King Belphegor!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            player["gold"] += 1000
+                            player["exp"] += 500
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
@@ -4009,19 +4063,10 @@ while True:
                                     print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
                         
                         elif monster_type == 'demon king beelzebub':
-                            # Vampire rewards
-                            gold_dropped = random.randint(
-                                MONSTER_TYPES['demon king beelzebub']['gold_drop_range'][0],
-                                MONSTER_TYPES['demon king beelzebub']['gold_drop_range'][1]
-                            )
-                            exp_earned = random.randint(
-                                MONSTER_TYPES['beelzebub']['exp_drop_range'][0],
-                                MONSTER_TYPES['beelzebub']['exp_drop_range'][1]
-                            )
-                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
                             
-                            player["gold"] += gold_dropped
-                            player["exp"] += exp_earned
+                            player["gold"] += 1000
+                            player["exp"] += 500
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
@@ -4052,20 +4097,44 @@ while True:
                         
                         elif monster_type == 'demon king mammon':
                             # Boss rewards
-                            gold_dropped = random.randint(
-                                MONSTER_TYPES['demon king mammon']['gold_drop_range'][0],
-                                MONSTER_TYPES['demon king mammon']['gold_drop_range'][1]
-                            )
-                            exp_earned = random.randint(
-                                MONSTER_TYPES['demon king mammon']['exp_drop_range'][0],
-                                MONSTER_TYPES['demon king mammon']['exp_drop_range'][1]
-                            ) * int(currentRoom[0])
                             for i in range(5):
                                 inventory.append("cosmilite bar")
                             print_slow(f"{RESET}Demon King Mammon dropped 5 {ITEM_COLOR}Cosmilite bars{RESET}!")
-                            print_slow(f"You defeated Demon King Mammon!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
-                            player["gold"] += gold_dropped
-                            player["exp"] += exp_earned
+                            print_slow(f"You defeated Demon King Mammon!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            player["gold"] += 1000
+                            player["exp"] += 500
+
+                            for i in range(2, 51):
+                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                    player["level"] = i
+                                    player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
+                                    player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
+                                    player["mana"] = math.ceil(BASE_STATS["mana"] * LEVEL_IMPROVEMENTS[i])
+                                    if player["level"] > 20:
+                                        player["armor"] = 20
+                                    else:
+                                        player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow("Your stats have improved!")
+                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    if not player["armor"] == 20:
+                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                else:
+                                    pass
+                            if player["level"] >= 20 and player["class 2"] == None:
+                                player["class 2"] = class_to_get_to_tier_2[player["class"]]
+                                player["spells"] = spells_tier_2[player["class 2"]]
+                                if player["class"] == "Rogue" or player["class"] == "Mage":
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                else:
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                        elif monster_type == 'demon king satan':
+                            # Boss rewards
+                            print_slow(f"You defeated Demon King Satan!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}1000 exp{RESET}!")
+                            player["gold"] += 1000
+                            player["exp"] += 1000
 
                             for i in range(2, 51):
                                 if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
@@ -4102,7 +4171,7 @@ while True:
                             exp_earned = random.randint(
                                 MONSTER_TYPES['normal']['exp_drop_range'][0],
                                 MONSTER_TYPES['normal']['exp_drop_range'][1]
-                            )* int(currentRoom[0])
+                            )
                             
                             # Chance for armor drops
                             if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
