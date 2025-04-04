@@ -3297,7 +3297,7 @@ def show_inventory():
             print_slow(f"{ITEM_COLOR} - {item}{GREEN}")
 
 # Main game loop
-currentRoom = '7~20'
+currentRoom = '1-1'
 help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
