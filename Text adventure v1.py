@@ -303,7 +303,7 @@ ARMOR_TIERS = {
     'mythril': {'defense': 7},
     'adamantite': {'defense': 10},
     'hallowed': {'defense': 12},
-    'god slayer': {'defense': 15}
+    'godslayer': {'defense': 15}
 }
 
 # Add sword tiers
@@ -314,7 +314,7 @@ SWORD_TIERS = {
     'mythril': {'damage': 20},
     'adamantite': {'damage': 25},
     'hallowed': {'damage': 35},
-    'god slayer': {'damage': 50}
+    'godslayer': {'damage': 50}
 }
 def print_credits(text):
     
@@ -415,10 +415,10 @@ MARKET_ITEMS = {
 }
 # Define armor slots and their available items
 ARMOR_SLOTS = {
-    'helmet': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer'],
-    'chestplate': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer'],
-    'pants': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer'],
-    'boots': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'god slayer']
+    'helmet': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'godslayer'],
+    'chestplate': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'godslayer'],
+    'pants': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'godslayer'],
+    'boots': ['leather', 'chainmail', 'iron', 'mythril', 'adamantite', 'hallowed', 'godslayer']
 }
 
 MONSTER_TYPES = {
@@ -3021,27 +3021,27 @@ BLACKSMITH_RECIPES = {
 
 UPGRADED_BLACKSMITH_RECIPES = {
     'adamantite sword': {
-        'materials': {'adamantite': 1},
+        'materials': {'adamantite bar': 1},
         'price': 300,
         'description': '+25 attack damage'
     },
     'adamantite helmet': {
-        'materials': {'adamantite': 1},
+        'materials': {'adamantite bar': 1},
         'price': 225,
         'description': '+10 defense'
     },
     'adamantite chestplate': {
-        'materials': {'adamantite': 1},
+        'materials': {'adamantite bar': 1},
         'price': 300,
         'description': '+10 defense'
     },
     'adamantite pants': {
-        'materials': {'adamantite': 1},
+        'materials': {'adamantite bar': 1},
         'price': 250,
         'description': '+10 defense'
     },
     'adamantite boots': {
-        'materials': {'adamantite': 1},
+        'materials': {'adamantite bar': 1},
         'price': 200,
         'description': '+10 defense'
     },
@@ -3070,27 +3070,27 @@ UPGRADED_BLACKSMITH_RECIPES = {
         'price': 250,
         'description': '+12 defense'
     },
-    'god slayer sword': {
+    'godslayer sword': {
         'materials': {'cosmilite bar': 1},
         'price': 500,
         'description': '+50 attack damage'
     },
-    'god slayer helmet': {
+    'godslayer helmet': {
         'materials': {'cosmilite bar': 1},
         'price': 350,
         'description': '+15 defense'
     },
-    'god slayer chestplate': {
+    'godslayer chestplate': {
         'materials': {'cosmilite bar': 1},
         'price': 500,
         'description': '+15 defense'
     },
-    'god slayer pants': {
+    'godslayer pants': {
         'materials': {'cosmilite bar': 1},
         'price': 350,
         'description': '+15 defense'
     },
-    'god slayer boots': {
+    'godslayer boots': {
         'materials': {'cosmilite bar': 1},
         'price': 300,
         'description': '+15 defense'
@@ -3164,7 +3164,7 @@ player = {
     "class 2": None,
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
-    "gold": 0,  # Starting gold
+    "gold": 999999,  # Starting gold
     "level": 1,
     "exp": 0,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
@@ -3186,7 +3186,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['spell book','spell book','spell book']
+inventory = ['spell book','spell book','spell book', 'adamantite bar', 'adamantite bar', 'adamantite bar', 'adamantite bar', 'adamantite bar', 'hallowed bar', 'hallowed bar', 'hallowed bar', 'hallowed bar', 'hallowed bar', 'cosmilite bar', 'cosmilite bar', 'cosmilite bar', 'cosmilite bar', 'cosmilite bar']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -3200,7 +3200,7 @@ def display_table(title, items, columns=None):
     if columns is None:
         columns = [
             ("Item Name", 23),
-            ("Price", 17),
+            ("Price", 18),
             ("Description", 32)
         ]
     
@@ -3280,6 +3280,33 @@ def forge_item(item_name):
     inventory.append(item_name)
     return f"Forged {item_name} for {price} gold!"
 
+def forge_DLC_item(item_name):
+    """Handle crafting items at the blacksmith"""
+    if item_name not in UPGRADED_BLACKSMITH_RECIPES:
+        return "That item isn't available to forge!"
+    
+    recipe = UPGRADED_BLACKSMITH_RECIPES[item_name]
+    price = recipe['price']
+    
+    # Check if player has enough gold
+    if player['gold'] < price:
+        return f"You don't have enough gold! (Need {price} gold)"
+    
+    # Check if player has required materials
+    for material, amount in recipe['materials'].items():
+        count = inventory.count(material)
+        if count < amount:
+            return f"You need {amount} {material}(s)! (Have {count})"
+    
+    # Remove materials and gold, add forged item
+    for material, amount in recipe['materials'].items():
+        for _ in range(amount):
+            inventory.remove(material)
+    
+    player['gold'] -= price
+    inventory.append(item_name)
+    return f"Forged {item_name} for {price} gold!"
+
 def show_inventory():
     print_slow(f"{GREEN}Inventory:{ITEM_COLOR}")
     if not inventory:
@@ -3297,7 +3324,7 @@ def show_inventory():
             print_slow(f"{ITEM_COLOR} - {item}{GREEN}")
 
 # Main game loop
-currentRoom = '1-1'
+currentRoom = '2~11'
 help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
@@ -3718,7 +3745,7 @@ while True:
                                 }
                                 turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
                                 enemy["health"] -= damage
-                            elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow", "eternity", "supernova", "phantasm", "assassinate", "tidal wave", "ultrakill", "midas prime", "kamehameha", "mordschlang", "boulder", "blood bomb"]:
+                            elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow", "eternity", "supernova", "phantasm", "assassinate", "tidal wave", "ultrakill", "midas prime", "kamehameha", "mordschlang", "boulder", "blood bomb", "blood spear", "haemolacria"]:
                                 base_damage = player["spells"][spell_name][0]
                                 damage = int(base_damage * (spell_percent / 100))
                                 turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
@@ -4538,9 +4565,14 @@ while True:
             result = sell_item(item_name)
             print_slow(result)
             continue
-        elif move[0] == 'forge' and currentRoom == '1-13' or move[0] == 'forge' and currentRoom == '2~11':
+        elif move[0] == 'forge' and currentRoom == '1-13':
             item_name = " ".join(move[1:])
             result = forge_item(item_name)
+            print_slow(result)
+            continue
+        elif move[0] == 'forge' and currentRoom == '2~11':
+            item_name = " ".join(move[1:])
+            result = forge_DLC_item(item_name)
             print_slow(result)
             continue
 
