@@ -432,7 +432,7 @@ MONSTER_TYPES = {
         'item_drop_chance': 0.2
     },
     'demon': {
-        'names': ['Demon'],
+        'names': ['Demon', 'Incubus', 'Succubus', 'Poltergeist', 'Oni', 'Rakshaka'],
         'health': 100,
         'attack_min': 5,
         'attack_max': 15,
@@ -715,7 +715,7 @@ classes = {
             "slash": [15, 20], 
             "mordschlang": [10, 15]
             }, 
-        "attack": 1000
+        "attack": 25
     },
 
     "Mage": {
@@ -3164,7 +3164,7 @@ player = {
     "class 2": None,
     "spells": classes[chosen_class]["spells"],
     "attack": classes[chosen_class]["attack"],
-    "gold": 999999,  # Starting gold
+    "gold": 0,  # Starting gold
     "level": 1,
     "exp": 0,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
@@ -3324,7 +3324,7 @@ def show_inventory():
             print_slow(f"{ITEM_COLOR} - {item}{GREEN}")
 
 # Main game loop
-currentRoom = '2~11'
+currentRoom = '1-1'
 help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
@@ -3436,6 +3436,23 @@ def sell_item(item_name):
 # Add this function to generate a random normal monster
 def generate_random_monster():
     enemy_type = MONSTER_TYPES['normal']
+    enemy_name = random.choice(enemy_type['names'])
+    
+    # Add some randomness to monster stats
+    health_variation = random.uniform(0.8, 1.2)  # 80% to 120% of base health
+    attack_variation = random.uniform(0.9, 1.1)  # 90% to 110% of base attack
+    
+    return {
+        "health": int(enemy_type['health'] * health_variation),
+        "name": enemy_name,
+        "attack_min": int(enemy_type['attack_min'] * attack_variation),
+        "attack_max": int(enemy_type['attack_max'] * attack_variation),
+        "stunned": 0,
+        "blinded": 0
+    }
+
+def generate_random_demon():
+    enemy_type = MONSTER_TYPES['demon']
     enemy_name = random.choice(enemy_type['names'])
     
     # Add some randomness to monster stats
@@ -3583,17 +3600,28 @@ while True:
                 enemies.append(enemy)
                 print_slow(f"{enemy['name']} appears!")
             elif monster_type == 'demon':
-                enemy_type = MONSTER_TYPES['demon']
-                enemy = {
-                    "health": enemy_type['health'],
-                    "name": enemy_type['name'],
-                    "attack_min": enemy_type['attack_min'],
-                    "attack_max": enemy_type['attack_max'],
-                    "stunned": 0,
-                    "blinded": 0
-                }
-                enemies.append(enemy)
-                print_slow(f"{enemy['name']} appears!")
+                if player["level"] <= 3:
+                    num_monsters = 1
+                elif player["level"] <= 5:
+                    num_monsters = 2
+                elif player["level"] <= 10:
+                    num_monsters = 3
+                elif player["level"] <= 15:
+                    num_monsters = 4
+                else:
+                    num_monsters = 5
+                for i in range(num_monsters):
+                    enemies.append(generate_random_demon())
+                
+                # Announce the encounter
+                if num_monsters == 1:
+                    print_slow(f"A {enemies[0]['name']} appears!")
+                else:
+                    monster_names = [f"{enemy['name']}" for enemy in enemies]
+                    if len(monster_names) == 2:
+                        print_slow(f"A {monster_names[0]} and a {monster_names[1]} appear!")
+                    else:
+                        print_slow(f"A {', '.join(monster_names[:-1])} and a {monster_names[-1]} appear!")
             else:  # normal monster - generate 1-5 random monsters
                 if player["level"] <= 3:
                     num_monsters = 1
