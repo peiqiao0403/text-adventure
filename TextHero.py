@@ -65,7 +65,7 @@ def save_game():
     
     # Convert to string using custom serialization
     game_data = str(game_state).replace('\\', '\\\\').replace('\n', '\\n')
- 
+    
     # Save to file
     with open("savegame.txt", "w") as f:
         f.write(game_data)
@@ -2054,8 +2054,8 @@ rooms = {
     '5-41': {
         'east': '5-40',
         'west': '5-42',
-        'item': 'mana potion'
-            
+        'item': 'mana potion',
+        'lore': 'And you must right those wrongs.'
                
     },
     '5-42': {
@@ -2083,20 +2083,18 @@ rooms = {
         'west': '5-44',
         'monster': 'boss',
         'lore': 'ALL YOUR EFFORTS ARE FOR NOTHING.'
-            
-
     },
     '5-46': {
         'east': '5-47',
-        'north': '5-45'
-            
+        'north': '5-45',
+        'lore': 'Trun back now.'
 
     },
     '5-47': {
         'east': '5-48',
         'north': '5-46',
-        'monster': 'normal'
-            
+        'monster': 'normal',
+        'lore': 'You have no place with the gods.'
 
     },
     '5-48': {
@@ -2124,16 +2122,16 @@ rooms = {
     '5-51': {
         'north': '5-50',
         'east': '5-52',
-        'monster': 'normal'
-            
+        'monster': 'normal',
+        'lore': 'It never was.'
 
     },
     '5-52': {
         'west': '5-51',
         'east': '5-53',
         'north': '5-59',
-        'monster': 'normal'
-            
+        'monster': 'normal',
+        'lore': 'A N D  Y O U  K N O W  I T.'
 
     },
     '5-53': {
@@ -2181,14 +2179,10 @@ rooms = {
         'north': '5-52',
         'west': '5-60',
         'item': 'health potion'
-            
-
     },
     '5-60': {
         'east': '5-59',
-        'monster': 'boss',
-        "lore": 'You can escape. BUT ONLY IF YOU MAKE YOUR EFFORTS WORTH IT AND DEFEAT THAT BOSS.'
-            
+        'monster': 'boss',    
     },
         '1~1': {
         'north': '1~2',
