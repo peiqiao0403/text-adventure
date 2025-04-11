@@ -3314,11 +3314,6 @@ def display_spell_book(player_class, player_class_2):
         print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
         print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
         
-        for spell, values in locked_spells[player_class].items():
-            effect = values[0]
-            cost = values[1]
-            special = get_spell_description(spell)
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
         for spell, values in locked_spells[player_class_2].items():
             effect = values[0]
             cost = values[1]
