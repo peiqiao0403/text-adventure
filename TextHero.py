@@ -3089,11 +3089,17 @@ elif chosen_class not in classes and not chosen_class == "Load":
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
     "level": 1,
-    "exp": 0,
+    "exp": 4000,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
     }
     currentRoom = '1-1'
     classes[player["class"]]
+    BASE_STATS = {
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "attack": classes[chosen_class]["attack"],
+    }
 else:
     player = {
     "health": classes[chosen_class]["health"],
@@ -3110,6 +3116,12 @@ else:
     }
     currentRoom = '1-1'
     classes[player["class"]]
+    BASE_STATS = {
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "attack": classes[chosen_class]["attack"],
+    }
 def use_item_during_combat(item):
     try:
         # Parse item name and quantity
@@ -3299,11 +3311,17 @@ def display_spell_book(player_class, player_class_2):
     print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
     
     # Display current spells
-    for spell, values in player["spells"].items():
-        effect = values[0]
-        cost = values[1]
-        special = get_spell_description(spell)
+    for spell, values in locked_spells[player_class].items(): 
+        effect = values[0] 
+        cost = values[1] 
+        special = get_spell_description(spell) 
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
+    for spell, values in locked_spells[player_class_2].items(): 
+        effect = values[0] 
+        cost = values[1] 
+        special = get_spell_description(spell) 
         print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+
     
     print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
     
@@ -3314,14 +3332,20 @@ def display_spell_book(player_class, player_class_2):
         print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
         print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
         
-        for spell, values in locked_spells[player_class_2].items():
-            effect = values[0]
-            cost = values[1]
-            special = get_spell_description(spell)
+        processed_spells = set()  # Keep track of processed spells
+
+    # Iterate through both classes' spells
+        for spell, values in locked_spells[player_class].items(): 
+            effect = values[0] 
+            cost = values[1] 
+            special = get_spell_description(spell) 
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
+        for spell, values in locked_spells[player_class_2].items(): 
+            effect = values[0] 
+            cost = values[1] 
+            special = get_spell_description(spell) 
             print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
-        
         print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
-        print_slow("\nType the name of the spell you want to learn, or 'exit' to close the spellbook:")
     else:
         print_slow("\nNo more spells left to learn!")
         print_slow("\nType 'exit' to close the spellbook:")
@@ -3346,13 +3370,13 @@ def get_spell_description(spell_name):
         "binding shot": "Roots enemy in place",
         "holy strike": "Imbue your sword with holy power",
         "healing pool": "A small healing spell",
-        "tidal wave": "Summon a powerful wave to decimate your enemies",
+        "tidal wave": "Summon a tsunami to decimate your enemies",
         "kamehameha": "A legendary attack used by a Turtle Hermit",
         "assassinate": "Catch enemies off guard",
         "ultrakill": "A truly overkill spell",
         "holy cleansing": "Heals a minor amount of HP",
         "arrow of light": "Fire a holy arrow, blinding enemies",
-        "midas prime": "Bounce an arrow off of a coin",
+        "marksman": "Bounce an arrow off of a coin",
         "mordshlang": "Attack with the pommel of the sword",
         "boulder": "Throw a boulder at the enemy",
         "knife throw": "Throw a knife",
@@ -4488,7 +4512,7 @@ while True:
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
                         elif item_name == "spell book":
-                            display_spell_book(player["class"], player["class"])
+                            display_spell_book(player["class"], player["class 2"])
                             spell = input(GREEN + "> ").lower()
                             clear_screen()
                             if spell == "exit":
