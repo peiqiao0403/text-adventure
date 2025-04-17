@@ -3905,7 +3905,7 @@ while True:
                             )
                             exp_earned = 100
                             inventory.append("vampire pendant")
-                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
+                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}pendant{RESET}!")
                             print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
                             
                             player["gold"] += gold_dropped
