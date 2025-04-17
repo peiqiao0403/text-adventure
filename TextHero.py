@@ -4511,6 +4511,10 @@ while True:
                             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
+                        elif item_name == "vampire pendant":
+                            player["class 2"] = "vampire"
+                            inventory.remove("vampire pendant")
+                            print_slow("Used vampire pendant! You have become a vampire!")
                         elif item_name == "spell book":
                             display_spell_book(player["class"], player["class 2"])
                             spell = input(GREEN + "> ").lower()
