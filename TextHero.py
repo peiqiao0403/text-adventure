@@ -1,3 +1,4 @@
+
 import sys
 import random
 import math
@@ -745,7 +746,8 @@ spells_tier_2 = {
     "Archmage": {"eternity": [20, 90]},
     "Assassin": {"supernova": [20, 25]},
     "Priest": {"heal": [25, 50]},
-    "Ranger": {"phantasm": [20, 50]}
+    "Ranger": {"phantasm": [20, 50]},
+    "Vampire": {"blood bomb": [25, 50],"lifesteal": [25, 30]}
 }
 
 locked_spells = {
@@ -3161,7 +3163,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['spell book','spell book','spell book']
+inventory = ['spell book','spell book','spell book', 'vampire pendant']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -3306,46 +3308,48 @@ def display_spell_book(player_class, player_class_2):
     print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
     print_slow("\nCurrent Spells:")
     
-    print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
-    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
-    print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
+    print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
+    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                             │")
+    print_slow("├────────────────┼─────────────┼────────────┼────────────────────────────────────────────┤")
     
     # Display current spells
-    for spell, values in locked_spells[player_class].items(): 
-        effect = values[0] 
-        cost = values[1] 
-        special = get_spell_description(spell) 
-        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
-    for spell, values in locked_spells[player_class_2].items(): 
-        effect = values[0] 
-        cost = values[1] 
-        special = get_spell_description(spell) 
-        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+    for spell, values in player['spells'].items():
+        effect = values[0]
+        cost = values[1]
+        special = get_spell_description(spell)
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
+    if player_class_2 != None:
+        for spell, values in locked_spells[player_class_2].items():
+            effect = values[0]
+            cost = values[1]
+            special = get_spell_description(spell)
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
 
     
-    print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
+    print_slow("└────────────────┴─────────────┴────────────┴────────────────────────────────────────────┘")
     
     # Display unlockable spells if any exist
     if locked_spells[player_class]:
         print_slow("\nUnlockable Spells:")
-        print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
-        print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
-        print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
+        print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
+        print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                             │")
+        print_slow("├────────────────┼─────────────┼────────────┼────────────────────────────────────────────┤")
         
-        processed_spells = set()  # Keep track of processed spells
 
     # Iterate through both classes' spells
         for spell, values in locked_spells[player_class].items(): 
             effect = values[0] 
             cost = values[1] 
             special = get_spell_description(spell) 
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
-        for spell, values in locked_spells[player_class_2].items(): 
-            effect = values[0] 
-            cost = values[1] 
-            special = get_spell_description(spell) 
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
-        print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
+            
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │") 
+        if player_class_2 != None:
+            for spell, values in locked_spells[player_class_2].items(): 
+                effect = values[0] 
+                cost = values[1] 
+                special = get_spell_description(spell) 
+                print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
+        print_slow("└────────────────┴─────────────┴────────────┴────────────────────────────────────────────┘")
     else:
         print_slow("\nNo more spells left to learn!")
         print_slow("\nType 'exit' to close the spellbook:")
@@ -4511,10 +4515,12 @@ while True:
                             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
-                        elif item_name == "vampire pendant" and level > 10:
-                            player["class 2"] = "vampire"
+                        elif item_name == "vampire pendant" and player['level'] > 10:
+                            player["class 2"] = "Vampire"
                             inventory.remove("vampire pendant")
-                            print_slow("Used vampire pendant! You have become a vampire!")
+                            player["spells"] = spells_tier_2["Vampire"]
+                            print(f"You have become a {ITEM_COLOR}Vampire{RESET} and have learnt {ITEM_COLOR}{', '.join(spells_tier_2['Vampire'].keys())}{RESET}!")
+
                         elif item_name == "spell book":
                             display_spell_book(player["class"], player["class 2"])
                             spell = input(GREEN + "> ").lower()
