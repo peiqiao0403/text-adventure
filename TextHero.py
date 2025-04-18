@@ -3089,7 +3089,7 @@ elif chosen_class not in classes and not chosen_class == "Load":
     "attack": classes[chosen_class]["attack"],
     "gold": 0,  # Starting gold
     "level": 1,
-    "exp": 4000,
+    "exp": 0,
     "key_fragment_chance": 0.7  # Starting chance for key fragments
     }
     currentRoom = '1-1'
@@ -4511,7 +4511,7 @@ while True:
                             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
-                        elif item_name == "vampire pendant":
+                        elif item_name == "vampire pendant" and level > 10:
                             player["class 2"] = "vampire"
                             inventory.remove("vampire pendant")
                             print_slow("Used vampire pendant! You have become a vampire!")
