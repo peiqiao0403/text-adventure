@@ -1,4 +1,3 @@
-
 import sys
 import random
 import math
@@ -3305,7 +3304,10 @@ help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
     """Display a formatted spellbook with all available spells for the class"""
-    print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
+    if player_class_2 == None:
+        print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
+    else:
+        print_slow(f"\n{GREEN}==== {player_class} {player_class_2}'s Spell Book ====")
     print_slow("\nCurrent Spells:")
     
     print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
@@ -4515,7 +4517,7 @@ while True:
                             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
-                        elif item_name == "vampire pendant" and player['level'] > 10:
+                        elif item_name == "vampire pendant" and player['level'] < 10:
                             player["class 2"] = "Vampire"
                             inventory.remove("vampire pendant")
                             player["spells"] = spells_tier_2["Vampire"]
