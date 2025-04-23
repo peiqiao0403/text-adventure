@@ -2,8 +2,9 @@ import sys
 import random
 import math
 import time
-import json
 from threading import Thread
+import os
+import keyboard
 
 
 GREEN = "\033[38;2;0;255;0m"
@@ -755,7 +756,7 @@ locked_spells = {
     "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 20]},
     "Healer": {'divine shield': [0, 15], "spear of justice": [20, 35]},
     "Archer": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]},
-    "Vampire": {'blood spear': [30, 65], 'haemolacria': [50, 100]},
+    "Vampire": {'blood spear': [30, 60], 'haemolacria': [80, 100]},
     "Paladin": {"holy strike": [25, 50], "healing pool": [10, 10]},
     "Archmage": {"tidal wave": [15, 30], "kamehameha": [50, 125]},
     "Assassin": {"Assassinate": [20, 40], "ultrakill": [40, 80]},
@@ -3061,11 +3062,128 @@ print_slow(r"""
   | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
   | |  __/>  <| |_   |  _  |  __/ | | (_) |
   |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/
+            Salvation Edition
 """)
 
-print_slow("Welcome to the Text Hero!")
-print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
-chosen_class = input(GREEN + "> ").capitalize() 
+def clear_lines(number: int, LEN = 100):
+    for i in range(number):
+        print("\033[F" + (" " * LEN), end="")
+    print("\033[F")
+
+class keyboard_handler(object):
+    def __init__(self):
+        self.clicked = []
+        keyboard.hook(lambda e: self.key_event(e))
+    def key_event(self, event):
+        if event.event_type == keyboard.KEY_UP:
+            self.key_release(event)
+        elif event.event_type == keyboard.KEY_DOWN:
+            self.key_press(event)
+    def key_press(self, event):
+        tag = str(event.name).lower()
+        if tag.startswith('Shift'): tag = 'Shift'
+        elif tag.startswith('Alt'): tag = 'Alt'
+        elif tag.startswith('Control'): tag = 'Control'
+        elif tag == '\t': tag = 'Tab'
+        elif tag == '\b': tag = 'BackSpace'
+        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
+        elif tag == 'Escape': tag = "Esc"
+        elif tag == '\x1b': tag = 'Esc'
+        elif tag == ' ': tag = 'Space'
+        if not tag in self.clicked:
+            self.clicked.append(tag)
+    def key_release(self, event):
+        tag = str(event.name).lower()
+        if tag.startswith('Shift'): tag = 'Shift'
+        elif tag.startswith('Alt'): tag = 'Alt'
+        elif tag.startswith('Control'): tag = 'Control'
+        elif tag == '\t': tag = 'Tab'
+        elif tag == '\b': tag = 'BackSpace'
+        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
+        elif tag == 'Escape': tag = "Esc"
+        elif tag == '\x1b': tag = 'Esc'
+        elif tag == ' ': tag = 'Space'
+        try: self.clicked.remove(tag)
+        except ValueError: pass
+    def is_pressed(self, char):
+        if char in self.clicked: return True
+        else: return False
+
+class selection_menu(object):
+    def __init__(self, *items, indent_size = 2):
+        self.Runner = self.runner(items, indent_size)
+    def run(self):
+        self.Runner.start()
+        input()
+        self.Runner.stop = True
+        time.sleep(0.01)
+        clear_lines(len(self.Runner.print_order) + 2, self.Runner.clear_len)
+        return self.Runner.cursor_pos
+    class runner(Thread):
+        def __init__(self, items, indent_size):
+            self.max_cursor_pos = 0
+            self.states = []
+            self.print_order = []
+            for item in items:
+                if item[0] == 'text': self.print_order.append(item)
+                elif item[0] == 'option':
+                    self.print_order.append(['option', '{0}' + item[1]])
+                    self.states.append(0)
+                    self.max_cursor_pos += 1
+            self.stop = False
+            Thread.__init__(self)
+        def run(self):
+            cursor_pos = 0
+            was_going = None
+            selected = 0
+            clear_len = 0
+            to_print = ""
+            for item in self.print_order:
+                if item[0] == 'text':
+                    to_print += item[1] + '\n'
+                    if len(item[1]) > clear_len: clear_len = len(item[1])
+                elif item[0] == 'option':
+                    tmp = len((item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)]) + '\n'))
+                    if tmp > clear_len: clear_len = tmp
+                    to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
+                    selected += 1
+            print("\n" + to_print, end='')
+            time.sleep(0.01)
+            while True:
+                to_print = False
+                if Input.is_pressed('down') and was_going != 'down':
+                    to_print = "\n"
+                    cursor_pos += 1
+                    if cursor_pos > self.max_cursor_pos - 1: cursor_pos = 0
+                    was_going = 'down'
+                elif Input.is_pressed('up') and was_going != 'up':
+                    to_print = "\n"
+                    cursor_pos -= 1
+                    if cursor_pos < 0: cursor_pos = self.max_cursor_pos - 1
+                    was_going = 'up'
+                elif not Input.is_pressed('up') and not Input.is_pressed('down'): was_going = None
+                if to_print:
+                    clear_lines(len(self.print_order) + 1, clear_len)
+                    selected = 0
+                    for item in self.print_order:
+                        if item[0] == 'text': to_print += item[1] + '\n'
+                        elif item[0] == 'option': 
+                            to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
+                            selected += 1
+                    print(to_print, end=' ')
+                time.sleep(0.01)
+                if self.stop:
+                    self.clear_len = clear_len
+                    self.cursor_pos = cursor_pos
+                    break
+
+Input = keyboard_handler() # Keep and use this variable. Input.is_pessed("w") for example.
+
+print("To start choose a class:")
+menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # Formated [type, text_content], [type, text_content]
+# menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ["text", "Random text in the middle. :)"], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # An example, uncomment and run to see how it works.
+chosen_class = ['Warrior', 'Rogue', 'Mage', 'Ranger', 'Load'][menu.run()]
+
 
 clear_screen()
 DLC_unlocked = "yes"
@@ -3073,55 +3191,31 @@ DLC_unlocked = "yes"
 if chosen_class == "Load":
     load_game()
     BASE_STATS = {
-    "health": classes[player["class"]]["health"],
-    "armor": classes[player["class"]]["armor"],
-    "mana": classes[player["class"]]["mana"],
-    "attack": classes[player["class"]]["attack"],
-    }
-elif chosen_class not in classes and not chosen_class == "Load":
-    chosen_class = "Warrior"
-    player = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "class": chosen_class,
-    "class 2": None,
-    "spells": classes[chosen_class]["spells"],
-    "attack": classes[chosen_class]["attack"],
-    "gold": 0,  # Starting gold
-    "level": 1,
-    "exp": 0,
-    "key_fragment_chance": 0.7  # Starting chance for key fragments
-    }
-    currentRoom = '1-1'
-    classes[player["class"]]
-    BASE_STATS = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "attack": classes[chosen_class]["attack"],
+        "health": classes[player["class"]]["health"],
+        "armor": classes[player["class"]]["armor"],
+        "mana": classes[player["class"]]["mana"],
+        "attack": classes[player["class"]]["attack"],
     }
 else:
     player = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "class": chosen_class,
-    "class 2": None,
-    "spells": classes[chosen_class]["spells"],
-    "attack": classes[chosen_class]["attack"],
-    "gold": 0,  # Starting gold
-    "level": 1,
-    "exp": 0,
-    "key_fragment_chance": 0.7  # Starting chance for key fragments
+        "health": classes[chosen_class]["health"],
+        "armor": classes[chosen_class]["armor"],
+        "mana": classes[chosen_class]["mana"],
+        "class": chosen_class,
+        "class 2": None,
+        "spells": classes[chosen_class]["spells"],
+        "attack": classes[chosen_class]["attack"],
+        "gold": 0,  # Starting gold
+        "level": 1,
+        "exp": 0,
+        "key_fragment_chance": 0.7  # Starting chance for key fragments
     }
     currentRoom = '1-1'
-    classes[player["class"]]
     BASE_STATS = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "attack": classes[chosen_class]["attack"],
+        "health": classes[chosen_class]["health"],
+        "armor": classes[chosen_class]["armor"],
+        "mana": classes[chosen_class]["mana"],
+        "attack": classes[chosen_class]["attack"],
     }
 def use_item_during_combat(item):
     try:
@@ -3765,6 +3859,13 @@ while True:
                                 damage = int(base_damage * (spell_percent / 100))
                                 turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
                                 enemy["health"] -= damage
+                            elif spell_name == "life steal":
+                                base_damage == player["spells"][spell_name][0]
+                                damage = int(base_damage * (spell_percent / 100))
+                                healing_amount = damage / 5
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and you heal {healing_amount} health!\n"
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                enemy['health'] -= damage
                             elif spell_name == "arrow of light":
                                 blind_chance = spell_percent / 100
                                 damage = 25
