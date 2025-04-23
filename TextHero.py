@@ -3180,9 +3180,9 @@ class selection_menu(object):
 Input = keyboard_handler() # Keep and use this variable. Input.is_pessed("w") for example.
 
 print("To start choose a class:")
-menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # Formated [type, text_content], [type, text_content]
+menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Archer'], ['option', 'Load']) # Formated [type, text_content], [type, text_content]
 # menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ["text", "Random text in the middle. :)"], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # An example, uncomment and run to see how it works.
-chosen_class = ['Warrior', 'Rogue', 'Mage', 'Ranger', 'Load'][menu.run()]
+chosen_class = ['Warrior', 'Rogue', 'Mage', 'Archer', 'Load'][menu.run()]
 
 
 clear_screen()
