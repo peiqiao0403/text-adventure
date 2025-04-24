@@ -1,4 +1,4 @@
-# Text Adventure Documentation
+## Text Adventure Documentation
 
 ## Overview
 
@@ -103,9 +103,13 @@ The game features a comprehensive armor system with multiple slots and tiers:
 
 -   **Armor Slots**: helmet, chestplate, pants, boots
 -   **Armor Tiers**:
-    -   Leather: Basic protection (5 defense)
-    -   Chainmail: Medium protection (10 defense)
-    -   Iron: Maximum protection (15 defense)
+    -   Leather: Low protection (1 defense)
+    -   Chainmail: Basic protection (3 defense)
+    -   Iron: Moderate protection (5 defense)
+    -   Mythril: Medium Protection (7 defense)
+    -   Adamantite: Good Protection (10 defense)
+    -   Hallowed: High Protection (12 defense)
+    -   God Slayer: Maximum defense (15 defense)
 
 ### Market System
 
