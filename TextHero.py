@@ -2,9 +2,8 @@ import sys
 import random
 import math
 import time
+import json
 from threading import Thread
-import os
-import keyboard
 
 
 GREEN = "\033[38;2;0;255;0m"
@@ -746,8 +745,7 @@ spells_tier_2 = {
     "Archmage": {"eternity": [20, 90]},
     "Assassin": {"supernova": [20, 25]},
     "Priest": {"heal": [25, 50]},
-    "Ranger": {"phantasm": [20, 50]},
-    "Vampire": {"blood bomb": [25, 50],"lifesteal": [25, 30]}
+    "Ranger": {"phantasm": [20, 50]}
 }
 
 locked_spells = {
@@ -756,7 +754,7 @@ locked_spells = {
     "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 20]},
     "Healer": {'divine shield': [0, 15], "spear of justice": [20, 35]},
     "Archer": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]},
-    "Vampire": {'blood spear': [30, 60], 'haemolacria': [80, 100]},
+    "Vampire": {'blood spear': [30, 65], 'haemolacria': [50, 100]},
     "Paladin": {"holy strike": [25, 50], "healing pool": [10, 10]},
     "Archmage": {"tidal wave": [15, 30], "kamehameha": [50, 125]},
     "Assassin": {"Assassinate": [20, 40], "ultrakill": [40, 80]},
@@ -3062,128 +3060,11 @@ print_slow(r"""
   | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
   | |  __/>  <| |_   |  _  |  __/ | | (_) |
   |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/
-            Salvation Edition
 """)
 
-def clear_lines(number: int, LEN = 100):
-    for i in range(number):
-        print("\033[F" + (" " * LEN), end="")
-    print("\033[F")
-
-class keyboard_handler(object):
-    def __init__(self):
-        self.clicked = []
-        keyboard.hook(lambda e: self.key_event(e))
-    def key_event(self, event):
-        if event.event_type == keyboard.KEY_UP:
-            self.key_release(event)
-        elif event.event_type == keyboard.KEY_DOWN:
-            self.key_press(event)
-    def key_press(self, event):
-        tag = str(event.name).lower()
-        if tag.startswith('Shift'): tag = 'Shift'
-        elif tag.startswith('Alt'): tag = 'Alt'
-        elif tag.startswith('Control'): tag = 'Control'
-        elif tag == '\t': tag = 'Tab'
-        elif tag == '\b': tag = 'BackSpace'
-        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
-        elif tag == 'Escape': tag = "Esc"
-        elif tag == '\x1b': tag = 'Esc'
-        elif tag == ' ': tag = 'Space'
-        if not tag in self.clicked:
-            self.clicked.append(tag)
-    def key_release(self, event):
-        tag = str(event.name).lower()
-        if tag.startswith('Shift'): tag = 'Shift'
-        elif tag.startswith('Alt'): tag = 'Alt'
-        elif tag.startswith('Control'): tag = 'Control'
-        elif tag == '\t': tag = 'Tab'
-        elif tag == '\b': tag = 'BackSpace'
-        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
-        elif tag == 'Escape': tag = "Esc"
-        elif tag == '\x1b': tag = 'Esc'
-        elif tag == ' ': tag = 'Space'
-        try: self.clicked.remove(tag)
-        except ValueError: pass
-    def is_pressed(self, char):
-        if char in self.clicked: return True
-        else: return False
-
-class selection_menu(object):
-    def __init__(self, *items, indent_size = 2):
-        self.Runner = self.runner(items, indent_size)
-    def run(self):
-        self.Runner.start()
-        input()
-        self.Runner.stop = True
-        time.sleep(0.01)
-        clear_lines(len(self.Runner.print_order) + 2, self.Runner.clear_len)
-        return self.Runner.cursor_pos
-    class runner(Thread):
-        def __init__(self, items, indent_size):
-            self.max_cursor_pos = 0
-            self.states = []
-            self.print_order = []
-            for item in items:
-                if item[0] == 'text': self.print_order.append(item)
-                elif item[0] == 'option':
-                    self.print_order.append(['option', '{0}' + item[1]])
-                    self.states.append(0)
-                    self.max_cursor_pos += 1
-            self.stop = False
-            Thread.__init__(self)
-        def run(self):
-            cursor_pos = 0
-            was_going = None
-            selected = 0
-            clear_len = 0
-            to_print = ""
-            for item in self.print_order:
-                if item[0] == 'text':
-                    to_print += item[1] + '\n'
-                    if len(item[1]) > clear_len: clear_len = len(item[1])
-                elif item[0] == 'option':
-                    tmp = len((item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)]) + '\n'))
-                    if tmp > clear_len: clear_len = tmp
-                    to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
-                    selected += 1
-            print("\n" + to_print, end='')
-            time.sleep(0.01)
-            while True:
-                to_print = False
-                if Input.is_pressed('down') and was_going != 'down':
-                    to_print = "\n"
-                    cursor_pos += 1
-                    if cursor_pos > self.max_cursor_pos - 1: cursor_pos = 0
-                    was_going = 'down'
-                elif Input.is_pressed('up') and was_going != 'up':
-                    to_print = "\n"
-                    cursor_pos -= 1
-                    if cursor_pos < 0: cursor_pos = self.max_cursor_pos - 1
-                    was_going = 'up'
-                elif not Input.is_pressed('up') and not Input.is_pressed('down'): was_going = None
-                if to_print:
-                    clear_lines(len(self.print_order) + 1, clear_len)
-                    selected = 0
-                    for item in self.print_order:
-                        if item[0] == 'text': to_print += item[1] + '\n'
-                        elif item[0] == 'option': 
-                            to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
-                            selected += 1
-                    print(to_print, end=' ')
-                time.sleep(0.01)
-                if self.stop:
-                    self.clear_len = clear_len
-                    self.cursor_pos = cursor_pos
-                    break
-
-Input = keyboard_handler() # Keep and use this variable. Input.is_pessed("w") for example.
-
-print("To start choose a class:")
-menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Archer'], ['option', 'Load']) # Formated [type, text_content], [type, text_content]
-# menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ["text", "Random text in the middle. :)"], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # An example, uncomment and run to see how it works.
-chosen_class = ['Warrior', 'Rogue', 'Mage', 'Archer', 'Load'][menu.run()]
-
+print_slow("Welcome to the Text Hero!")
+print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
+chosen_class = input(GREEN + "> ").capitalize() 
 
 clear_screen()
 DLC_unlocked = "yes"
@@ -3191,31 +3072,55 @@ DLC_unlocked = "yes"
 if chosen_class == "Load":
     load_game()
     BASE_STATS = {
-        "health": classes[player["class"]]["health"],
-        "armor": classes[player["class"]]["armor"],
-        "mana": classes[player["class"]]["mana"],
-        "attack": classes[player["class"]]["attack"],
+    "health": classes[player["class"]]["health"],
+    "armor": classes[player["class"]]["armor"],
+    "mana": classes[player["class"]]["mana"],
+    "attack": classes[player["class"]]["attack"],
+    }
+elif chosen_class not in classes and not chosen_class == "Load":
+    chosen_class = "Warrior"
+    player = {
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "class": chosen_class,
+    "class 2": None,
+    "spells": classes[chosen_class]["spells"],
+    "attack": classes[chosen_class]["attack"],
+    "gold": 0,  # Starting gold
+    "level": 1,
+    "exp": 0,
+    "key_fragment_chance": 0.7  # Starting chance for key fragments
+    }
+    currentRoom = '1-1'
+    classes[player["class"]]
+    BASE_STATS = {
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "attack": classes[chosen_class]["attack"],
     }
 else:
     player = {
-        "health": classes[chosen_class]["health"],
-        "armor": classes[chosen_class]["armor"],
-        "mana": classes[chosen_class]["mana"],
-        "class": chosen_class,
-        "class 2": None,
-        "spells": classes[chosen_class]["spells"],
-        "attack": classes[chosen_class]["attack"],
-        "gold": 0,  # Starting gold
-        "level": 1,
-        "exp": 0,
-        "key_fragment_chance": 0.7  # Starting chance for key fragments
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "class": chosen_class,
+    "class 2": None,
+    "spells": classes[chosen_class]["spells"],
+    "attack": classes[chosen_class]["attack"],
+    "gold": 0,  # Starting gold
+    "level": 1,
+    "exp": 0,
+    "key_fragment_chance": 0.7  # Starting chance for key fragments
     }
     currentRoom = '1-1'
+    classes[player["class"]]
     BASE_STATS = {
-        "health": classes[chosen_class]["health"],
-        "armor": classes[chosen_class]["armor"],
-        "mana": classes[chosen_class]["mana"],
-        "attack": classes[chosen_class]["attack"],
+    "health": classes[chosen_class]["health"],
+    "armor": classes[chosen_class]["armor"],
+    "mana": classes[chosen_class]["mana"],
+    "attack": classes[chosen_class]["attack"],
     }
 def use_item_during_combat(item):
     try:
@@ -3256,7 +3161,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['spell book','spell book','spell book', 'vampire pendant']
+inventory = ['spell book','spell book','spell book']
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -3398,54 +3303,49 @@ help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
     """Display a formatted spellbook with all available spells for the class"""
-    if player_class_2 == None:
-        print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
-    else:
-        print_slow(f"\n{GREEN}==== {player_class} {player_class_2}'s Spell Book ====")
+    print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
     print_slow("\nCurrent Spells:")
     
-    print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
-    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                             │")
-    print_slow("├────────────────┼─────────────┼────────────┼────────────────────────────────────────────┤")
+    print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
+    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
+    print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
     
     # Display current spells
-    for spell, values in player['spells'].items():
-        effect = values[0]
-        cost = values[1]
-        special = get_spell_description(spell)
-        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
-    if player_class_2 != None:
-        for spell, values in locked_spells[player_class_2].items():
-            effect = values[0]
-            cost = values[1]
-            special = get_spell_description(spell)
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
+    for spell, values in locked_spells[player_class].items(): 
+        effect = values[0] 
+        cost = values[1] 
+        special = get_spell_description(spell) 
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
+    for spell, values in locked_spells[player_class_2].items(): 
+        effect = values[0] 
+        cost = values[1] 
+        special = get_spell_description(spell) 
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
 
     
-    print_slow("└────────────────┴─────────────┴────────────┴────────────────────────────────────────────┘")
+    print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
     
     # Display unlockable spells if any exist
     if locked_spells[player_class]:
         print_slow("\nUnlockable Spells:")
-        print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
-        print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                             │")
-        print_slow("├────────────────┼─────────────┼────────────┼────────────────────────────────────────────┤")
+        print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
+        print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
+        print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
         
+        processed_spells = set()  # Keep track of processed spells
 
     # Iterate through both classes' spells
         for spell, values in locked_spells[player_class].items(): 
             effect = values[0] 
             cost = values[1] 
             special = get_spell_description(spell) 
-            
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │") 
-        if player_class_2 != None:
-            for spell, values in locked_spells[player_class_2].items(): 
-                effect = values[0] 
-                cost = values[1] 
-                special = get_spell_description(spell) 
-                print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
-        print_slow("└────────────────┴─────────────┴────────────┴────────────────────────────────────────────┘")
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
+        for spell, values in locked_spells[player_class_2].items(): 
+            effect = values[0] 
+            cost = values[1] 
+            special = get_spell_description(spell) 
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+        print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
     else:
         print_slow("\nNo more spells left to learn!")
         print_slow("\nType 'exit' to close the spellbook:")
@@ -3859,13 +3759,6 @@ while True:
                                 damage = int(base_damage * (spell_percent / 100))
                                 turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
                                 enemy["health"] -= damage
-                            elif spell_name == "life steal":
-                                base_damage == player["spells"][spell_name][0]
-                                damage = int(base_damage * (spell_percent / 100))
-                                healing_amount = damage / 5
-                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and you heal {healing_amount} health!\n"
-                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
-                                enemy['health'] -= damage
                             elif spell_name == "arrow of light":
                                 blind_chance = spell_percent / 100
                                 damage = 25
@@ -4012,7 +3905,7 @@ while True:
                             )
                             exp_earned = 100
                             inventory.append("vampire pendant")
-                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}pendant{RESET}!")
+                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
                             print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
                             
                             player["gold"] += gold_dropped
@@ -4618,14 +4511,6 @@ while True:
                             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
-                        elif item_name == "vampire pendant":
-                            if  player['level'] > 10:
-                                player["class 2"] = "Vampire"
-                                inventory.remove("vampire pendant")
-                                player["spells"] = spells_tier_2["Vampire"]
-                                print(f"You have become a {ITEM_COLOR}Vampire{RESET} and have learnt {ITEM_COLOR}{', '.join(spells_tier_2['Vampire'].keys())}{RESET}!")
-                            else:
-                                print_slow("You need to be at least level 10 to use this item!")
                         elif item_name == "spell book":
                             display_spell_book(player["class"], player["class 2"])
                             spell = input(GREEN + "> ").lower()
