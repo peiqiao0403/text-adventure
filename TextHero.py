@@ -2,8 +2,8 @@ import sys
 import random
 import math
 import time
-import json
 from threading import Thread
+import keyboard
 
 
 GREEN = "\033[38;2;0;255;0m"
@@ -114,6 +114,480 @@ def count_visible_chars(text):
             count += 1
     return count
 
+
+symbols = ['$', '#', '%', '&', '@', '?']
+symbol_colors = {
+    '$': '\033[38;2;0;255;0m',  # Green
+    '#': '\033[94m',  # Blue
+    '%': '\033[93m',  # Yellow
+    '&': '\033[95m',  # Magenta
+    '@': '\033[91m',  # Red
+    '?': '\033[96m'   # Cyan
+}
+RESET = '\033[0m'
+
+symbols = ['$', '#', '%', '&', '@', '?']
+symbol_colors = {
+    '$': '\033[38;2;0;255;0m',  # Green
+    '#': '\033[94m',  # Blue
+    '%': '\033[93m',  # Yellow
+    '&': '\033[95m',  # Magenta
+    '@': '\033[91m',  # Red
+    '?': '\033[96m'   # Cyan
+}
+RESET = '\033[0m'
+
+# Payout values
+payouts = {
+    '$': 100,
+    '#': 75,
+    '%': 60,
+    '&': 50,
+    '@': 40,
+    '?': 25  # Only when all 3 are wilds
+}
+
+# Weights
+symbol_weights = {
+    '$': 10,
+    '#': 20,
+    '%': 30,
+    '&': 40,
+    '@': 50,
+    '?': 150
+}
+symbol_weights_2 = symbol_weights.copy()
+
+BET_AMOUNT = 5
+
+def colorize(symbol):
+    return f"{symbol_colors[symbol]}{symbol}{GREEN}"
+
+def clear():
+    sys.stdout.write("\033[2J\033[H")
+    sys.stdout.flush()
+
+def print_payout_table():
+    print("\033[1mPAYOUT TABLE\033[0m")
+    print("\033[38;2;0;255;0m┌─────────┬────────┐")
+    print("\033[38;2;0;255;0m| Icon    │ Coins  |")
+    print("\033[38;2;0;255;0m├─────────┼────────┤")
+    for symbol in symbols:
+        payout = payouts[symbol]
+        color = colorize(symbol)
+        print(f"\033[38;2;0;255;0m│ {color}  {color}  {color} \033[38;2;0;255;0m│  {payout:>4}  \033[38;2;0;255;0m│")
+    print("\033[38;2;0;255;0m└─────────┴────────┘")
+    print("Note: \033[96m?\033[38;2;0;255;0m is a wildcard and matches any symbol.")
+
+def display_reels(reels):
+    rows = get_display_rows(reels)
+    print("Slot Machine\n\033[38;2;0;255;0m┌─────┬─────┬─────┐")
+    for row in rows:
+        print("\033[38;2;0;255;0m│  {}  \033[38;2;0;255;0m│  {}  \033[38;2;0;255;0m│  {}  \033[38;2;0;255;0m│".format(
+            *[colorize(s) for s in row]
+        ))
+    print("\033[38;2;0;255;0m└─────┴─────┴─────┘\n")
+
+def create_reel(spins):
+    weights=[symbol_weights[s] for s in symbols]
+    return random.choices(symbols, weights=weights, k=spins)
+
+def rotate_reel(reel, history):
+    valid_choices = [s for s in symbols if s not in history]
+    if not valid_choices:
+        valid_choices = symbols
+        weights = [symbol_weights[s] for s in symbols]
+    else:
+        weights = [symbol_weights[s] for s in valid_choices]
+    new_symbol = random.choices(valid_choices, weights=weights, k=1)[0]
+
+    reel.insert(0, new_symbol)
+    reel.pop()
+
+    history.insert(0, new_symbol)
+    if len(history) > 3:
+        history.pop()
+
+    return reel, history
+
+def get_display_rows(reels):
+    return [[reel[i] for reel in reels] for i in range(3)]  # top, mid, bottom
+
+def check_win(middle_row):
+    non_wilds = [s for s in middle_row if s != '?']
+    
+    if len(non_wilds) == 0:
+        return True, payouts['?']
+    elif all(s == non_wilds[0] for s in non_wilds):
+        return True, payouts[non_wilds[0]]
+    return False, 0
+def create_reels(num_reels, reel_length=40):
+    reels = []
+    for _ in range(num_reels):
+        reel = create_reel(reel_length)  # generate a full reel with random symbols
+        reels.append(reel)
+    return reels
+
+def create_final_reel():
+    global symbol_weights_2
+    eligible_symbols = [s for s in symbols if s != '?']
+
+    reel_weights = [symbol_weights_2[s] for s in eligible_symbols]
+
+    first = random.choices(eligible_symbols, weights=reel_weights, k=1)[0]
+    symbol_weights_2[first] += 50
+
+    second = random.choices(eligible_symbols, weights=reel_weights, k=1)[0]
+
+    # Reset the weights of first and second to zero before choosing third
+    symbol_weights_2[first] = 0
+    symbol_weights_2[second] = 0
+
+    # Check if first two are different and not '?'
+    if first != second and first != '?' and second != '?':
+        eligible_symbols = symbols  # allow '?'
+    else:
+        eligible_symbols = [s for s in symbols if s != '?']
+
+    # Prepare adjusted weights for third spin
+    reel_weights = [symbol_weights_2[s] for s in eligible_symbols]
+    third = random.choices(eligible_symbols, weights=reel_weights, k=1)[0]
+
+    final_reel = [first, second, third]
+    symbol_weights_2 = symbol_weights.copy()
+    return final_reel
+
+
+def slot_machine(gold):
+    balance = gold
+    print_payout_table()
+
+    while True:
+        if balance < BET_AMOUNT:
+            clear_screen()
+            print("Game over.")
+            return balance
+
+        print(f"\n\033[1mYour balance: {balance} coins | Bet: {BET_AMOUNT} coins\033[0m")
+        move = input("\033[38;2;0;255;0mPress Enter to spin or exit to quit\n")
+        if move == 'q' or move == 'exit':
+            clear_screen()
+            print("Thanks for playing!")
+            return balance
+        clear()
+
+        # minus bet
+        balance -= BET_AMOUNT
+        #making it "balanced"
+        final_reel = create_final_reel()
+        reels = create_reels(3, reel_length=40)
+        histories = [[] for _ in range(3)]
+        spins_remaining = [20, 30, 40]
+        max_spins = max(spins_remaining)
+
+        for frame in range(max_spins+1):
+            for i in range(3):
+                if spins_remaining[i] > 0:
+                    reels[i], histories[i] = rotate_reel(reels[i], histories[i])
+                    spins_remaining[i] -= 1
+                else:
+                    reels[i][1] = final_reel[i]
+                
+            display_reels(reels)
+            print_payout_table()
+            time.sleep(0.07)
+            clear()
+
+        # final display
+        display_reels(reels)
+        print_payout_table()
+
+        middle_row = get_display_rows(reels)[1]
+        won, payout = check_win(middle_row)
+        if won:
+            balance += payout
+            print(f"\033[1;92mYou WON {payout} coins!\033[0m")
+        else:
+            print("No win this time. Better luck next spin!")
+MAX_SPLITS = 3  # Up to 4 total hands
+
+def get_card():
+    return random.choice(['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'])
+
+def card_value(card):
+    if card in ['J', 'Q', 'K']:
+        return 10
+    elif card == 'A':
+        return 11
+    else:
+        return int(card)
+
+def hand_value(hand):
+    total = sum(card_value(c) for c in hand)
+    aces = hand.count('A')
+    while total > 21 and aces:
+        total -= 10
+        aces -= 1
+    return total
+
+def is_blackjack(hand):
+    return len(hand) == 2 and hand_value(hand) == 21
+
+def print_hand(title, hand):
+    print(f"{title}: {' '.join(hand)} (value: {hand_value(hand)})")
+
+def offer_insurance(balance, dealer_card, dealer_hidden):
+    if dealer_card != 'A':
+        return 0
+    if not is_blackjack([dealer_card, dealer_hidden]):
+        return 0
+    while True:
+        choice = input("Dealer shows an Ace. Take insurance for half your bet? (yes/no): ").lower().strip()
+        if choice == 'yes':
+            return 1
+        elif choice == 'no':
+            return 0
+        else:
+            print("Invalid input.")
+
+def resolve_dealer(dealer):
+    print_hand("Dealer's hand", dealer)
+    while hand_value(dealer) < 17:
+        dealer.append(get_card())
+        print_hand("Dealer's hand", dealer)
+    return hand_value(dealer)
+
+def play_hand(player, dealer_card, balance, bet):
+    print_hand("Your hand", player)
+    print(f"Dealer shows: {dealer_card} ?")
+    doubled = False
+    if len(player) == 2 and balance >= bet:
+        choice = input("Would you like to double down (yes/no)? ").lower().strip()
+        if choice == 'yes':
+            bet *= 2
+            player.append(get_card())
+            print_hand("Your hand after doubling", player)
+            return player, bet, True
+
+    while hand_value(player) < 21:
+        move = input("Hit or stand? ").lower().strip()
+        if move == 'hit':
+            player.append(get_card())
+            print_hand("Your hand", player)
+        elif move == 'stand':
+            break
+        else:
+            print("Invalid input.")
+    return player, bet, doubled
+
+def resolve_outcome(player, dealer_hand, bet):
+    player_total = hand_value(player)
+    dealer_total = hand_value(dealer_hand)
+    if player_total > 21:
+        print("Bust. You lose.")
+        return -bet
+    elif dealer_total > 21 or player_total > dealer_total:
+        print("You win!")
+        return bet
+    elif player_total < dealer_total:
+        print("Dealer wins.")
+        return -bet
+    else:
+        print("Push.")
+        return 0
+
+def play_split_hands(hands, dealer_card, dealer_hidden, balance, bet):
+    results = 0
+    dealer = [dealer_card, dealer_hidden]
+    dealer_blackjack = is_blackjack(dealer)
+    dealer_total = hand_value(dealer) if not dealer_blackjack else 21
+
+    for idx, hand in enumerate(hands):
+        print(f"\n--- Playing hand {idx + 1} ---")
+        if is_blackjack(hand):
+            if dealer_blackjack:
+                print_hand("Your hand", hand)
+                print("Push. Both have blackjack.")
+                continue
+            else:
+                print_hand("Your hand", hand)
+                print("Blackjack! You win 3:2.")
+                results += int(1.5 * bet)
+                continue
+
+        hand, actual_bet, doubled = play_hand(hand, dealer_card, balance, bet)
+        if hand_value(hand) > 21:
+            results -= actual_bet
+            continue
+
+        if not dealer_blackjack:
+            if idx == 0:
+                dealer_total = resolve_dealer(dealer)
+            result = resolve_outcome(hand, dealer, actual_bet)
+            results += result
+
+    return results
+
+def play_round(balance):
+    while True:
+        bet_input = input("Enter your bet (10–1000) or 'exit': ").strip().lower()
+        if bet_input == 'exit' or bet_input == 'q':
+            return balance, True
+        if not bet_input.isdigit():
+            print("Invalid input.")
+            continue
+        bet = int(bet_input)
+        if bet < 10 or bet > 1000:
+            print("Bet must be between 10 and 1000.")
+            continue
+        if bet > balance:
+            print("Not enough money.")
+            return balance, True
+        clear_screen()
+        break
+
+    dealer = [get_card(), get_card()]
+    player = [get_card(), get_card()]
+
+    # Insurance
+    insurance = offer_insurance(balance, dealer[0], dealer[1])
+    if insurance == 1:
+        insurance_bet = bet // 2
+        if is_blackjack(dealer):
+            print("Dealer has blackjack! Insurance pays 2:1.")
+            balance += insurance_bet
+        else:
+            print("Dealer does not have blackjack. Insurance lost.")
+            balance -= insurance_bet
+
+    # Player blackjack
+    if is_blackjack(player):
+        print_hand("Your hand", player)
+        if is_blackjack(dealer):
+            print_hand("Dealer's hand", dealer)
+            print_slow("Push. Both have blackjack.")
+            return balance, False
+        else:
+            print_hand("Dealer's hand", dealer)
+            print_slow("Blackjack! You win 3:2.")
+            return balance + int(1.5 * bet), False
+
+    # Splitting
+    hands = [player]
+    while len(hands) <= MAX_SPLITS:
+        first = hands[-1]
+        if len(first) == 2 and card_value(first[0]) == card_value(first[1]) and balance >= (len(hands) + 1) * bet:
+            choice = input(f"You have a pair of {first[0]}. Split? (yes/no): ").strip().lower()
+            if choice == 'yes':
+                hands[-1] = [first[0], get_card()]
+                hands.append([first[1], get_card()])
+                continue
+        break
+
+    result = play_split_hands(hands, dealer[0], dealer[1], balance, bet)
+    return balance + result, False
+
+def blackjack(balance):
+    sys.stdout.write("\033[2J\033[H")
+    exit_game = False
+    while balance >= 10 and not exit_game:
+        print_slow(f"Current balance: ${balance}")
+        balance, exit_game = play_round(balance)
+    clear_screen()
+    print_slow(f"\nGame over.")
+    return balance
+# Constants
+RED_NUMBERS = {
+    1, 3, 5, 7, 9, 12, 14, 16, 18,
+    19, 21, 23, 25, 27, 30, 32, 34, 36
+}
+BLACK_NUMBERS = set(range(1, 37)) - RED_NUMBERS
+
+# Player state
+
+def print_intro():
+    print_slow("You can bet on:")
+    print_slow("- A number (payout: 35 to 1)")
+    print_slow("- 'red', 'black' or 'green' (payout: 1 to 1)")
+    print_slow("- 'odd' or 'even' (payout: 1 to 1)")
+    print_slow("Type 'exit' to quit.\n")
+
+def spin_wheel():
+    return random.randint(0, 36)
+
+def get_color(number):
+    if number == 0:
+        return 'green'
+    return 'red' if number in RED_NUMBERS else 'black'
+
+def place_bet(balance):
+    print_slow(f"\nCurrent Balance: ${balance}")
+    bet_type = input("Bet on a number (0-36), 'red', 'black', 'odd', or 'even': ").lower().strip()
+    if bet_type == 'exit':
+        return 'exit', 0
+
+    amount_str = input("Enter bet amount: ").strip()
+    if not amount_str.isdigit():
+        print_slow("Invalid amount.")
+        return None, 0
+
+    amount = int(amount_str)
+    if amount > balance or amount <= 0:
+        print_slow("Invalid bet amount.")
+        return None, 0
+
+    return bet_type, amount
+
+def resolve_bet(bet_type, amount, result, balance):
+    win = False
+    winnings = 0
+    result_color = get_color(result)
+
+    if bet_type.isdigit():
+        if int(bet_type) == result:
+            win = True
+            winnings = amount * 35
+    elif bet_type == 'red' and result_color == 'red':
+        win = True
+        winnings = amount
+    elif bet_type == 'black' and result_color == 'black':
+        win = True
+        winnings = amount
+    elif bet_type == 'green' and result_color == 'green':
+        win = True
+        winnings = amount * 35
+    elif bet_type == 'odd' and result != 0 and result % 2 == 1:
+        win = True
+        winnings = amount
+    elif bet_type == 'even' and result != 0 and result % 2 == 0:
+        win = True
+        winnings = amount
+
+    balance -= amount
+    if win:
+        print_slow(f"You won! Number: {result} ({result_color})")
+        balance += amount + winnings
+    else:
+        print_slow(f"You lost. Number: {result} ({result_color})")
+    print_slow(f"New balance: ${balance}\n")
+    return balance
+
+
+def roulette(balance):
+    print_intro()
+    while balance > 0:
+        bet_type, amount = place_bet(balance)
+        if bet_type == 'exit':
+            break
+        elif bet_type is None:
+            continue
+
+        result = spin_wheel()
+        balance = resolve_bet(bet_type, amount, result, balance)
+    clear_screen()
+    print_slow("Game over.")
+    return balance
+
 def clear_screen():
     sys.stdout.write("\033[2J\033[H")
 
@@ -121,7 +595,7 @@ def display_credits():
     """Display the end credits when reaching the final room"""
     clear_screen()
     print_credits("\n" + "="*50+"\n")
-    print_credits(f"{GREEN}CONGRATULATIONS!{RESET}\n")
+    print_credits(f"{GREEN}CONGRATULATIONS!{GREEN}\n")
     print_credits(f"You've completed Text Hero!\n")
     print_credits("="*50 + "\n")
     print_credits(r'''
@@ -134,24 +608,24 @@ def display_credits():
     print()
     # Credits scroll
     f"\n",
-    f"{BLUE}Development Team:{RESET}\n",
-    f"Lead Developer & Creator: {BLUE}Chales{RESET}\n",
-    f"Developer: {BLUE}arnesito{RESET}\n",
-    f"Developer & Designer: {BLUE}Moltd{RESET}\n",
+    f"{BLUE}Development Team:{GREEN}\n",
+    f"Lead Developer & Creator: {BLUE}Chales{GREEN}\n",
+    f"Developer: {BLUE}arnesito{GREEN}\n",
+    f"Developer & Designer: {BLUE}Moltd{GREEN}\n",
     "\n",
-    f"{BLUE}DLC Development Team:{RESET}\n",
-    f"DLC Developer: {BLUE}arnesito{RESET}\n",
+    f"{BLUE}DLC Development Team:{GREEN}\n",
+    f"DLC Developer: {BLUE}arnesito{GREEN}\n",
     "\n"
-    f"{BLUE}Quality Assurance Team:{RESET}\n",
-    f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n",
+    f"{BLUE}Quality Assurance Team:{GREEN}\n",
+    f"Bug Finder & Patcher: {BLUE}JayMcCray11{GREEN}\n",
     "\n",
-    f"{BLUE}Playtesting Team:{RESET}\n",
-    f"{GREEN}David Sucks At Life{RESET}\n",
-    f"{GREEN}Bee1949{RESET}\n",
-    f"{GREEN}Not Guy Stew{RESET}\n",
-    f"{GREEN}Vroom Vroom Snail{RESET}\n",
+    f"{BLUE}Playtesting Team:{GREEN}\n",
+    f"{GREEN}David Sucks At Life{GREEN}\n",
+    f"{GREEN}Bee1949{GREEN}\n",
+    f"{GREEN}Not Guy Stew{GREEN}\n",
+    f"{GREEN}Vroom Vroom Snail{GREEN}\n",
     "\n",
-    f"{BLUE}Game Features:{RESET}\n",
+    f"{BLUE}Game Features:{GREEN}\n",
     "10 Unique Classes\n",
     "340 Rooms to Explore\n",
     "11 Levels to Defeat\n",
@@ -159,14 +633,14 @@ def display_credits():
     "200 Monsters to Battle\n",
     "Leveling up system\n",
     "\n",
-    f"{BLUE}Technical Details:{RESET}\n",
+    f"{BLUE}Technical Details:{GREEN}\n",
     "Custom ANSI Color System\n",
     "Dynamic Combat Engine\n",
     "Save/Load System\n",
     "Crafting System\n",
     "\n",
-    f"{BLUE}Thanks for Playing!{RESET}\n",
-    f"{BLUE}press enter to quit{RESET}"
+    f"{BLUE}Thanks for Playing!{GREEN}\n",
+    f"{BLUE}press enter to quit{GREEN}"
     input()
     quit()
     
@@ -185,7 +659,7 @@ def display_DLC_credits():
     """Display the end credits when reaching the final room"""
     clear_screen()
     print_credits("\n" + "="*50+"\n")
-    print_credits(f"{GREEN}CONGRATULATIONS!{RESET}\n")
+    print_credits(f"{GREEN}CONGRATULATIONS!{GREEN}\n")
     print_credits(f"You've completed Text Hero!\n")
     print_credits("="*50 + "\n")
     print_credits(r'''
@@ -198,24 +672,24 @@ def display_DLC_credits():
     )
     # Credits scroll
     print_credits(f"\n")
-    print_credits(f"{BLUE}Development Team:{RESET}\n")
-    print_credits(f"Lead Developer & Creator: {BLUE}Chales{RESET}\n")
-    print_credits(f"Developer: {BLUE}arnesito{RESET}\n")
-    print_credits(f"Developer & Designer: {BLUE}Moltd{RESET}\n")
+    print_credits(f"{BLUE}Development Team:{GREEN}\n")
+    print_credits(f"Lead Developer & Creator: {BLUE}Chales{GREEN}\n")
+    print_credits(f"Developer: {BLUE}arnesito{GREEN}\n")
+    print_credits(f"Developer & Designer: {BLUE}Moltd{GREEN}\n")
     print_credits("\n")
-    print_credits(f"{BLUE}DLC Development Team:{RESET}\n")
-    print_credits(f"DLC Developer: {BLUE}arnesito{RESET}\n")
+    print_credits(f"{BLUE}DLC Development Team:{GREEN}\n")
+    print_credits(f"DLC Developer: {BLUE}arnesito{GREEN}\n")
     print_credits("\n")
-    print_credits(f"{BLUE}Quality Assurance Team:{RESET}\n")
-    print_credits(f"Bug Finder & Patcher: {BLUE}JayMcCray11{RESET}\n")
+    print_credits(f"{BLUE}Quality Assurance Team:{GREEN}\n")
+    print_credits(f"Bug Finder & Patcher: {BLUE}JayMcCray11{GREEN}\n")
     print_credits("\n")
-    print_credits(f"{BLUE}Playtesting Team:{RESET}\n")
-    print_credits(f"{GREEN}David Sucks At Life{RESET}\n")
-    print_credits(f"{GREEN}Bee1949{RESET}\n")
-    print_credits(f"{GREEN}Not Guy Stew{RESET}\n")
-    print_credits(f"{GREEN}Vroom Vroom Snail{RESET}\n")
+    print_credits(f"{BLUE}Playtesting Team:{GREEN}\n")
+    print_credits(f"{GREEN}David Sucks At Life{GREEN}\n")
+    print_credits(f"{GREEN}Bee1949{GREEN}\n")
+    print_credits(f"{GREEN}Not Guy Stew{GREEN}\n")
+    print_credits(f"{GREEN}Vroom Vroom Snail{GREEN}\n")
     print_credits("\n")
-    print_credits(f"{BLUE}Game Features:{RESET}\n")
+    print_credits(f"{BLUE}Game Features:{GREEN}\n")
     print_credits("10 Unique Classes\n")
     print_credits("340 Rooms to Explore\n")
     print_credits("11 Levels to Defeat\n")
@@ -223,14 +697,14 @@ def display_DLC_credits():
     print_credits("200 Monsters to Battle\n")
     print_credits("Leveling up system\n")
     print_credits("\n")
-    print_credits(f"{BLUE}Technical Details:{RESET}\n")
+    print_credits(f"{BLUE}Technical Details:{GREEN}\n")
     print_credits("Custom ANSI Color System\n")
     print_credits("Dynamic Combat Engine\n")
     print_credits("Save/Load System\n")
     print_credits("Crafting System\n")
     print_credits("\n")
-    print_credits(f"{BLUE}Thanks for Playing!{RESET}\n")
-    print_credits(f"{BLUE}press enter to quit{RESET}")
+    print_credits(f"{BLUE}Thanks for Playing!{GREEN}\n")
+    print_credits(f"{BLUE}press enter to quit{GREEN}")
     input()
     quit()
     
@@ -745,7 +1219,8 @@ spells_tier_2 = {
     "Archmage": {"eternity": [20, 90]},
     "Assassin": {"supernova": [20, 25]},
     "Priest": {"heal": [25, 50]},
-    "Ranger": {"phantasm": [20, 50]}
+    "Ranger": {"phantasm": [20, 50]},
+    "Vampire": {"blood bomb": [25, 50],"lifesteal": [25, 30]}
 }
 
 locked_spells = {
@@ -754,7 +1229,7 @@ locked_spells = {
     "Rogue": {'stealth': [0, 10], 'stealth strike': [25, 20]},
     "Healer": {'divine shield': [0, 15], "spear of justice": [20, 35]},
     "Archer": {'bleeding arrow': [30, 20], 'binding shot': [15, 15]},
-    "Vampire": {'blood spear': [30, 65], 'haemolacria': [50, 100]},
+    "Vampire": {'blood spear': [30, 60], 'haemolacria': [80, 100]},
     "Paladin": {"holy strike": [25, 50], "healing pool": [10, 10]},
     "Archmage": {"tidal wave": [15, 30], "kamehameha": [50, 125]},
     "Assassin": {"Assassinate": [20, 40], "ultrakill": [40, 80]},
@@ -804,58 +1279,58 @@ def showAvailableDirections(room):
     """Show all available directions for the current room with destination room numbers."""
     directions = []
     if 'north' in room:
-        directions.append(f"  north: {BLUE}{room['north']}{RESET}")
+        directions.append(f"{GREEN}  north: {BLUE}{room['north']}{GREEN}")
     if 'south' in room:
-        directions.append(f"  south: {BLUE}{room['south']}{RESET}")
+        directions.append(f"{GREEN}  south: {BLUE}{room['south']}{GREEN}")
     if 'east' in room:
-        directions.append(f"  east: {BLUE}{room['east']}{RESET}")
+        directions.append(f"{GREEN}  east: {BLUE}{room['east']}{GREEN}")
     if 'west' in room:
-        directions.append(f"  west: {BLUE}{room['west']}{RESET}")
+        directions.append(f"{GREEN}  west: {BLUE}{room['west']}{GREEN}")
     if 'down' in room:
-        directions.append(f"  down: {BLUE}{room['down']}{RESET}")
+        directions.append(f"{GREEN}  down: {BLUE}{room['down']}{GREEN}")
     if 'up' in room:
-        directions.append(f"  up: {BLUE}{room['up']}{RESET}")
+        directions.append(f"{GREEN}  up: {BLUE}{room['up']}{GREEN}")
     return "\n".join(directions)
 
 def showStatus():
-    print_slow('You are in ' + BLUE+currentRoom+RESET)
-    print_slow('Available directions:')
+    print_slow(f'{GREEN}You are in ' + BLUE+currentRoom+RESET)
+    print_slow(f'{GREEN}Available directions:')
     print_slow(showAvailableDirections(rooms[currentRoom]))
-    print_slow(f'Health: {player["health"]}')
-    print_slow(f'Armor: {player["armor"]}')
-    print_slow(f'Mana: {player["mana"]}')
-    print_slow(f'Gold: {player["gold"]}')
-    print_slow(f'Class: {BLUE}{player["class"]}{RESET}')
-    print_slow(f'Secondary Class: {BLUE}{player["class 2"]}{RESET}')
-    print_slow(f'Level: {player["level"]}')
-    print_slow(f'Exp: {player["exp"]}')
-    print_slow('Equipped Armor:')
+    print_slow(f'{GREEN}Health: {player["health"]}')
+    print_slow(f'{GREEN}Armor: {player["armor"]}')
+    print_slow(f'{GREEN}Mana: {player["mana"]}')
+    print_slow(f'{GREEN}Gold: {player["gold"]}')
+    print_slow(f'{GREEN}Class: {BLUE}{player["class"]}{GREEN}')
+    print_slow(f'{GREEN}Secondary Class: {BLUE}{player["class 2"]}{GREEN}')
+    print_slow(f'{GREEN}Level: {player["level"]}')
+    print_slow(f'{GREEN}Exp: {player["exp"]}')
+    print_slow(f'{GREEN}Equipped Armor:')
     for slot, item in player_equipment.items():
         if item:
-            print_slow(f'- {slot}: {ITEM_COLOR}{item}{RESET}')
+            print_slow(f'- {slot}: {ITEM_COLOR}{item}{GREEN}')
     show_inventory()
     if "lore" in rooms[currentRoom]:
-        print_slow(f"{rooms[currentRoom]['lore']}{RESET}\n")
+        print_slow(f"{rooms[currentRoom]['lore']}{GREEN}\n")
     if "hint" in rooms[currentRoom]:
-        print_slow(f"{BLUE}{rooms[currentRoom]['hint']}{RESET}")
+        print_slow(f"{BLUE}{rooms[currentRoom]['hint']}{GREEN}")
     if "item" in rooms[currentRoom]:
         if isinstance(rooms[currentRoom]["item"], list):
             items = rooms[currentRoom]["item"]
             if len(items) == 1:
-                print_slow(f"{GREEN}You see a{RESET} {ITEM_COLOR}{items[0]}{RESET}")
+                print_slow(f"{GREEN}You see a{GREEN} {ITEM_COLOR}{items[0]}{GREEN}")
             else:
-                formatted_items = [f"{ITEM_COLOR}{item}{RESET}" for item in items]
+                formatted_items = [f"{ITEM_COLOR}{item}{GREEN}" for item in items]
                 if len(formatted_items) == 2:
                     item_str = " and ".join(formatted_items)
                 else:
                     item_str = ", ".join(formatted_items[:-1]) + f" and {formatted_items[-1]}"
-                print_slow(f"{GREEN}You see{RESET} {item_str}")
+                print_slow(f"{GREEN}You see{GREEN} {item_str}")
         else:
-            print_slow(f"{GREEN}You see a{RESET} {ITEM_COLOR}{rooms[currentRoom]['item']}{RESET}")
-    print_slow("---------------------------")
+            print_slow(f"{GREEN}You see a{GREEN} {ITEM_COLOR}{rooms[currentRoom]['item']}{GREEN}")
+    print_slow(f"{GREEN}---------------------------")
 
 def print_slow_list(tag, items):
-    print_slow(f"{tag}: {ITEM_COLOR}{', '.join(map(str, items))}{RESET}")
+    print_slow(f"{tag}: {ITEM_COLOR}{', '.join(map(str, items))}{GREEN}")
 
 def get_tier_value(tier):
     """Helper function to determine the value/strength of a tier"""
@@ -1291,7 +1766,11 @@ rooms = {
         'west': '3-2',
         'east': '3-4',
         'south': '3-7',
+        'down':'casino',
         'item': 'iron pants'
+    },
+    'casino': {
+        'up':'3-3'
     },
     '3-4': {
         'west': '3-3',
@@ -3053,18 +3532,135 @@ UPGRADED_BLACKSMITH_RECIPES = {
 
 # Game setup
 clear_screen()
-print(GREEN)
+print_slow(GREEN)
 print_slow(r"""
  _____         _      _   _
 |_   _|____  _| |_   | | | | ___ _ __ ___
   | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
   | |  __/>  <| |_   |  _  |  __/ | | (_) |
   |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/
+            Salvation Edition
 """)
 
-print_slow("Welcome to the Text Hero!")
-print_slow("To start, choose a class: Warrior, Mage, Rogue, Healer, Archer")
-chosen_class = input(GREEN + "> ").capitalize() 
+def clear_lines(number: int, LEN = 100):
+    for i in range(number):
+        print("\033[F" + (" " * LEN), end="")
+    print("\033[F")
+
+class keyboard_handler(object):
+    def __init__(self):
+        self.clicked = []
+        keyboard.hook(lambda e: self.key_event(e))
+    def key_event(self, event):
+        if event.event_type == keyboard.KEY_UP:
+            self.key_release(event)
+        elif event.event_type == keyboard.KEY_DOWN:
+            self.key_press(event)
+    def key_press(self, event):
+        tag = str(event.name).lower()
+        if tag.startswith('Shift'): tag = 'Shift'
+        elif tag.startswith('Alt'): tag = 'Alt'
+        elif tag.startswith('Control'): tag = 'Control'
+        elif tag == '\t': tag = 'Tab'
+        elif tag == '\b': tag = 'BackSpace'
+        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
+        elif tag == 'Escape': tag = "Esc"
+        elif tag == '\x1b': tag = 'Esc'
+        elif tag == ' ': tag = 'Space'
+        if not tag in self.clicked:
+            self.clicked.append(tag)
+    def key_release(self, event):
+        tag = str(event.name).lower()
+        if tag.startswith('Shift'): tag = 'Shift'
+        elif tag.startswith('Alt'): tag = 'Alt'
+        elif tag.startswith('Control'): tag = 'Control'
+        elif tag == '\t': tag = 'Tab'
+        elif tag == '\b': tag = 'BackSpace'
+        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
+        elif tag == 'Escape': tag = "Esc"
+        elif tag == '\x1b': tag = 'Esc'
+        elif tag == ' ': tag = 'Space'
+        try: self.clicked.remove(tag)
+        except ValueError: pass
+    def is_pressed(self, char):
+        if char in self.clicked: return True
+        else: return False
+
+class selection_menu(object):
+    def __init__(self, *items, indent_size = 2):
+        self.Runner = self.runner(items, indent_size)
+    def run(self):
+        self.Runner.start()
+        input()
+        self.Runner.stop = True
+        time.sleep(0.01)
+        clear_lines(len(self.Runner.print_order) + 2, self.Runner.clear_len)
+        return self.Runner.cursor_pos
+    class runner(Thread):
+        def __init__(self, items, indent_size):
+            self.max_cursor_pos = 0
+            self.states = []
+            self.print_order = []
+            for item in items:
+                if item[0] == 'text': self.print_order.append(item)
+                elif item[0] == 'option':
+                    self.print_order.append(['option', '{0}' + item[1]])
+                    self.states.append(0)
+                    self.max_cursor_pos += 1
+            self.stop = False
+            Thread.__init__(self)
+        def run(self):
+            cursor_pos = 0
+            was_going = None
+            selected = 0
+            clear_len = 0
+            to_print = ""
+            for item in self.print_order:
+                if item[0] == 'text':
+                    to_print += item[1] + '\n'
+                    if len(item[1]) > clear_len: clear_len = len(item[1])
+                elif item[0] == 'option':
+                    tmp = len((item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)]) + '\n'))
+                    if tmp > clear_len: clear_len = tmp
+                    to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
+                    selected += 1
+            print("\n" + to_print, end='')
+            time.sleep(0.01)
+            while True:
+                to_print = False
+                if Input.is_pressed('down') and was_going != 'down':
+                    to_print = "\n"
+                    cursor_pos += 1
+                    if cursor_pos > self.max_cursor_pos - 1: cursor_pos = 0
+                    was_going = 'down'
+                elif Input.is_pressed('up') and was_going != 'up':
+                    to_print = "\n"
+                    cursor_pos -= 1
+                    if cursor_pos < 0: cursor_pos = self.max_cursor_pos - 1
+                    was_going = 'up'
+                elif not Input.is_pressed('up') and not Input.is_pressed('down'): was_going = None
+                if to_print:
+                    clear_lines(len(self.print_order) + 1, clear_len)
+                    selected = 0
+                    for item in self.print_order:
+                        if item[0] == 'text': to_print += item[1] + '\n'
+                        elif item[0] == 'option': 
+                            to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
+                            selected += 1
+                    print(to_print, end=' ')
+                time.sleep(0.01)
+                if self.stop:
+                    self.clear_len = clear_len
+                    self.cursor_pos = cursor_pos
+                    break
+
+Input = keyboard_handler() # Keep and use this variable. Input.is_pessed("w") for example.
+
+print("To start choose a class:")
+menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Archer'], ['option', 'Load']) # Formated [type, text_content], [type, text_content]
+# menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ["text", "Random text in the middle. :)"], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # An example, uncomment and run to see how it works.
+chosen_class = ['Warrior', 'Rogue', 'Mage', 'Archer', 'Load'][menu.run()]
+
 
 clear_screen()
 DLC_unlocked = "yes"
@@ -3072,55 +3668,31 @@ DLC_unlocked = "yes"
 if chosen_class == "Load":
     load_game()
     BASE_STATS = {
-    "health": classes[player["class"]]["health"],
-    "armor": classes[player["class"]]["armor"],
-    "mana": classes[player["class"]]["mana"],
-    "attack": classes[player["class"]]["attack"],
-    }
-elif chosen_class not in classes and not chosen_class == "Load":
-    chosen_class = "Warrior"
-    player = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "class": chosen_class,
-    "class 2": None,
-    "spells": classes[chosen_class]["spells"],
-    "attack": classes[chosen_class]["attack"],
-    "gold": 0,  # Starting gold
-    "level": 1,
-    "exp": 0,
-    "key_fragment_chance": 0.7  # Starting chance for key fragments
-    }
-    currentRoom = '1-1'
-    classes[player["class"]]
-    BASE_STATS = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "attack": classes[chosen_class]["attack"],
+        "health": classes[player["class"]]["health"],
+        "armor": classes[player["class"]]["armor"],
+        "mana": classes[player["class"]]["mana"],
+        "attack": classes[player["class"]]["attack"],
     }
 else:
     player = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "class": chosen_class,
-    "class 2": None,
-    "spells": classes[chosen_class]["spells"],
-    "attack": classes[chosen_class]["attack"],
-    "gold": 0,  # Starting gold
-    "level": 1,
-    "exp": 0,
-    "key_fragment_chance": 0.7  # Starting chance for key fragments
+        "health": classes[chosen_class]["health"],
+        "armor": classes[chosen_class]["armor"],
+        "mana": classes[chosen_class]["mana"],
+        "class": chosen_class,
+        "class 2": None,
+        "spells": classes[chosen_class]["spells"],
+        "attack": classes[chosen_class]["attack"],
+        "gold": 0,  # Starting gold
+        "level": 1,
+        "exp": 0,
+        "key_fragment_chance": 0.7  # Starting chance for key fragments
     }
-    currentRoom = '1-1'
-    classes[player["class"]]
+    currentRoom = '3-3'
     BASE_STATS = {
-    "health": classes[chosen_class]["health"],
-    "armor": classes[chosen_class]["armor"],
-    "mana": classes[chosen_class]["mana"],
-    "attack": classes[chosen_class]["attack"],
+        "health": classes[chosen_class]["health"],
+        "armor": classes[chosen_class]["armor"],
+        "mana": classes[chosen_class]["mana"],
+        "attack": classes[chosen_class]["attack"],
     }
 def use_item_during_combat(item):
     try:
@@ -3161,7 +3733,7 @@ player_equipment = {
 }
 
 # Initialize inventory
-inventory = ['spell book','spell book','spell book']
+inventory = []
 
 # Track defeated bosses
 defeated_bosses = set()
@@ -3207,7 +3779,30 @@ def display_table(title, items, columns=None):
         ))
     
     print_slow(bottom)
-    print_slow("---------------------------")
+    print_slow(f"{GREEN}---------------------------")
+# Define the data for the casino games
+casino_games = {
+    "Blackjack": {
+        "description": "Test your luck and skill—get 21 or bust!",
+        "price": "10 to 1000"
+    },
+    "Roulette": {
+        "description": "Place your bets on red, black, or numbers!",
+        "price": "25 to 5000"
+    },
+    "Slot Machine": {
+        "description": "Spin the reels and hit the jackpot",
+        "price": "5"
+    }
+}
+
+# Define the column headers
+casino_columns = [
+    ("Game", 20),
+    ("Cost", 20),
+    ("Description", 45)
+]
+
 
 # Update the existing functions to use the new display_table function
 def show_market_items():
@@ -3221,6 +3816,12 @@ def show_blacksmith_items():
         "Blacksmith Items",
         BLACKSMITH_RECIPES
     )
+def Show_casino_games():
+    display_table(
+        "Casino Royale",
+        casino_games,
+        casino_columns
+        )
 
 def show_mare_items():
     display_table(
@@ -3303,49 +3904,54 @@ help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
     """Display a formatted spellbook with all available spells for the class"""
-    print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
+    if player_class_2 == None:
+        print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
+    else:
+        print_slow(f"\n{GREEN}==== {player_class} {player_class_2}'s Spell Book ====")
     print_slow("\nCurrent Spells:")
     
-    print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
-    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
-    print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
+    print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
+    print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                             │")
+    print_slow("├────────────────┼─────────────┼────────────┼────────────────────────────────────────────┤")
     
     # Display current spells
-    for spell, values in locked_spells[player_class].items(): 
-        effect = values[0] 
-        cost = values[1] 
-        special = get_spell_description(spell) 
-        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
-    for spell, values in locked_spells[player_class_2].items(): 
-        effect = values[0] 
-        cost = values[1] 
-        special = get_spell_description(spell) 
-        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
+    for spell, values in player['spells'].items():
+        effect = values[0]
+        cost = values[1]
+        special = get_spell_description(spell)
+        print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
+    if player_class_2 != None:
+        for spell, values in locked_spells[player_class_2].items():
+            effect = values[0]
+            cost = values[1]
+            special = get_spell_description(spell)
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
 
     
-    print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
+    print_slow("└────────────────┴─────────────┴────────────┴────────────────────────────────────────────┘")
     
     # Display unlockable spells if any exist
     if locked_spells[player_class]:
-        print_slow("\nUnlockable Spells:")
-        print_slow("┌────────────────┬─────────────┬────────────┬──────────────────────────────────┐")
-        print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                   │")
-        print_slow("├────────────────┼─────────────┼────────────┼──────────────────────────────────┤")
+        print_slow(f"\n{GREEN}Unlockable Spells:")
+        print_slow("┌────────────────┬─────────────┬────────────┬────────────────────────────────────────────┐")
+        print_slow("│ Spell          │ Damage/Eff  │ Mana Cost  │ Special Effect                             │")
+        print_slow("├────────────────┼─────────────┼────────────┼────────────────────────────────────────────┤")
         
-        processed_spells = set()  # Keep track of processed spells
 
     # Iterate through both classes' spells
         for spell, values in locked_spells[player_class].items(): 
             effect = values[0] 
             cost = values[1] 
             special = get_spell_description(spell) 
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │") 
-        for spell, values in locked_spells[player_class_2].items(): 
-            effect = values[0] 
-            cost = values[1] 
-            special = get_spell_description(spell) 
-            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<32} │")
-        print_slow("└────────────────┴─────────────┴────────────┴──────────────────────────────────┘")
+            
+            print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │") 
+        if player_class_2 != None:
+            for spell, values in locked_spells[player_class_2].items(): 
+                effect = values[0] 
+                cost = values[1] 
+                special = get_spell_description(spell) 
+                print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
+        print_slow("└────────────────┴─────────────┴────────────┴────────────────────────────────────────────┘")
     else:
         print_slow("\nNo more spells left to learn!")
         print_slow("\nType 'exit' to close the spellbook:")
@@ -3353,39 +3959,39 @@ def display_spell_book(player_class, player_class_2):
 def get_spell_description(spell_name):
     """Return a short description of what the spell does"""
     descriptions = {
-        "slash": "Basic melee attack",
-        "finishing blow": "Powerful finishing attack",
-        "stun strike": "Chance to stun enemy (2-5 turns)",
-        "fireball": "Causes burning for 3 turns",
-        "water bolt": "Basic water attack, low cost",
-        "thunder zapper": "Chance to stun enemy",
-        "back stab": "Basic rogue attack",
-        "stealth": "Allows you to exit the battle",
-        "stealth strike": "Attack from stealth confusing the enemy",
-        "spear of justice": "Attack enemies with a spear of justice",
-        "great heal": "Powerful single target heal",
-        "divine shield": "Block damage for 3 rounds",
-        "minor heal": "Small efficient heal",
-        "bleeding arrow": "Causes bleeding damage",
-        "binding shot": "Roots enemy in place",
-        "holy strike": "Imbue your sword with holy power",
-        "healing pool": "A small healing spell",
-        "tidal wave": "Summon a tsunami to decimate your enemies",
-        "kamehameha": "A legendary attack used by a Turtle Hermit",
-        "assassinate": "Catch enemies off guard",
-        "ultrakill": "A truly overkill spell",
-        "holy cleansing": "Heals a minor amount of HP",
-        "arrow of light": "Fire a holy arrow, blinding enemies",
-        "marksman": "Bounce an arrow off of a coin",
-        "mordshlang": "Attack with the pommel of the sword",
-        "boulder": "Throw a boulder at the enemy",
-        "knife throw": "Throw a knife",
-        "divine retribution": "The wrath of the gods will aid you in battle",
-        "double shot": "Shoot 2 arrows at once",
-        "blood bomb": "Release an explosive blood sack",
-        "lifesteal": "Drain the life force of the enemy", 
-        "blood spear": "Shoot a spear of blood at the enemy",
-        "haemolacria": "launch a giant bloody tear at the enemy"
+        f"{GREEN}slash": "Basic melee attack",
+        f"{GREEN}finishing blow": "Powerful finishing attack",
+        f"{GREEN}stun strike": "Chance to stun enemy (2-5 turns)",
+        f"{GREEN}fireball": "Causes burning for 3 turns",
+        f"{GREEN}water bolt": "Basic water attack, low cost",
+        f"{GREEN}thunder zapper": "Chance to stun enemy",
+        f"{GREEN}back stab": "Basic rogue attack",
+        f"{GREEN}stealth": "Allows you to exit the battle",
+        f"{GREEN}stealth strike": "Attack from stealth confusing the enemy",
+        f"{GREEN}spear of justice": "Attack enemies with a spear of justice",
+        f"{GREEN}great heal": "Powerful single target heal",
+        f"{GREEN}divine shield": "Block damage for 3 rounds",
+        f"{GREEN}minor heal": "Small efficient heal",
+        f"{GREEN}bleeding arrow": "Causes bleeding damage",
+        f"{GREEN}binding shot": "Roots enemy in place",
+        f"{GREEN}holy strike": "Imbue your sword with holy power",
+        f"{GREEN}healing pool": "A small healing spell",
+        f"{GREEN}tidal wave": "Summon a tsunami to decimate your enemies",
+        f"{GREEN}kamehameha": "A legendary attack used by a Turtle Hermit",
+        f"{GREEN}assassinate": "Catch enemies off guard",
+        f"{GREEN}ultrakill": "A truly overkill spell",
+        f"{GREEN}holy cleansing": "Heals a minor amount of HP",
+        f"{GREEN}arrow of light": "Fire a holy arrow, blinding enemies",
+        f"{GREEN}marksman": "Bounce an arrow off of a coin",
+        f"{GREEN}mordshlang": "Attack with the pommel of the sword",
+        f"{GREEN}boulder": "Throw a boulder at the enemy",
+        f"{GREEN}knife throw": "Throw a knife",
+        f"{GREEN}divine retribution": "The wrath of the gods will aid you in battle",
+        f"{GREEN}double shot": "Shoot 2 arrows at once",
+        f"{GREEN}blood bomb": "Release an explosive blood sack",
+        f"{GREEN}lifesteal": "Drain the life force of the enemy", 
+        f"{GREEN}blood spear": "Shoot a spear of blood at the enemy",
+        f"{GREEN}haemolacria": "launch a giant bloody tear at the enemy"
     }
     return descriptions.get(spell_name, "")
 
@@ -3633,13 +4239,13 @@ while True:
             # Combat loop
             original_armor = player["armor"]
             while len(enemies) > 0 and player["health"] > 0:
-                print_slow("---------------------------")
+                print_slow(f"{GREEN}---------------------------")
                 
                 # Display all enemy health
                 for i, enemy in enumerate(enemies):
                     print_slow(f"Enemy {i+1} ({enemy['name']}): {enemy['health']} HP")
                 
-                print_slow("---------------------------")
+                print_slow(f"{GREEN}---------------------------")
                 print_slow(f"Your Health: {player['health']}")
                 print_slow(f"Your Mana: {player['mana']}")
                 print_slow(f"Your armor: {player['armor']}")
@@ -3647,7 +4253,7 @@ while True:
                 # Display inventory
                 show_inventory()
                 print(GREEN)
-                print_slow("---------------------------")
+                print_slow(f"{GREEN}---------------------------")
                 
                 if len(enemies) > 1:
                     print_slow("Choose an action: fight [enemy#], defend, cast [spell] [enemy#], use [item]")
@@ -3681,12 +4287,12 @@ while True:
                         
                         # Apply damage to targeted enemy
                         enemy = enemies[target_idx]
-                        turn_log += f"{GREEN}You attack {enemy['name']} with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{RESET}\n"
+                        turn_log += f"{GREEN}You attack {enemy['name']} with {accuracy_percent}% accuracy for{COMBAT_COLOR} {attack_damage} damage!{GREEN}\n"
                         enemy["health"] -= attack_damage
                         
                         # Check if enemy is defeated
                         if enemy["health"] <= 0:
-                            turn_log += f"You defeated {enemy['name']}!\n"
+                            turn_log += f"{GREEN}you defeated {enemy['name']}!\n"
                             # Don't remove enemy yet, do it after all enemies have attacked
 
                     elif action[0] == "defend":
@@ -3752,13 +4358,20 @@ while True:
                                     "duration": burn_duration,
                                     "damage": burn_damage
                                 }
-                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and {RED}burns{RESET} the enemy!\n"
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{GREEN} and {RED}burns{GREEN} the enemy!\n"
                                 enemy["health"] -= damage
                             elif spell_name in ["back stab", "slash", "water bolt", "bleeding arrow", "eternity", "supernova", "phantasm", "assassinate", "tidal wave", "ultrakill", "midas prime", "kamehameha", "mordschlang", "boulder", "blood bomb", "blood spear", "haemolacria", "spear of justice"]:
                                 base_damage = player["spells"][spell_name][0]
                                 damage = int(base_damage * (spell_percent / 100))
-                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage!{GREEN}\n"
                                 enemy["health"] -= damage
+                            elif spell_name == "life steal":
+                                base_damage == player["spells"][spell_name][0]
+                                damage = int(base_damage * (spell_percent / 100))
+                                healing_amount = damage / 5
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{GREEN} and you heal {healing_amount} health!\n"
+                                player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
+                                enemy['health'] -= damage
                             elif spell_name == "arrow of light":
                                 blind_chance = spell_percent / 100
                                 damage = 25
@@ -3792,7 +4405,7 @@ while True:
                                 base_damage == player["spells"][spell_name][0]
                                 damage = int(base_damage * (spell_percent / 100))
                                 healing_amount = damage / 5
-                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{RESET} and you heal {healing_amount} health!\n"
+                                turn_log += f"You cast {spell_name} at {enemy['name']} with {spell_percent}% efficiency for{COMBAT_COLOR} {damage} damage{GREEN} and you heal {healing_amount} health!\n"
                                 player["health"] = min(player["health"] + healing_amount, classes[player["class"]]["health"])
                                 enemy['health'] -= damage
                             elif spell_name == "finishing blow":
@@ -3816,7 +4429,7 @@ while True:
                                     turn_log += f"Weak finishing blow on {enemy['name']}! The enemy is too healthy! \n"
                                 
                                 damage = int(base_damage * (spell_percent / 100) * damage_multiplier)
-                                turn_log += f"You deal {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{RESET}\n"
+                                turn_log += f"You deal {spell_percent}% accuracy for{COMBAT_COLOR} {damage} damage!{GREEN}\n"
                                 enemy["health"] -= damage
                             
                             # Deduct mana cost
@@ -3865,7 +4478,7 @@ while True:
                                 MONSTER_TYPES['boss']['exp_drop_range'][0],
                                 MONSTER_TYPES['boss']['exp_drop_range'][1]
                             ) * int(currentRoom[0])
-                            print_slow(f"You defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned} exp{RESET}!")
+                            print_slow(f"{GREEN}you defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{GREEN} and {ITEM_COLOR}{exp_earned} exp{GREEN}!")
                             player["gold"] += gold_dropped
                             player["exp"] += exp_earned
                             defeated_bosses.append(currentRoom)
@@ -3880,22 +4493,22 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 15 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
 
                         elif monster_type == 'vampire':
                             # Vampire rewards
@@ -3905,8 +4518,8 @@ while True:
                             )
                             exp_earned = 100
                             inventory.append("vampire pendant")
-                            print_slow(f"{RESET}Count Dracula dropped a mysterious {ITEM_COLOR}vampire pendant{RESET}!")
-                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}100 exp{RESET}!")
+                            print_slow(f"{GREEN}Count Dracula dropped a mysterious {ITEM_COLOR}pendant{GREEN}!")
+                            print_slow(f"You earned {ITEM_COLOR}{gold_dropped} gold{GREEN} and {ITEM_COLOR}100 exp{GREEN}!")
                             
                             player["gold"] += gold_dropped
                             player["exp"] += exp_earned
@@ -3922,22 +4535,22 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         
                         elif monster_type == 'demon king lucifer':
                             # Vampire rewards
@@ -3949,7 +4562,7 @@ while True:
                                 MONSTER_TYPES['lucifer']['exp_drop_range'][0],
                                 MONSTER_TYPES['lucifer']['exp_drop_range'][1]
                             )
-                            print_slow(f"You earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             
                             player["gold"] += 1000
                             player["exp"] += 500
@@ -3965,29 +4578,29 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
 
                         elif monster_type == 'demon king asmodeus':
                             # Boss rewards
                             for i in range(5):
                                 inventory.append("adamantite bar")
-                            print_slow(f"{RESET}Demon King Asmodeus dropped 5 {ITEM_COLOR}Adamanmtite bars{RESET}!")
-                            print_slow(f"You defeated Demon King Asmodeus!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            print_slow(f"{GREEN}Demon King Asmodeus dropped 5 {ITEM_COLOR}Adamanmtite bars{GREEN}!")
+                            print_slow(f"{GREEN}you defeated Demon King Asmodeus!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 500
                             defeated_bosses.append("Demon King Asmodeus")
@@ -4002,22 +4615,22 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         
                         elif monster_type == 'demon king leviathan':
                             # Vampire rewards
@@ -4029,7 +4642,7 @@ while True:
                                 MONSTER_TYPES['leviathan']['exp_drop_range'][0],
                                 MONSTER_TYPES['leviathan']['exp_drop_range'][1]
                             )
-                            print_slow(f"You earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             
                             player["gold"] += 1000
                             player["exp"] += 500
@@ -4045,29 +4658,29 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
 
                         elif monster_type == 'demon king belphegor':
                             # Boss rewards
                             for i in range(5):
                                 inventory.append("hallowed bar")
-                            print_slow(f"{RESET}Demon King Belphegor dropped 5 {ITEM_COLOR}Hallowed bars{RESET}!")
-                            print_slow(f"You defeated Demon King Belphegor!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            print_slow(f"{GREEN}Demon King Belphegor dropped 5 {ITEM_COLOR}Hallowed bars{GREEN}!")
+                            print_slow(f"{GREEN}you defeated Demon King Belphegor!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 500
                             defeated_bosses.append("Demon King Belphegor")
@@ -4082,25 +4695,25 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         
                         elif monster_type == 'demon king beelzebub':
-                            print_slow(f"You earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            print_slow(f"You earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             
                             player["gold"] += 1000
                             player["exp"] += 500
@@ -4116,29 +4729,29 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         
                         elif monster_type == 'demon king mammon':
                             # Boss rewards
                             for i in range(5):
                                 inventory.append("cosmilite bar")
-                            print_slow(f"{RESET}Demon King Mammon dropped 5 {ITEM_COLOR}Cosmilite bars{RESET}!")
-                            print_slow(f"You defeated Demon King Mammon!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}500 exp{RESET}!")
+                            print_slow(f"{GREEN}Demon King Mammon dropped 5 {ITEM_COLOR}Cosmilite bars{GREEN}!")
+                            print_slow(f"{GREEN}you defeated Demon King Mammon!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 500
                             defeated_bosses.append("Demon King Mammon")
@@ -4153,25 +4766,25 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         elif monster_type == 'demon king satan':
                             # Boss rewards
-                            print_slow(f"You defeated Demon King Satan!\n You have earned {ITEM_COLOR}1000 gold{RESET} and {ITEM_COLOR}1000 exp{RESET}!")
+                            print_slow(f"{GREEN}you defeated Demon King Satan!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}1000 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 1000
                             defeated_bosses.append("Demon King Satan")
@@ -4186,22 +4799,22 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         elif monster_type == "demon":
                             # Normal monster rewards - based on how many were defeated
                             gold_dropped = random.randint(
@@ -4219,14 +4832,14 @@ while True:
                                 tier = random.choice(['leather', 'chainmail', 'iron'])
                                 dropped_item = f"{tier} {slot}"
                                 inventory.append(dropped_item)
-                                print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
+                                print_slow(f"{GREEN}A monster dropped {ITEM_COLOR}{dropped_item}{GREEN}!")
                             
                             # Key fragment drop chance
                             if random.random() < player['key_fragment_chance']:
                                 inventory.append("key fragment")
-                                print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                                print_slow(f"{GREEN}A monster dropped a {ITEM_COLOR}key fragment{GREEN}!")
                             
-                            print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
+                            print_slow(f"{GREEN}you defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{GREEN} and {ITEM_COLOR}{exp_earned * num_monsters} exp{GREEN}!")
                             player["gold"] += gold_dropped
                             player["exp"] += exp_earned * num_monsters
 
@@ -4240,22 +4853,22 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         else:
                             # Normal monster rewards - based on how many were defeated
                             gold_dropped = random.randint(
@@ -4274,14 +4887,14 @@ while True:
                                 tier = random.choice(['leather', 'chainmail', 'iron'])
                                 dropped_item = f"{tier} {slot}"
                                 inventory.append(dropped_item)
-                                print_slow(f"{RESET}A monster dropped {ITEM_COLOR}{dropped_item}{RESET}!")
+                                print_slow(f"{GREEN}A monster dropped {ITEM_COLOR}{dropped_item}{GREEN}!")
                             
                             # Key fragment drop chance
                             if random.random() < player['key_fragment_chance'] and not "bleeding key" in inventory and not inventory.count('key fragment') > 2:
                                 inventory.append("key fragment")
-                                print_slow(f"{RESET}A monster dropped a {ITEM_COLOR}key fragment{RESET}!")
+                                print_slow(f"{GREEN}A monster dropped a {ITEM_COLOR}key fragment{GREEN}!")
 
-                            print_slow(f"You defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{RESET} and {ITEM_COLOR}{exp_earned * num_monsters} exp{RESET}!")
+                            print_slow(f"{GREEN}you defeated all monsters\nYou have earned {ITEM_COLOR}{gold_dropped} gold{GREEN} and {ITEM_COLOR}{exp_earned * num_monsters} exp{GREEN}!")
                             player["gold"] += gold_dropped
                             player["exp"] += exp_earned * num_monsters
 
@@ -4295,26 +4908,26 @@ while True:
                                         player["armor"] = 20
                                     else:
                                         player["armor"] = ARMOR_IMPROVEMENTS[player["level"]]
-                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{RESET}!")
+                                    print_slow(f"You have reached {ITEM_COLOR}level {player['level']}{GREEN}!")
                                     print_slow("Your stats have improved!")
-                                    print_slow(f"{ITEM_COLOR}Health{RESET}: {ITEM_COLOR}{player['health']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Mana{RESET}: {ITEM_COLOR}{player['mana']}{RESET}")
-                                    print_slow(f"{ITEM_COLOR}Attack{RESET}: {ITEM_COLOR}{player['attack']}{RESET}")
+                                    print_slow(f"{ITEM_COLOR}Health{GREEN}: {ITEM_COLOR}{player['health']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Mana{GREEN}: {ITEM_COLOR}{player['mana']}{GREEN}")
+                                    print_slow(f"{ITEM_COLOR}Attack{GREEN}: {ITEM_COLOR}{player['attack']}{GREEN}")
                                     if not player["armor"] == 20:
-                                        print_slow(f"{ITEM_COLOR}Armor{RESET}: {ITEM_COLOR}{player['armor']}{RESET}")
+                                        print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
                             if player["level"] >= 20 and player["class 2"] == None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
-                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become an {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                                 else:
-                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{RESET} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{RESET}!")
+                                    print_slow(f"You have become a {ITEM_COLOR}{player['class 2']}{GREEN} and have learnt {ITEM_COLOR}{class_tier_2[player['class 2']]}{GREEN}!")
                         
                         player["armor"] = original_armor
                         del rooms[currentRoom]["monster"]
-                        print_slow("---------------------------")
+                        print_slow(f"{GREEN}---------------------------")
                         break
                     
                     if valid_action:
@@ -4361,7 +4974,7 @@ while True:
                                 lifesteal_percent = random.randint(enemy["lifesteal_range"][0], enemy["lifesteal_range"][1])
                                 lifesteal_amount = math.floor(player["health"] * (lifesteal_percent / 100))
                                 enemy["health"] += lifesteal_amount
-                                turn_log += f"{RED}{enemy['name']} drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{RESET}\n"
+                                turn_log += f"{RED}{enemy['name']} drains {lifesteal_amount} health ({lifesteal_percent}% of your current health)!{GREEN}\n"
                             
                             # Normal enemy attack
                             enemy_attack = math.floor(random.randint(enemy["attack_min"], enemy["attack_max"]) * (1 - player["armor"] / 100))
@@ -4381,7 +4994,7 @@ while True:
                                         player["divine_shield"] = None
                             
                             player["health"] -= enemy_attack
-                            turn_log += f"{enemy['name']} attacks you for{RED} {enemy_attack} damage!{RESET}\n"
+                            turn_log += f"{GREEN}{enemy['name']} attacks you for{RED} {enemy_attack} damage!{GREEN}\n"
                         
                         # Check player death
                         if player["health"] <= 0:
@@ -4397,16 +5010,19 @@ while True:
     # Show current status
     if currentRoom == '1-17':
         print_slow('Shop')
-        print_slow("---------------------------")
+        print_slow(f"{GREEN}---------------------------")
         show_market_items()
     if currentRoom == '1-13':
         print_slow('Blacksmith')
-        print_slow("---------------------------")
+        print_slow(f"{GREEN}---------------------------")
         show_blacksmith_items()
         print_slow("Type 'forge [item]' to craft items")
+    if currentRoom == 'casino':
+        Show_casino_games()
+        print_slow("Type 'play [game]' to start gambling")
     if currentRoom == '2~11':
         print_slow('Mare')
-        print_slow("---------------------------")
+        print_slow(f"{GREEN}---------------------------")
         show_mare_items()
         print_slow("Type 'forge [item]' to craft items")
     showStatus()
@@ -4449,7 +5065,7 @@ while True:
                     if isinstance(rooms[currentRoom]["item"], list):
                         items = rooms[currentRoom]["item"]
                         if items:
-                            formatted_items = [f"{ITEM_COLOR}{item}{RESET}" for item in items]
+                            formatted_items = [f"{ITEM_COLOR}{item}{GREEN}" for item in items]
                             if len(formatted_items) == 1:
                                 item_str = formatted_items[0]
                             elif len(formatted_items) == 2:
@@ -4464,7 +5080,7 @@ while True:
                     else:
                         item = rooms[currentRoom]['item']
                         inventory.append(item)
-                        print_slow(f"Got {ITEM_COLOR}{item}{RESET}!")
+                        print_slow(f"Got {ITEM_COLOR}{item}{GREEN}!")
                         del rooms[currentRoom]['item']
                 else:
                     print_slow("Nothing to pick up!")
@@ -4477,12 +5093,12 @@ while True:
                             if not rooms[currentRoom]["item"]:  # If list is empty after removal
                                 del rooms[currentRoom]["item"]
                             inventory.append(item_name)
-                            print_slow(f"Got {ITEM_COLOR}{item_name}{RESET}!")
+                            print_slow(f"Got {ITEM_COLOR}{item_name}{GREEN}!")
                         else:
                             print_slow(f"Can't get {item_name}!")
                     elif item_name == rooms[currentRoom]['item']:
                         inventory.append(item_name)
-                        print_slow(f"Got {ITEM_COLOR}{item_name}{RESET}!")
+                        print_slow(f"Got {ITEM_COLOR}{item_name}{GREEN}!")
                         del rooms[currentRoom]['item']
                     else:
                         print_slow(f"Can't get {item_name}!")
@@ -4511,6 +5127,14 @@ while True:
                             player["mana"] = min(classes[player["class"]]["mana"], player["mana"] + 30)
                             inventory.remove("mana potion")
                             print_slow("Used mana potion! Restored 30 mana!")
+                        elif item_name == "vampire pendant":
+                            if  player['level'] > 10:
+                                player["class 2"] = "Vampire"
+                                inventory.remove("vampire pendant")
+                                player["spells"] = spells_tier_2["Vampire"]
+                                print(f"You have become a {ITEM_COLOR}Vampire{GREEN} and have learnt {ITEM_COLOR}{', '.join(spells_tier_2['Vampire'].keys())}{GREEN}!")
+                            else:
+                                print_slow("You need to be at least level 10 to use this item!")
                         elif item_name == "spell book":
                             display_spell_book(player["class"], player["class 2"])
                             spell = input(GREEN + "> ").lower()
@@ -4523,7 +5147,7 @@ while True:
                                 # Remove the spell from locked spells
                                 del locked_spells[player["class"]][spell]
                                 inventory.remove("spell book")
-                                print_slow(f"You learned the {COMBAT_COLOR}{spell}{RESET} spell!")
+                                print_slow(f"You learned the {COMBAT_COLOR}{spell}{GREEN} spell!")
                             else:
                                 if not locked_spells[player["class"]]:
                                     print_slow("You have learned all available spells!")
@@ -4588,6 +5212,19 @@ while True:
             result = forge_DLC_item(item_name)
             print_slow(result)
             continue
+        elif move[0] == 'play' and currentRoom == 'casino':
+            if " ".join(move[1:]) == "slot machine":
+                slot_machine(player["gold"])
+            elif " ".join(move[1:]) == "blackjack":
+                player["gold"] = blackjack(player["gold"])
+            elif "".join(move[1:]) == "roulette":
+                roulette(player["gold"])
+            else:
+                print("".join(move[1:]))
+                print_slow("Invalid game choice!")
+            continue
+
+            
 
         elif move[0] in ['drop']:
             if len(move) == 1:
@@ -4602,7 +5239,7 @@ while True:
                         rooms[currentRoom]["item"] = [rooms[currentRoom]["item"]]
                     rooms[currentRoom]["item"].extend(dropped_items)
                     inventory.clear()
-                    print_slow(f"Dropped all items: {ITEM_COLOR}{', '.join(dropped_items)}{RESET}")
+                    print_slow(f"Dropped all items: {ITEM_COLOR}{', '.join(dropped_items)}{GREEN}")
             else:
                 # Drop specific item
                 item_name = " ".join(move[1:])
@@ -4613,7 +5250,7 @@ while True:
                     elif not isinstance(rooms[currentRoom]["item"], list):
                         rooms[currentRoom]["item"] = [rooms[currentRoom]["item"]]
                     rooms[currentRoom]["item"].append(item_name)
-                    print_slow(f"Dropped: {ITEM_COLOR}{item_name}{RESET}")
+                    print_slow(f"Dropped: {ITEM_COLOR}{item_name}{GREEN}")
                 else:
                     print_slow(f"You don't have {item_name}!")
             continue
