@@ -58,7 +58,6 @@ def save_game():
         "inventory": inventory,
         "player_equipment": player_equipment,
         "currentRoom": currentRoom,
-        "defeated_bosses": list(defeated_bosses),
         "rooms": rooms,
         "locked_spells": locked_spells.copy(),
     }
@@ -83,12 +82,11 @@ def load_game():
         game_state = eval(save_data)
         
         # Restore game state
-        global player, inventory, player_equipment, currentRoom, defeated_bosses, rooms, locked_spells
+        global player, inventory, player_equipment, currentRoom, rooms, locked_spells
         player = game_state["player"]
         inventory = game_state["inventory"]
         player_equipment = game_state["player_equipment"]
         currentRoom = game_state["currentRoom"]
-        defeated_bosses = set(game_state["defeated_bosses"])
         rooms = game_state["rooms"]
         player["spells"] = game_state["player"]["spells"]
         inventory = game_state["inventory"]
@@ -400,7 +398,6 @@ def play_split_hands(hands, dealer_card, dealer_hidden, balance, bet):
     results = 0
     dealer = [dealer_card, dealer_hidden]
     dealer_blackjack = is_blackjack(dealer)
-    dealer_total = hand_value(dealer) if not dealer_blackjack else 21
 
     for idx, hand in enumerate(hands):
         print(f"\n--- Playing hand {idx + 1} ---")
@@ -421,8 +418,6 @@ def play_split_hands(hands, dealer_card, dealer_hidden, balance, bet):
             continue
 
         if not dealer_blackjack:
-            if idx == 0:
-                dealer_total = resolve_dealer(dealer)
             result = resolve_outcome(hand, dealer, actual_bet)
             results += result
 
@@ -494,7 +489,7 @@ def blackjack(balance):
         print_slow(f"Current balance: ${balance}")
         balance, exit_game = play_round(balance)
     clear_screen()
-    print_slow(f"\nGame over.")
+    print_slow("\nGame over.")
     return balance
 # Constants
 RED_NUMBERS = {
@@ -505,7 +500,7 @@ BLACK_NUMBERS = set(range(1, 37)) - RED_NUMBERS
 
 # Player state
 
-def print_intro():
+def print_intro_bj():
     print_slow("You can bet on:")
     print_slow("- A number (payout: 35 to 1)")
     print_slow("- 'red', 'black' or 'green' (payout: 1 to 1)")
@@ -574,7 +569,7 @@ def resolve_bet(bet_type, amount, result, balance):
 
 
 def roulette(balance):
-    print_intro()
+    print_intro_bj()
     while balance > 0:
         bet_type, amount = place_bet(balance)
         if bet_type == 'exit':
@@ -596,7 +591,7 @@ def display_credits():
     clear_screen()
     print_credits("\n" + "="*50+"\n")
     print_credits(f"{GREEN}CONGRATULATIONS!{GREEN}\n")
-    print_credits(f"You've completed Text Hero!\n")
+    print_credits("You've completed Text Hero!\n")
     print_credits("="*50 + "\n")
     print_credits(r'''
       _____         _      _   _
@@ -607,7 +602,7 @@ def display_credits():
     )
     print()
     # Credits scroll
-    f"\n",
+    "\n",
     f"{BLUE}Development Team:{GREEN}\n",
     f"Lead Developer & Creator: {BLUE}Chales{GREEN}\n",
     f"Developer: {BLUE}arnesito{GREEN}\n",
@@ -660,7 +655,7 @@ def display_DLC_credits():
     clear_screen()
     print_credits("\n" + "="*50+"\n")
     print_credits(f"{GREEN}CONGRATULATIONS!{GREEN}\n")
-    print_credits(f"You've completed Text Hero!\n")
+    print_credits("You've completed Text Hero!\n")
     print_credits("="*50 + "\n")
     print_credits(r'''
       _____         _      _   _
@@ -671,7 +666,7 @@ def display_DLC_credits():
                   Salvation Edition'''   
     )
     # Credits scroll
-    print_credits(f"\n")
+    print_credits("\n")
     print_credits(f"{BLUE}Development Team:{GREEN}\n")
     print_credits(f"Lead Developer & Creator: {BLUE}Chales{GREEN}\n")
     print_credits(f"Developer: {BLUE}arnesito{GREEN}\n")
@@ -783,7 +778,50 @@ def print_credits(text):
                 sys.stdout.flush()
                 time.sleep(0.005)
     
+def print_slow_intro(text):
     
+    # Split text into parts that are either ANSI sequences or regular text
+    parts = []
+    current_part = ""
+    i = 0
+    
+    while i < len(text):
+        # Check if we're at the start of an ANSI sequence
+        if text[i:i+2] == "\033[":
+            # If we have regular text before this sequence, add it
+            if current_part:
+                parts.append(current_part)
+                current_part = ""
+            
+            # Find the end of the ANSI sequence
+            j = text.find("m", i)
+            if j != -1:
+                parts.append(text[i:j+1])
+                i = j + 1
+                continue
+        
+        # Add the current character to the regular text part
+        current_part += text[i]
+        i += 1
+    
+    # Add any remaining regular text
+    if current_part:
+        parts.append(current_part)
+    
+    # Print each part slowly, but keep ANSI sequences together
+    for part in parts:
+        if part.startswith("\033["):
+            # ANSI sequence - print all at once
+            sys.stdout.write(part)
+            sys.stdout.flush()
+        else:
+            # Regular text - print character by character with proper color
+            for char in part:
+                sys.stdout.write(char)  # Write the character first
+                sys.stdout.flush()
+                time.sleep(0.01)
+    
+    print()  # Add newline at end
 def print_slow(text):
     
     # Split text into parts that are either ANSI sequences or regular text
@@ -866,9 +904,9 @@ MONSTER_TYPES = {
     },
     'boss': {
         'name': 'Boss Monster',
-        'health': 200,
-        'attack_min': 25,
-        'attack_max': 35,
+        'health': 150,
+        'attack_min': 15,
+        'attack_max': 30,
         'gold_drop_range': (100, 150),
         "exp_drop_range": (25, 50),
         'item_drop_chance': 1
@@ -948,7 +986,7 @@ MONSTER_TYPES = {
     }
 }
 
-EXP_TO_GET_TO_LEVEL2 = {
+EXP_TO_LEVEL = {
     1: 0,
     2: 8,
     3: 16,
@@ -1001,58 +1039,6 @@ EXP_TO_GET_TO_LEVEL2 = {
     50: 4000
 }
 
-EXP_TO_GET_TO_LEVEL = {
-    0: 1,
-    8: 2,
-    16: 3,
-    26: 4,
-    37: 5,
-    48: 6,
-    60: 7,
-    72: 8,
-    84: 9,
-    100: 10,
-    120: 11,
-    140: 12,
-    160: 13,
-    180: 14,
-    240: 15,
-    280: 16,
-    320: 17,
-    380: 18,
-    440: 19,
-    500: 20,
-    600: 21,
-    700: 22,
-    800: 23,
-    900: 24,
-    1000: 25,
-    1100: 26,
-    1200: 27,
-    1300: 28,
-    1400: 29,
-    1500: 30,
-    1600: 31,
-    1700: 32,
-    1800: 33,
-    1900: 34,
-    2000: 35,
-    2100: 36,
-    2200: 37,
-    2300: 38,
-    2400: 39,
-    2500: 40,
-    2600: 41,
-    2700: 42,
-    2800: 43,
-    2900: 44,
-    3000: 45,
-    3200: 46,
-    3400: 47,
-    3600: 48,
-    3800: 49,
-    4000: 50
-}
 
 LEVEL_IMPROVEMENTS = {
     1: 1,
@@ -1478,1930 +1464,2130 @@ def remove_armor(slot=None):
     return f"Removed {current_item} (-{defense_bonus} defense)"
 
 rooms = {
-    '1-1': {
-        "east": '1-2',
+    "1-1": {
+        "east": "1-2",
         "item": "health potion",
-        'lore': 'You have recieved a message: CLEANSE THE TOWER OF DEMONS',
-        'hint': 'In this game, you use cardinal directions to travel. There are some keyboard shortcuts. EG - n for north, s for south, e for east, w for west.'
+        "lore": "You have received a message: CLEANSE THE TOWER OF DEMONS",
+        "hint": "In this game, you use cardinal directions to travel. There are some keyboard shortcuts. EG - n for north, s for south, e for east, w for west.",
+        "description": "Levitation platforms hover silently. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
     },
-    '1-2': {
-        'north': '1-3',
-        'west': '1-1',
+    "1-2": {
+        "north": "1-3",
+        "west": "1-1",
+        "description": "Calendar pages turn themselves."
     },
-    '1-3': {
-        'west': '1-4',
-        'south': '1-2',
-        'item': 'wooden sword',
-        'hint': 'To equip something, you type in (equip (itemname))'
+    "1-3": {
+        "west": "1-4",
+        "south": "1-2",
+        "item": "wooden sword",
+        "hint": "To equip something, you type in (equip (itemname))",
+        "description": "Seasons cycle within single rooms. You see a sword with a leather wrap providing additional grip, sitting atop the woven basket."
     },
-    '1-4': {
-        'east': '1-3',
-        'west': '1-15',
-        'north': '1-5',
-        'item': 'chainmail boots',
-        'hint': 'if you have multiple items in your inventory to equip, you can type in (i) to equip the best ones possible'
+    "1-4": {
+        "east": "1-3",
+        "west": "1-15",
+        "north": "1-5",
+        "item": "chainmail boots",
+        "hint": "if you have multiple items in your inventory to equip, you can type in (i) to equip the best ones possible",
+        "description": "Parchments flutter without wind. You notice boots whose mail is shaped to allow natural foot movement, leaning against the pillar."
     },
-    '1-5': {
-        'south': '1-4',
-        'west': '1-6',
-        'hint': 'For combat, you have 3 options. Fight, Defend and Cast.\nFight allows you to attack the monster, If you type in (fight) a slider will pop up.\nTry to hit the middle of the slider to most damage possible!\nDefend makes you take less damage from the monsters next attack and allows you to build up mana.\nCast will cast a spell, which will require mana to do.\nHowever, you need to unlock the spell before being able to cast it.\nYou can do this by using spellbooks. To cast a spell, you will type in (cast(spell name))'
+    "1-5": {
+        "south": "1-4",
+        "west": "1-6",
+        "hint": "For combat, you have 3 options. Fight, Defend and Cast.\nFight allows you to attack the monster, If you type in (fight) a slider will pop up.\nTry to hit the middle of the slider to most damage possible!\nDefend makes you take less damage from the monsters next attack and allows you to build up mana.\nCast will cast a spell, which will require mana to do.\nHowever, you need to unlock the spell before being able to cast it.\nYou can do this by using spellbooks. To cast a spell, you will type in (cast(spell name))",
+        "description": "Raw magical force seeps from cracks."
     },
-    '1-6': {
-        'west': '1-7',
-        'east': '1-5',
-        'monster': "normal",
+    "1-6": {
+        "west": "1-7",
+        "east": "1-5",
+        "monster": "normal",
         "item": "mana potion",
-        'hint': 'Mana potions instantly regain mana. You can use them inside our outside of combat by typing (use(mana potion))'
+        "hint": "Mana potions instantly regain mana. You can use them inside our outside of combat by typing (use(mana potion))",
+        "description": "A dark shape blocks the path ahead, its presence making the air colder. You see a potion from which tiny sparks dance within its depths, sitting atop the pile of ancient scrolls."
     },
-    '1-7': {
-        'east': '1-6',
-        'west': '1-8',
-        'south': '1-15',
-        'monster': "normal"
+    "1-7": {
+        "east": "1-6",
+        "west": "1-8",
+        "south": "1-15",
+        "item": "iron chestplate",
+        "monster": "normal",
+        "description": "Eyes reflect the torchlight from multiple impossible angles. You see a chestplate whose metal has a deep, rich color, resting on the wooden chest."
     },
-    '1-8': {
-        'east': '1-7',
-        'west': '1-9',
-        'south': '1-14',
-        'north': '1-12'
+    "1-8": {
+        "east": "1-7",
+        "west": "1-9",
+        "south": "1-14",
+        "item": "iron pants",
+        "north": "1-12",
+        "description": "Floating orbs of light drift aimlessly. Before you rest pants with rivets marking the joints for maximum flexibility, sitting on the display stand."
     },
-    '1-9': {
-        'west': '1-10',
-        'south': '1-13',
-        'east': '1-8',
+    "1-9": {
+        "west": "1-10",
+        "south": "1-13",
+        "east": "1-8",
         "item": "key fragment",
+        "description": "Moss creeps along the walls, softening the dungeon's menace. You notice a fragment whose intricate teeth seem to shift and change when viewed from different angles, leaning against the wall."
     },
-    '1-10': {
-        'south': '1-11',
-        'east': '1-9',
-        "monster": "normal"
+    "1-10": {
+        "south": "1-11",
+        "east": "1-9",
+        "monster": "normal",
+        "description": "The creature's presence makes the torches flicker with fear."
     },
-    '1-11': {
-        'north': '1-10',
-        "item": "leather helmet"
+    "1-11": {
+        "north": "1-10",
+        "item": "leather helmet",
+        "description": "Windows filled with stained glass cast kaleidoscopic patterns. You see a helmet with a thin layer of metal reinforcement lining its inside, sitting atop the treasure pile."
     },
-    '1-12': {
-        'south': '1-11',
-        'monster': 'normal'
+    "1-12": {
+        "south": "1-11",
+        "monster": "normal",
+        "description": "A dark shape blocks the path ahead, its presence making the air colder."
     },
-    '1-13': {
-        'east': '1-16',
-        'north': '1-9',
-        "item": "mana potion"
+    "1-13": {
+        "east": "1-16",
+        "north": "1-9",
+        "item": "mana potion",
+        "description": "Time echoes replay historical events. You find a vial that seems to absorb and reflect light simultaneously, partially hidden behind the tattered curtain."
     },
-    '1-14': {
-        'north': '1-8',
+    "1-14": {
+        "north": "1-8",
         "south": "1-16",
-        "item": "leather chestplate"
+        "item": "leather chestplate",
+        "description": "Diary pages turn themselves. You see a chestplate with a small emblem pressed into its center, sitting atop the display pedestal."
     },
-    '1-15': {
-        'east': '1-4',
-        'north': '1-7',
+    "1-15": {
+        "east": "1-4",
+        "north": "1-7",
         "item": "health potion",
-        'hint': 'health potions are used the same way as mana potions, except for the fact that they give health instead of mana. Type in the same command, which was: (use (health potion))'
+        "hint": "health potions are used the same way as mana potions, except for the fact that they give health instead of mana. Type in the same command, which was: (use (health potion))",
+        "description": "Spaces seem larger inside than outside. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
     },
-    '1-16': {
-        'east': '1-1',
-        'north': '1-14',
-        'south': '1-17',
-        'west': '1-13',
-        'monster': "normal"
+    "1-16": {
+        "east": "1-1",
+        "north": "1-14",
+        "south": "1-17",
+        "west": "1-13",
+        "monster": "normal",
+        "description": "The ground shudders beneath the approach of something massive."
     },
-    '1-17': {
-        'west': '1-18',
-        'north': '1-16'
+    "1-17": {
+        "west": "1-18",
+        "north": "1-16",
+        "description": "Weather patterns repeat in cycles."
     },
-    '1-18': {
-        'west': '1-19',
-        'east': '1-17'
+    "1-18": {
+        "west": "1-19",
+        "east": "1-17",
+        "description": "Ancient scrolls unfurl themselves."
     },
-    '1-19': {
-        'west': '1-20',
-        'east': '1-18',
-        'monster': "boss",
+    "1-19": {
+        "west": "1-20",
+        "east": "1-18",
+        "monster": "boss",
+        "item": "spell book",
+        "description": "The throne of skulls creaks as a skeletal form rises, its very presence causing time to unravel; its voice is the whisper of forgotten graves."
     },
-    '1-20': {
-        'east': '1-19',
-        'up': '2-1'
+    "1-20": {
+        "east": "1-19",
+        "up": "2-1",
+        "description": "Arcane energies swirl like visible currents."
     },
-    'dungeon-1': {
-        'up': '1-10',
-        'east': 'dungeon-2',
-        'monster': "normal"
+    "dungeon-1": {
+        "up": "1-10",
+        "east": "dungeon-2",
+        "monster": "normal",
+        "description": "Something moves with unnatural grace, its form unclear."
     },
-    'dungeon-2': {
-        'west': 'dungeon-1',
-        'south': 'dungeon-3',
-        'item': 'iron sword'
+    "dungeon-2": {
+        "west": "dungeon-1",
+        "south": "dungeon-3",
+        "item": "iron sword",
+        "description": "Reliquaries contain mysterious substances. You see a sword that has been balanced for perfect swing, resting on the metal stand."
     },
-    'dungeon-3': {
-        'north': 'dungeon-2',
-        'monster': "vampire",
-        'lore': 'SOMETHING FEELS SUCCESFUL IN YOU.'
+    "dungeon-3": {
+        "north": "dungeon-2",
+        "monster": "vampire",
+        "lore": "SOMETHING FEELS SUCCESSFUL IN YOU.",
+        "description": "Doors lead to impossible places."
     },
-    '2-1': {
-        'west': '1-20',
-        "north": '2-2',
-        'lore': 'Your sourroundings feel vague.'
+    "2-1": {
+        "west": "1-20",
+        "north": "2-2",
+        "lore": "Your surroundings feel vague.",
+        "description": "Sand timers flow upward."
     },
-    '2-2': {
-        'west': '2-3',
-        'south': '2-1',
-        "item": "mana potion"
+    "2-2": {
+        "west": "2-3",
+        "south": "2-1",
+        "item": "mana potion",
+        "description": "Raw magical force seeps from cracks. Before you sits a potion that pulses with an inner rhythm matching your heartbeat, perched precariously on the edge of the broken table."
     },
-    '2-3': {
-        'west': '2-4',
-        'east': '2-2',
-        'item': 'iron sword'
+    "2-3": {
+        "west": "2-4",
+        "east": "2-2",
+        "item": "iron sword",
+        "description": "Residual magic crackles in the air. You find a sword that feels solid and dependable, hanging from the iron hook."
     },
-    '2-4': {
-        'east': '2-3',
-        'south': '2-5',
-        'west': '2-15',
-        'item': 'mana potion'
+    "2-4": {
+        "east": "2-3",
+        "south": "2-5",
+        "west": "2-15",
+        "item": "mana potion",
+        "description": "Ghostly servants continue eternal duties. Before you sits a potion that pulses with an inner rhythm matching your heartbeat, perched precariously on the edge of the broken table."
     },
-    '2-5': {
-        'north': '2-4',
-        'south': '2-6',
-        'monster': 'normal'
+    "2-5": {
+        "north": "2-4",
+        "south": "2-6",
+        "monster": "normal",
+        "description": "A twisted form writhes in the corner, its eyes glowing with unnatural hunger."
     },
-    '2-6': {
-        'west': '2-7',
-        'north': '2-5',
-        "item": "mana potion"
+    "2-6": {
+        "west": "2-7",
+        "north": "2-5",
+        "item": "mana potion",
+        "description": "Pedestals await artifacts yet to be placed. On the floor lies a potion surrounded by a protective circle of ash."
     },
-    '2-7': {
-        'east': '2-6',
-        'west': '2-8',
-        'south': '2-13',
-        'north': '2-15',
-        'monster': 'normal'
+    "2-7": {
+        "east": "2-6",
+        "west": "2-8",
+        "south": "2-13",
+        "north": "2-15",
+        "monster": "normal",
+        "description": "The ground shudders beneath the approach of something massive."
     },
-    '2-8': {
-        'east': '2-7',
-        'west': '2-9',
+    "2-8": {
+        "east": "2-7",
+        "west": "2-9",
+        "description": "Ethereal dancers perform endless routines."
     },
-    '2-9': {
-        'south': '2-10',
-        'north': '2-13',
-        'east': '2-8',
-        'west': '2-10',
-        "item": "iron chestplate"
+    "2-9": {
+        "south": "2-10",
+        "north": "2-13",
+        "east": "2-8",
+        "west": "2-10",
+        "item": "iron chestplate",
+        "description": "Ripples disturb the air like water. You see a chestplate whose edges are reinforced with additional strips, sitting atop the treasure pile."
     },
-    '2-10': {
-        'south': '2-11',
-        'north': '2-9',
-        "item": "health potion"
+    "2-10": {
+        "south": "2-11",
+        "north": "2-9",
+        "item": "health potion",
+        "description": "Natural phenomena defy physics. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
     },
-    '2-11': {
-        'north': '2-10',
-        'south': '2-12',
-        'monster': 'normal'
+    "2-11": {
+        "north": "2-10",
+        "south": "2-12",
+        "monster": "normal",
+        "description": "A creature that seems to be crafted from nightmares watches you."
     },
-    '2-12': {
-      'north': '2-11',
-      'west': '2-13',
-      'monster': 'normal',
+    "2-12": {
+        "north": "2-11",
+        "west": "2-13",
+        "monster": "normal",
+        "description": "A dark shape blocks the path ahead, its presence making the air colder."
     },
-    '2-13': {
-        'east': '2-12',
-        'south': '2-9',
-        'north': '2-14',
+    "2-13": {
+        "east": "2-12",
+        "south": "2-9",
+        "north": "2-14",
+        "description": "Residual magic crackles in the air."
     },
-    '2-14': {
-        'south': '2-13',
+    "2-14": {
+        "south": "2-13",
         "west": "2-16",
-        "item": "chainmail pants"
+        "item": "chainmail pants",
+        "description": "Shadows move independently of light sources. You find pants whose joints are protected by small rings of leather, hanging from the hook."
     },
-    '2-15': {
-        'east': '2-4',
-        'north': '2-7',
-        "item": "mana potion"
+    "2-15": {
+        "east": "2-4",
+        "north": "2-7",
+        "item": "mana potion",
+        "description": "Astrolabes track impossible celestial movements. Before you sits a potion that pulses with an inner rhythm matching your heartbeat, perched precariously on the edge of the broken table."
     },
-    '2-16': {
-        'west': '2-18',
-        'south': '2-17',
-        'east': '2-14',
-        'monster': 'normal'
+    "2-16": {
+        "west": "2-18",
+        "south": "2-17",
+        "east": "2-14",
+        "monster": "normal",
+        "description": "A creature that seems to be made of living shadow moves closer."
     },
-    '2-17': {
-        'north': '2-16',
-        'monster': 'normal'
+    "2-17": {
+        "north": "2-16",
+        "monster": "normal",
+        "description": "The creature's very presence seems to corrupt the air around it."
     },
-    '2-18': {
-        'west': '2-19',
-        'east': '2-16',
-        'item': 'spellbook'
+    "2-18": {
+        "west": "2-19",
+        "east": "2-16",
+        "item": "spellbook",
+        "description": "Runes pulse with inner fire."
     },
-    '2-19': {
-        'north': '2-20',
-        'east': '2-18',
-        'item': 'health potion'
+    "2-19": {
+        "north": "2-20",
+        "east": "2-18",
+        "item": "health potion",
+        "description": "Children's toys lie abandoned in dark corners. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
     },
-    '2-20': {
-        'south': '2-19'
+    "2-20": {
+        "south": "2-19",
+        "description": "Bubbles rise through solid stone."
     },
-    '2-21': {
-        'south': '2-20',
-        'north': '2-22'
+    "2-21": {
+        "south": "2-20",
+        "north": "2-22",
+        "description": "Echoes repeat unheard phrases."
     },
-    '2-22': {
-        'south': '2-21',
-        'north': '2-23',
-        'east': '2-26'
+    "2-22": {
+        "south": "2-21",
+        "north": "2-23",
+        "east": "2-26",
+        "description": "Spectral guards patrol forgotten corridors."
     },
-    '2-23': {
-        'south': '2-22',
-        'west': '2-24',
-        'item': 'mana potion'
+    "2-23": {
+        "south": "2-22",
+        "west": "2-24",
+        "item": "mana potion",
+        "description": "Arcane energies swirl like visible currents. You find a vial that seems to absorb and reflect light simultaneously, partially hidden behind the tattered curtain."
     },
-    '2-24': {
-        'east': '2-23',
-        'south': '2-25'
-            
+    "2-24": {
+        "east": "2-23",
+        "south": "2-25",
+        "description": "Energy signatures persist in patterns."
     },
-    '2-25': {
-        'north': '2-24',
-        'east': '2-28',
-        'item': 'steel sword'
-            
+    "2-25": {
+        "north": "2-24",
+        "east": "2-28",
+        "item": "steel sword",
+        "description": "Ancient scrolls unfurl when approached. You see a sword whose steel has been folded countless times, leaning against the nearby pillar."
     },
-    '2-26': {
-        'west': '2-23',
-        'east': '2-27',
-        'monster': 'normal'
-
+    "2-26": {
+        "west": "2-23",
+        "east": "2-27",
+        "monster": "normal",
+        "description": "A creature that seems to be made of living shadow moves closer."
     },
-    '2-27': {
-        'west': '2-26',
-        'monster': 'normal'
-
+    "2-27": {
+        "west": "2-26",
+        "monster": "normal",
+        "description": "The shadows seem to coalesce into something that shouldn't exist."
     },
-    '2-28': {
-        'west': '2-25',
-        'east': '2-29',
-        'monster': 'normal'
+    "2-28": {
+        "west": "2-25",
+        "east": "2-29",
+        "monster": "normal",
+        "description": "The shadows seem to coalesce into something that shouldn't exist."
     },
-    '2-29': {
-        'west': '2-28',
-        'south': '2-30',
-        'item': 'iron boots'
+    "2-29": {
+        "west": "2-28",
+        "south": "2-30",
+        "item": "iron boots",
+        "description": "Shadows cast by invisible objects. You see boots whose metal has developed a subtle sheen, resting on the display pedestal."
     },
-    '2-30': {
-        'east': '2-29',
-        'west': '3-1',
-        'monster': 'boss',
-        'lore': 'you feel less greedy'
+    "2-30": {
+        "east": "2-29",
+        "west": "3-1",
+        "monster": "boss",
+        "lore": "you feel less greedy",
+        "description": "Through swirling mists emerges a colossal dragon, scales shimmering like fallen stars; its roar shakes the very foundations of reality."
     },
-    '3-1': {
-        'east': '2-29',
-        "north": '3-2'
+    "3-1": {
+        "east": "2-29",
+        "north": "3-2",
+        "description": "Dream creatures manifest briefly."
     },
-    '3-2': {
-        'east': '3-3',
-        'south': '3-1',
-        'monster': 'normal'
+    "3-2": {
+        "east": "3-3",
+        "south": "3-1",
+        "monster": "normal",
+        "description": "The air grows colder as an unseen presence draws near."
     },
-    '3-3': {
-        'west': '3-2',
-        'east': '3-4',
-        'south': '3-7',
-        'down':'casino',
-        'item': 'iron pants'
+    "3-3": {
+        "west": "3-2",
+        "east": "3-4",
+        "south": "3-7",
+        "down": "casino",
+        "item": "iron pants",
+        "description": "Running water masks hidden dangers. You see pants whose edges are rounded to prevent catching, resting against the wall."
     },
-    'casino': {
-        'up':'3-3'
+    "casino": {
+        "up": "3-3",
+        "description": "Memory spirits relive final moments."
     },
-    '3-4': {
-        'west': '3-3',
-        'east': '3-5',
-        'monster': 'normal'
+    "3-4": {
+        "west": "3-3",
+        "east": "3-5",
+        "monster": "normal",
+        "description": "A mass of writhing tendrils reaches out from the darkness."
     },
-    '3-5': {
-        'west': '3-4',
-        'north': '3-6'
+    "3-5": {
+        "west": "3-4",
+        "north": "3-6",
+        "description": "Memory spirits relive final moments."
     },
-    '3-6': {
-        'west': '3-31',
-        'south': '3-5',
-        'east': '3-8',
-        'north': '3-13',
-        "item": "health potion"
+    "3-6": {
+        "west": "3-31",
+        "south": "3-5",
+        "east": "3-8",
+        "north": "3-13",
+        "item": "health potion",
+        "description": "Time echoes replay historical events. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
     },
-    '3-7': {
-        'east': '3-10',
-        'west': '3-8',
-        'south': '3-16',
-        'north': '3-3',
-        'monster': 'normal'
+    "3-7": {
+        "east": "3-10",
+        "west": "3-8",
+        "south": "3-16",
+        "north": "3-3",
+        "monster": "normal",
+        "description": "The creature's presence makes your skin crawl with primal fear."
     },
-    '3-8': {
-        'east': '3-7',
-        'west': '3-6',
-        'north': '3-9',
-        'item': 'iron boots'
+    "3-8": {
+        "east": "3-7",
+        "west": "3-6",
+        "north": "3-9",
+        "item": "iron boots",
+        "description": "Runes pulse with inner fire. Before you sit boots that are heavy but balanced, perfect for charging into battle, resting on the welcome mat."
     },
-    '3-9': {
-        'south': '3-8',
-        'east': '3-11',
-        'west': '3-10',
-        'monster': 'normal'
+    "3-9": {
+        "south": "3-8",
+        "east": "3-11",
+        "west": "3-10",
+        "monster": "normal",
+        "description": "A creature that defies mortal comprehension moves through the darkness."
     },
-    '3-10': {
-        'east': '3-9',
-        "item": "health potion"
+    "3-10": {
+        "east": "3-9",
+        "item": "health potion",
+        "description": "Ghostly apparitions fade in and out of visibility. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
     },
-    '3-11': {
-        'west': '3-9',
-        'south': '3-12',
-        "item": 'iron sword'
+    "3-11": {
+        "west": "3-9",
+        "south": "3-12",
+        "item": "iron sword",
+        "description": "Shadows cast by invisible objects. You see a sword whose hilt is wrapped in worn leather, sitting atop the wooden chest."
     },
-    '3-12': {
-      'north': '3-11',
-      'monster': 'normal'
+    "3-12": {
+        "north": "3-11",
+        "monster": "normal",
+        "description": "A twisted form writhes in the corner, its eyes glowing with unnatural hunger."
     },
-    '3-13': {
-        'south': '3-6',
-        'north': '3-14',
+    "3-13": {
+        "south": "3-6",
+        "north": "3-14",
+        "description": "Ancient scrolls unfurl when approached."
     },
-    '3-14': {
-        'south': '3-13',
+    "3-14": {
+        "south": "3-13",
         "west": "3-15",
-        'monster': 'normal'
-    },
-    '3-15': {
-        'east': '3-14',
-        'north': '3-16',
-        "item": "spell"
-    },
-    '3-16': {
-        'west': '3-26',
-        'south': '3-15',
-        'north': '3-7',
-        'monster': 'normal'
-    },
-    '3-17': {
-        'north': '3-31',
-        'item': 'health potion'
-    },
-    '3-18': {
-        'south': '3-26',
-        'east': '3-19',
-        'item': 'health potion'
-   },
-    '3-19': {
-        'north': '3-22',
-        'west': '3-18',
-        'item': 'health potion'
-    },
-    '3-20': {
-        'south': '3-23',
-        'monster': 'normal'
-    },
-    '3-21': {
-        'north': '3-22'
-    },
-    '3-22': {
-        'south': '3-19',
-        'north': '3-20',
-        'east': '3-32',
-        'west': '3-23'
-    },
-    '3-23': {
-        'east': '3-22',
-        'west': '3-24',
-        'north': '3-20',
-        'monster': 'normal'
-    },
-    '3-24': {
-        'east': '3-23',
-        'south': '3-25'
-            
-    },
-    '3-25': {
-        'north': '3-24',
-        'east': '3-31',
-        'item': 'health potion'
-            
-    },
-    '3-26': {
-        'west': '3-33',
-        'monster': 'normal'
-
-    },
-    '3-27': {
-        'west': '3-32',
-        'item': 'health potion'
-
-    },
-    '3-28': {
-        'north': '3-29',
-        'east': '3-34',
-        'item': 'health potion'
-    },
-    '3-29': {
-        'west': '3-28',
-        'south': '3-30',
-        'item': 'mana potion'
-    },
-    '3-30': {
-        'east': '3-29',
-        'item': 'health potion',       
-    },
-    '3-31': {
-        'east': '3-6',
-        'west': '3-25',
-        'monster': 'normal'
-            
-    },
-    '3-32': {
-        'east': '3-27',
-        'west': '3-22',
-        'north': '3-33',
-        'item': 'health potion'
-            
-    },
-    '3-33': {
-        'south': '3-32',
-        'north': '3-34',
-        'monster': 'normal'
-            
-    },
-    '3-34': {
-        'south': '3-33',
-        'west': '3-35',
-        'north': '3-36',
-        'monster': 'normal'
-            
-    },
-    '3-35': {
-        'south': '3-34',
-        'west': '3-38',
-        'item': 'iron helmet'
-            
-    },
-    '3-36': {
-        'south': '3-34',
-        'east': '3-37',
-        'item': 'health potion'
-            
-    },
-    '3-37': {
-        'east': '3-38',
-        'west': '3-36',
-        'item': 'iron boots'
-            
-    },
-    '3-38': {
-        'east': '3-39',
-        'west': '3-37',
-        'item': 'health potion'
-            
-    },
-    '3-39': {
-        'east': '3-40',
-        'west': '3-38',
-        'item': 'health potion'
-            
-    },
-    '3-40': {
-        'east': '4-1',
-        'west': '3-39',
-        'monster': 'boss',
-    },
-    '4-1': {
-        'east': '3-40',
-        "west": '4-2',
-    },
-    '4-2': {
-        'east': '4-1',
-        'north': '4-3',
-        'item': 'health potion'
-        
-    },
-    '4-3': {
-        'west': '4-5',
-        'north': '4-4',
-        'south': '4-2',
-        'item': 'mana potion'
-        
-    },
-    '4-4': {
-        'south': '4-3',
-        'east': '4-5',
-        'monster': 'normal'
-        
-    },
-    '4-5': {
-        'west': '4-4',
-        'north': '4-6',
-        'south': '4-7'
-        
-    },
-    '4-6': {
-        'west': '4-47',
-        'south': '4-5',
-        'east': '4-8',
-        'north': '4-15',
-        "item": "health potion"
-        
-    },
-    '4-7': {
-        'east': '4-8',
-        'south': '4-16',
-        'north': '4-5',
-        'monster': 'normal'
-        
-    },
-    '4-8': {
-        'east': '4-10',
-        'north': '4-9',
-        'item': 'health potion'
-        
-    },
-    '4-9': {
-        'south': '4-8',
-        'east': '4-15',
-        'north': '4-10',
-        'monster': 'normal'
-        
-    },
-    '4-10': {
-        'south': '4-9',
-        'north': '4-11',
-        "item": "health potion"
-        
-    },
-    '4-11': {
-        'west': '4-12',
-        "item": 'iron chestplate'
-        
-    },
-    '4-12': {
-      'east': '4-11',
-        
-    },
-    '4-13': {
-        'south': '4-15',
-        'north': '3-14',
-        
-    },
-    '4-14': {
-        'south': '4-13',
-        'monster': 'normal'
-        
-    },
-    '4-15': {
-        'west': '4-9',
-        'north': '3-16',
-        'south': '4-6',
-        'east': '4-16',
-        "item": "health potion"
-        
-    },
-    '4-16': {
-        'west': '4-15',
-        'south': '4-17',
-        'north': '4-7',
-        'item': 'mana potion'
-        
-    },
-    '4-17': {
-        'north': '4-16',
-        'west': '4-18',
-        'item': 'health potion'
-        
-    },
-    '4-18': {
-        'south': '4-19',
-        'east': '4-17',
-        'monster': 'normal'
-        
-    },
-    '4-19': {
-        'north': '4-18',
-        'west': '4-20',
-        'item': 'health potion'
-        
-    },
-    '4-20': {
-        'east': '4-19',
-        'south': '4-21',
-        'monster': 'boss',
-        
-    },
-    '4-21': {
-        'north': '4-21',
-        'south': '4-22',
-        'monster': 'normal',
-        
-    },
-    '4-22': {
-        'south': '4-29',
-        'north': '4-25',
-        'east': '4-46',
-        'west': '4-23'
-        
-    },
-    '4-23': {
-        'east': '4-22',
-        'west': '4-24',
-        'north': '4-26',
-        'monster': 'normal'
-        
-    },
-    '4-24': {
-        'east': '4-23',
-        'south': '4-25'
-           
-    },
-    '4-25': {
-        'north': '4-24',
-        'south': '4-22',
-        'east': '4-26',
-        'west': '4-33',
-        'item': 'health potion'
-           
-    },
-    '4-26': {
-        'west': '4-25',
-        'east': '4-27',
-        'monster': 'normal'
-
-    },
-    '4-27': {
-        'west': '4-26',
-        'south': '4-28',
-        'item': 'health potion'
-
-    },
-    '4-28': {
-        'north': '4-27',
-        'east': '4-29',
-        'monster': 'normal'
-    },
-    '4-29': {
-        'west': '4-28',
-        'south': '4-30',
-        'item': 'mana potion'
-    },
-    '4-30': {
-        'east': '4-29',
-        'north': '4-31',
-        'item': 'health potion'
-           
-    },
-    '4-31': {
-        'south': '4-30',
-        'west': '4-32',
-        'monster': 'normal'
-           
-    },
-    '4-32': {
-        'east': '4-31',
-        'north': '4-33',
-        'item': 'health potion'
-           
-    },
-    '4-33': {
-        'south': '4-32',
-        'east': '4-25',
-        'north': '4-34',
-        'monster': 'normal'
-           
-    },
-    '4-34': {
-        'south': '4-33',
-        'west': '4-35',
-        'north': '4-36',
-        'monster': 'normal'
-           
-    },
-    '4-35': {
-        'east': '4-34',
-        'west': '4-38',
-        'item': 'iron helmet'
-           
-    },
-    '4-36': {
-        'south': '4-44',
-        'north': '4-38',
-        'item': 'health potion'
-           
-    },
-    '4-37': {
-        'east': '4-38',
-        'south': '4-36',
-        'monster': 'normal'
-           
-    },
-    '4-38': {
-        'east': '4-39',
-        'north': '4-37',
-        'item': 'health potion'
-           
-    },
-    '4-39': {
-        'east': '4-40',
-        'west': '4-38',
-        'monster': 'normal'
-           
-    },
-    '4-40': {
-        'east': '4-41',
-        'west': '4-39',
-        'monster': 'normal'
-            
-           
-    },
-    '4-41': {
-        'east': '4-40',
-        'west': '4-42',
-        'item': 'mana potion'
-            
-               
-    },
-    '4-42': {
-        'east': '4-41',
-        'north': '4-44',
-        'west': '4-43',
-        'item': 'mana potion'
-            
-    },
-    '4-43': {
-        'east': '4-42',
-        'item': 'health potion'
-            
-               
-    },
-    '4-44': {
-        'east': '4-45',
-        'west': '4-43',
-        'monster': 'normal'
-            
-
-    },
-    '4-45': {
-        'south': '4-46',
-        'west': '4-44'
-            
-
-    },
-    '4-46': {
-        'east': '4-47',
-        'north': '4-45'
-            
-
-    },
-    '4-47': {
-        'east': '4-48',
-        'north': '4-46',
-        'south': '4-49'
-            
-
-    },
-    '4-48': {
-        'west': '4-48',
-        'monster': 'normal'
-            
-
-    },
-    '4-49': {
-        'north': '4-47',
-        'south': '4-50',
-        'item': 'health potion',
-        'lore': 'You feel if something terrible is coming...'
-        
-
-    },
-    '4-50': {
-        'north': '4-49',
-        'south': '5-1',
-        'monster': 'boss',
-            
-            
-    },
-    '5-1': {
-        'east': '4-50',
-        "north": '5-2',
-        
-    },
-    '5-2': {
-        'east': '5-1',
-        'south': '5-3',
-        'west': '5-12',
-        'monster': 'normal'
-        
-    },
-    '5-3': {
-        'west': '5-5',
-        'south': '5-4',
-        'north': '5-2',
-        'east': '5-17',
-        'item': 'health potion'
-        
-    },
-    '5-4': {
-        'south': '5-3',
-        'east': '5-6',
-        'monster': 'normal'
-        
-    },
-    '5-5': {
-        'east': '5-3',
-        'north': '5-10',
-        'monster': 'boss',
-        'lore': 'This doesnt feel right.'
-        
-    },
-    '5-6': {
-        'west': '5-50',
-        'south': '5-7',
-        'north': '5-15',
-        "monster": "normal"
-        
-    },
-    '5-7': {
-        'east': '5-8',
-        'north': '5-6',
-        'item': 'health potion'
-        
-    },
-    '5-8': {
-        'west': '5-7',
-        'north': '5-9',
-        'monster': 'normal'
-        
-    },
-    '5-9': {
-        'south': '5-8',
-        'north': '5-10',
-        'monster': 'normal'
-        
-    },
-    '5-10': {
-        'south': '5-9',
-        'north': '5-11',
-        "monster": "boss"
-        
-    },
-    '5-11': {
-        'west': '5-12',
-        'south': '5-10',
-        "item": 'mana potion'
-        
-    },
-    '5-12': {
-      'east': '5-11',
-      'south': '5-13',
-      'item': 'health potion'
-        
-    },
-    '5-13': {
-        'south': '5-14',
-        'north': '5-12',
-        'monster': 'normal',
-        
-    },
-    '5-14': {
-        'north': '5-13',
-        'west': '5-15',
-        'monster': 'normal'
-        
-    },
-    '5-15': {
-        'south': '5-16',
-        'east': '5-14',
-        "item": "wooden sword"
-        
-    },
-    '5-16': {
-        'west': '4-16',
-        'south': '5-59',
-        'north': '5-15',
-        'east': '5-17',
-        'monster': 'normal'
-        
-    },
-    '5-17': {
-        'north': '5-18',
-        'west': '5-16',
-        'monster': 'normal'
-        
-    },
-    '5-18': {
-        'south': '5-17',
-        'east': '5-19',
-        'monster': 'normal'
-        
-   },
-    '5-19': {
-        'north': '5-18',
-        'west': '5-20',
-        'item': 'health potion'
-        
-    },
-    '5-20': {
-        'east': '5-19',
-        'south': '5-21',
-        'monster': 'boss'
-        
-    },
-    '5-21': {
-        'north': '5-20',
-        'east': '5-22',
-        'west': '5-23',
-        'monster': 'normal'
-        
-    },
-    '5-22': {
-        'south': '5-33',
-        'north': '5-32',
-        'east': '5-31',
-        'west': '5-21'
-        
-    },
-    '5-23': {
-        'east': '5-21',
-        'west': '5-24',
-        'monster': 'normal'
-        
-    },
-    '5-24': {
-        'east': '5-23',
-        'south': '5-25',
-           
-    },
-    '4-25': {
-        'north': '4-24',
-        'east': '4-26',
-        'monster': 'boss'
-           
-    },
-    '5-26': {
-        'west': '5-25',
-        'east': '5-27',
-        'monster': 'normal'
-
-    },
-    '5-27': {
-        'west': '5-26',
-        'south': '5-28',
-        'monster': 'normal'
-
-    },
-    '5-28': {
-        'north': '5-27',
-        'east': '5-29',
-        'monster': 'normal'
-    },
-    '5-29': {
-        'west': '5-28',
-        'south': '5-30',
-        'item': 'mana potion'
-    },
-    '5-30': {
-        'east': '5-29',
-        'monster': 'boss',
-        'lore': 'you feel sick.'
-           
-    },
-    '5-31': {
-        'west': '5-22',
-        'west': '5-32',
-        'item': 'health potion'
-           
-    },
-    '5-32': {
-        'east': '5-31',
-        'south': '5-22',
-        'north': '5-33',
-        'item': 'health potion'
-           
-    },
-    '5-33': {
-        'south': '5-32',
-        'east': '5-34',
-        'north': '5-22',
-        'monster': 'normal'
-           
-    },
-    '5-34': {
-        'south': '4-33',
-        'west': '4-35',
-        'monster': 'normal'
-           
-    },
-    '5-35': {
-        'easr': '5-34',
-        'west': '5-36',
-        'monster': 'boss'
-           
-    },
-    '5-36': {
-        'south': '5-45',
-        'north': '5-37',
-        'item': 'health potion'
-           
-    },
-    '5-37': {
-        'east': '5-38',
-        'south': '5-36',
-        'item': 'health potion'
-           
-    },
-    '5-38': {
-        'east': '5-39',
-        'west': '5-37',
-        'item': 'health potion'
-           
-    },
-    '5-39': {
-        'east': '5-40',
-        'west': '5-38',
-        'item': 'health potion'
-           
-    },
-    '5-40': {
-        'east': '5-41',
-        'west': '5-39',
-        'monster': 'boss',
-        'lore': 'NOTHING IN THIS WORLD IS RIGHT'
-            
-           
-    },
-    '5-41': {
-        'east': '5-40',
-        'west': '5-42',
-        'item': 'mana potion',
-        'lore': 'And you must right those wrongs.'
-               
-    },
-    '5-42': {
-        'east': '4-41',
-        'west': '4-43',
-        'item': 'mana potion'
-            
-    },
-    '5-43': {
-        'east': '4-42',
-        'north': '5-44',
-        'item': 'health potion'
-            
-               
-    },
-    '5-44': {
-        'east': '5-45',
-        'west': '5-43',
-        'monster': 'normal'
-            
-
-    },
-    '5-45': {
-        'south': '5-46',
-        'west': '5-44',
-        'monster': 'boss',
-        'lore': 'ALL YOUR EFFORTS ARE FOR NOTHING.'
-    },
-    '5-46': {
-        'east': '5-47',
-        'north': '5-45',
-        'lore': 'Trun back now.'
-
-    },
-    '5-47': {
-        'east': '5-48',
-        'north': '5-46',
-        'monster': 'normal',
-        'lore': 'You have no place with the gods.'
-
-    },
-    '5-48': {
-        'west': '5-47',
-        'south': '5-49',
-        'monster': 'normal'
-            
-
-    },
-    '5-49': {
-        'north': '4-48',
-        'south': '4-50',
-        'item': 'health potion'
-            
-
-    },
-    '5-50': {
-        'north': '5-49',
-        'south': '5-51',
-        'monster': 'boss',
-        'lore': 'ITS NOT FAIR'
-            
-
-    },
-    '5-51': {
-        'north': '5-50',
-        'east': '5-52',
-        'monster': 'normal',
-        'lore': 'It never was.'
-
-    },
-    '5-52': {
-        'west': '5-51',
-        'east': '5-53',
-        'north': '5-59',
-        'monster': 'normal',
-        'lore': 'A N D  Y O U  K N O W  I T.'
-
-    },
-    '5-53': {
-        'west': '5-52',
-        'south': '5-54',
-        'item': 'health potion'
-            
-
-    },
-    '5-54': {
-        'north': '5-53',
-        'west': '5-55',
-        'item': 'health potion'
-            
-
-    },
-    '5-55': {
-        'east': '5-54',
-        'west': '5-56',
-        'monster': 'boss'
-            
-
-    },
-    '5-56': {
-        'east': '5-55',
-        'west': '5-57',
-        'monster': 'normal'
-            
-
-    },
-    '5-57': {
-        'east': '5-56',
-        'west': '5-58',
-        'item': 'health potion'
-            
-
-    },
-    '5-58': {
-        'west': '5-57',
-        'item': 'health potion'
-            
-
-    },
-    '5-59': {
-        'north': '5-52',
-        'west': '5-60',
-        'item': 'health potion'
-    },
-    '5-60': {
-        'east': '5-59',
-        'monster': 'boss',    
-    },
-        '1~1': {
-        'north': '1~2',
-        'item': 'health potion',
-        'lore': 'hehe, lol jk'
-    },
-    '1~2': {
-        'west': '1~3',
-        'south': '1~1',
-        'monster': 'demon'
-    },
-    '1~3': {
-        'west': '1~4',
-        'east': '1~2',
-        'south': '1~8',
-        'item': 'mythril pants'
-    },
-    '1~4': {
-        'west': '1~5',
-        'east': '1~3',
-        'south': '1~7',
-        'monster': 'demon'
-    },
-    '1~5': {
-        'south': '1~6',
-        'east': '1~4',
-        'monster': 'demon'
-    },
-    '1~6': {
-        'east': '1~7',
-        'north': '1~5',
-        "item": "health potion"
-    },
-    '1~7': {
-        'east': '1~8',
-        'west': '1~6',
-        'north': '1~4',
-        'monster': 'demon'
-    },
-    '1~8': {
-        'south': '1~9',
-        'west': '1~7',
-        'north': '1~3',
-        'item': 'mythril boots'
-    },
-    '1~9': {
-        'south': '1~10',
-        'north': '1~8',
-        'monster': 'demon'
-    },
-    '1~10': {
-        'east': '1~13',
-        'north': '1~9',
-        'south': '1~11',
-        "item": "health potion"
-    },
-    '1~11': {
-        'north': '1~10',
-        'south': '1~12',
-        "item": 'mythril sword'
-    },
-    '1~12': {
-      'north': '1~11',
-      'monster': 'demon'
-    },
-    '1~13': {
-        'west': '1~14',
-        'east': '1~10',
-        'monster': 'demon'
-    },
-    '1~14': {
-        'south': '1~15',
+        "monster": "normal",
+        "description": "A creature that seems to be made of pure malevolence watches you."
+    },
+    "3-15": {
+        "east": "3-14",
+        "north": "3-16",
+        "item": "spell",
+        "description": "A withered banner hangs limply from the ceiling, its emblem unrecognizable."
+    },
+    "3-16": {
+        "west": "3-26",
+        "south": "3-15",
+        "north": "3-7",
+        "monster": "normal",
+        "description": "A creature that seems to be made of pure malevolence watches you."
+    },
+    "3-17": {
+        "north": "3-31",
+        "item": "health potion",
+        "description": "Abandoned armor stands vigil in corners. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
+    },
+    "3-18": {
+        "south": "3-26",
+        "east": "3-19",
+        "item": "health potion",
+        "description": "Parchments flutter without wind. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "3-19": {
+        "north": "3-22",
+        "west": "3-18",
+        "item": "health potion",
+        "description": "Footsteps echo from corridors yet to be discovered. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "3-20": {
+        "south": "3-23",
+        "monster": "normal",
+        "description": "Something massive shifts in the darkness, its full form unseen."
+    },
+    "3-21": {
+        "north": "3-22",
+        "description": "Mechanical devices count backward."
+    },
+    "3-22": {
+        "south": "3-19",
+        "north": "3-20",
+        "east": "3-32",
+        "west": "3-23",
+        "description": "Doors open onto different locations each time."
+    },
+    "3-23": {
+        "east": "3-22",
+        "west": "3-24",
+        "north": "3-20",
+        "monster": "normal",
+        "description": "A creature that seems to be made of living shadow moves closer."
+    },
+    "3-24": {
+        "east": "3-23",
+        "south": "3-25",
+        "description": "Children's toys lie abandoned in dark corners."
+    },
+    "3-25": {
+        "north": "3-24",
+        "east": "3-31",
+        "item": "health potion",
+        "description": "Architecture defies physical laws. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "3-26": {
+        "west": "3-33",
+        "monster": "normal",
+        "description": "A creature that defies mortal comprehension moves through the darkness."
+    },
+    "3-27": {
+        "west": "3-32",
+        "item": "health potion",
+        "description": "Projected illusions serve as guides. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
+    },
+    "3-28": {
+        "north": "3-29",
+        "east": "3-34",
+        "item": "health potion",
+        "description": "Raw magical force seeps from cracks. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "3-29": {
+        "west": "3-28",
+        "south": "3-30",
+        "item": "mana potion",
+        "description": "Smells shift and change without apparent source. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "3-30": {
+        "east": "3-29",
+        "item": "health potion",
+        "description": "Family portraits with scratched-out faces. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
+    },
+    "3-31": {
+        "east": "3-6",
+        "west": "3-25",
+        "monster": "normal",
+        "description": "A creature that seems to be made of pure malevolence watches you."
+    },
+    "3-32": {
+        "east": "3-27",
+        "west": "3-22",
+        "north": "3-33",
+        "item": "health potion",
+        "description": "Architecture defies physical laws. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "3-33": {
+        "south": "3-32",
+        "north": "3-34",
+        "monster": "normal",
+        "description": "A twisted form writhes in the corner, its eyes glowing with unnatural hunger."
+    },
+    "3-34": {
+        "south": "3-33",
+        "west": "3-35",
+        "north": "3-36",
+        "monster": "normal",
+        "description": "Something ancient and evil stirs in the depths of the room."
+    },
+    "3-35": {
+        "south": "3-34",
+        "west": "3-38",
+        "item": "iron helmet",
+        "description": "Ancient scrolls unfurl when approached. You see a helmet with a decorative crest running along its center, resting on the wooden peg."
+    },
+    "3-36": {
+        "south": "3-34",
+        "east": "3-37",
+        "item": "health potion",
+        "description": "Enchantment residue clings to surfaces. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "3-37": {
+        "east": "3-38",
+        "west": "3-36",
+        "item": "spell book",
+        "description": "Textures feel different from appearance. Before you sit boots that are heavy but balanced, perfect for charging into battle, resting on the welcome mat."
+    },
+    "3-38": {
+        "east": "3-39",
+        "west": "3-37",
+        "item": "health potion",
+        "description": "Pedestals await artifacts yet to be placed. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "3-39": {
+        "east": "3-40",
+        "west": "3-38",
+        "item": "health potion",
+        "description": "Wind chimes ring from unknown heights. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "3-40": {
+        "east": "4-1",
+        "west": "3-39",
+        "monster": "boss",
+        "description": "Through swirling mists emerges a colossal dragon, scales shimmering like fallen stars; its roar shakes the very foundations of reality."
+    },
+    "4-1": {
+        "east": "3-40",
+        "west": "4-2",
+        "description": "Stone tablets bear eroding inscriptions."
+    },
+    "4-2": {
+        "east": "4-1",
+        "north": "4-3",
+        "item": "health potion",
+        "description": "Sounds echo differently depending on position. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "4-3": {
+        "west": "4-5",
+        "north": "4-4",
+        "south": "4-2",
+        "item": "mana potion",
+        "description": "Pedestals await artifacts yet to be placed. You see a potion from which tiny sparks dance within its depths, sitting atop the pile of ancient scrolls."
+    },
+    "4-4": {
+        "south": "4-3",
+        "east": "4-5",
+        "monster": "normal",
+        "description": "The air seems to ripple with malevolent presence."
+    },
+    "4-5": {
+        "west": "4-4",
+        "north": "4-6",
+        "south": "4-7",
+        "description": "Ancient calendars display impossible dates."
+    },
+    "4-6": {
+        "west": "4-47",
+        "south": "4-5",
+        "east": "4-8",
+        "north": "4-15",
+        "item": "health potion",
+        "description": "Residual magic crackles in the air. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "4-7": {
+        "east": "4-8",
+        "south": "4-16",
+        "north": "4-5",
+        "monster": "normal",
+        "description": "A horror beyond human comprehension moves closer."
+    },
+    "4-8": {
+        "east": "4-10",
+        "north": "4-9",
+        "item": "health potion",
+        "description": "Phantom musicians play silent instruments. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "4-9": {
+        "south": "4-8",
+        "east": "4-15",
+        "north": "4-10",
+        "monster": "normal",
+        "description": "Eyes reflect the torchlight from multiple impossible angles."
+    },
+    "4-10": {
+        "south": "4-9",
+        "north": "4-11",
+        "item": "health potion",
+        "description": "Ancient stonework bears the marks of long-forgotten construction techniques. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "4-11": {
+        "west": "4-12",
+        "item": "iron chestplate",
+        "description": "Running water masks hidden dangers. You notice a chestplate whose plates are shaped to deflect blows, leaning against the pillar."
+    },
+    "4-12": {
+        "east": "4-11",
+        "description": "Absolute silence feels oppressive."
+    },
+    "4-13": {
+        "south": "4-15",
+        "north": "3-14",
+        "description": "Rooms exist in multiple places simultaneously."
+    },
+    "4-14": {
+        "south": "4-13",
+        "monster": "normal",
+        "description": "The sound of scraping bone echoes through the chamber."
+    },
+    "4-15": {
+        "west": "4-9",
+        "north": "3-16",
+        "south": "4-6",
+        "east": "4-16",
+        "item": "health potion",
+        "description": "Rusty keys hang from hooks labeled in forgotten languages. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "4-16": {
+        "west": "4-15",
+        "south": "4-17",
+        "north": "4-7",
+        "item": "mana potion",
+        "description": "Timepieces run in reverse. You see a vial containing liquid that seems to capture starlight, resting in the corner."
+    },
+    "4-17": {
+        "north": "4-16",
+        "west": "4-18",
+        "item": "health potion",
+        "description": "Time echoes replay historical events. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "4-18": {
+        "south": "4-19",
+        "east": "4-17",
+        "monster": "normal",
+        "description": "The sound of scraping bone echoes through the chamber."
+    },
+    "4-19": {
+        "north": "4-18",
+        "west": "4-20",
+        "item": "health potion",
+        "description": "Colors seem more vivid near certain walls. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "4-20": {
+        "east": "4-19",
+        "south": "4-21",
+        "monster": "boss",
+        "description": "Where light dare not tread, an elder beast stirs, its presence warping space; the dragon's gaze turns heroes to stone."
+    },
+    "4-21": {
+        "north": "4-21",
+        "south": "4-22",
+        "monster": "normal",
+        "description": "A horror beyond human comprehension moves closer."
+    },
+    "4-22": {
+        "south": "4-29",
+        "north": "4-25",
+        "east": "4-46",
+        "west": "4-23",
+        "description": "Whispers seem to come from behind."
+    },
+    "4-23": {
+        "east": "4-22",
+        "west": "4-24",
+        "north": "4-26",
+        "monster": "normal",
+        "description": "The ground shudders beneath the approach of something massive."
+    },
+    "4-24": {
+        "east": "4-23",
+        "south": "4-25",
+        "description": "Stone pillars support impossible geometries."
+    },
+    "4-25": {
+        "north": "4-24",
+        "east": "4-26",
+        "monster": "boss",
+        "description": "Stars die in the void left by the presence; its whispered name causes sanity to fray."
+    },
+    "4-26": {
+        "west": "4-25",
+        "east": "4-27",
+        "monster": "normal",
+        "description": "A dark form moves with jerky, unnatural movements."
+    },
+    "4-27": {
+        "west": "4-26",
+        "south": "4-28",
+        "item": "health potion",
+        "description": "Messages scrawled in blood remain legible. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "4-28": {
+        "north": "4-27",
+        "east": "4-29",
+        "monster": "normal",
+        "description": "A twisted form writhes in the corner, its eyes glowing with unnatural hunger."
+    },
+    "4-29": {
+        "west": "4-28",
+        "south": "4-30",
+        "item": "mana potion",
+        "description": "Timepieces run in reverse. You see a vial containing liquid that seems to capture starlight, resting in the corner."
+    },
+    "4-30": {
+        "east": "4-29",
+        "north": "4-31",
+        "item": "health potion",
+        "description": "Bioluminescent fungi cast an ethereal blue glow. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "4-31": {
+        "south": "4-30",
+        "west": "4-32",
+        "monster": "normal",
+        "description": "A creature that seems to be made of pure malevolence watches you."
+    },
+    "4-32": {
+        "east": "4-31",
+        "north": "4-33",
+        "item": "health potion",
+        "description": "Children's toys lie abandoned in dark corners. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "4-33": {
+        "south": "4-32",
+        "east": "4-25",
+        "north": "4-34",
+        "monster": "normal",
+        "description": "A horror beyond human comprehension moves closer."
+    },
+    "4-34": {
+        "south": "4-33",
+        "west": "4-35",
+        "north": "4-36",
+        "monster": "normal",
+        "description": "The sound of scraping bone echoes through the chamber."
+    },
+    "4-35": {
+        "east": "4-34",
+        "west": "4-38",
+        "item": "iron helmet",
+        "description": "Corridors stretch further than physically possible. You see a helmet with a decorative crest running along its center, resting on the wooden peg."
+    },
+    "4-36": {
+        "south": "4-44",
+        "north": "4-38",
+        "item": "health potion",
+        "description": "Water clocks measure something other than time. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "4-37": {
+        "east": "4-38",
+        "south": "4-36",
+        "monster": "normal",
+        "description": "The shadows seem to coalesce into something that shouldn't exist."
+    },
+    "4-38": {
+        "east": "4-39",
+        "north": "4-37",
+        "item": "health potion",
+        "description": "You hear distant music, eerie and slow, with no source in sight. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "4-39": {
+        "east": "4-40",
+        "west": "4-38",
+        "monster": "normal",
+        "description": "The creature's very presence seems to corrupt the air around it."
+    },
+    "4-40": {
+        "east": "4-41",
+        "west": "4-39",
+        "monster": "normal",
+        "description": "Something ancient and evil stirs in the depths of the room."
+    },
+    "4-41": {
+        "east": "4-40",
+        "west": "4-42",
+        "item": "mana potion",
+        "description": "Levitation platforms hover silently. You see a potion from which tiny sparks dance within its depths, sitting atop the pile of ancient scrolls."
+    },
+    "4-42": {
+        "east": "4-41",
+        "north": "4-44",
+        "west": "4-43",
+        "item": "mana potion",
+        "description": "Bioluminescent fungi cast an ethereal blue glow. You notice a vial whose liquid shifts between colors like a sunset in miniature, reflecting off the potion that sits in the beam of light."
+    },
+    "4-43": {
+        "east": "4-42",
+        "item": "health potion",
+        "description": "Colors seem more vivid in certain chambers. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "4-44": {
+        "east": "4-45",
+        "west": "4-43",
+        "monster": "normal",
+        "description": "Something massive shifts in the darkness, its full form unseen."
+    },
+    "4-45": {
+        "south": "4-46",
+        "west": "4-44",
+        "description": "Memory echoes replay ancient rituals."
+    },
+    "4-46": {
+        "east": "4-47",
+        "north": "4-45",
+        "description": "Ancient calendars display impossible dates."
+    },
+    "4-47": {
+        "east": "4-48",
+        "north": "4-46",
+        "south": "4-49",
+        "description": "Running water masks hidden dangers."
+    },
+    "4-48": {
+        "west": "4-48",
+        "monster": "normal",
+        "description": "A dark form moves with jerky, unnatural movements."
+    },
+    "4-49": {
+        "north": "4-47",
+        "south": "4-50",
+        "item": "health potion",
+        "lore": "You feel if something terrible is coming...",
+        "description": "Moss creeps along the walls, softening the dungeon's menace. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "4-50": {
+        "north": "4-49",
+        "south": "5-1",
+        "monster": "boss",
+        "description": "Reality tears apart as a deity of darkness manifests, its true form hidden behind veils of madness-inducing horror."
+    },
+    "5-1": {
+        "east": "4-50",
+        "north": "5-2",
+        "description": "Colors seem more vivid near certain walls."
+    },
+    "5-2": {
+        "east": "5-1",
+        "south": "5-3",
+        "west": "5-12",
+        "monster": "normal",
+        "description": "The ground trembles beneath the feet of an unseen horror."
+    },
+    "5-3": {
+        "west": "5-5",
+        "south": "5-4",
+        "north": "5-2",
+        "east": "5-17",
+        "item": "health potion",
+        "description": "Projected illusions serve as guides. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "5-4": {
+        "south": "5-3",
+        "east": "5-6",
+        "monster": "normal",
+        "description": "A twisted abomination emerges from the darkness."
+    },
+    "5-5": {
+        "east": "5-3",
+        "north": "5-10",
+        "monster": "boss",
+        "lore": "This doesn't feel right.",
+        "description": "Where light dare not tread, an elder beast stirs, its presence warping space; the dragon's gaze turns heroes to stone."
+    },
+    "5-6": {
+        "west": "5-50",
+        "south": "5-7",
+        "north": "5-15",
+        "monster": "normal",
+        "description": "The shadows seem to coalesce into something that shouldn't exist."
+    },
+    "5-7": {
+        "east": "5-8",
+        "north": "5-6",
+        "item": "health potion",
+        "description": "Pressure waves ripple through standing water. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
+    },
+    "5-8": {
+        "west": "5-7",
+        "north": "5-9",
+        "monster": "normal",
+        "description": "The ground seems to writhe beneath the feet of an approaching horror."
+    },
+    "5-9": {
+        "south": "5-8",
+        "north": "5-10",
+        "monster": "normal",
+        "description": "The creature's very presence seems to corrupt the air around it."
+    },
+    "5-10": {
+        "south": "5-9",
+        "north": "5-11",
+        "monster": "boss",
+        "description": "Amidst swirling necromantic energies stands a figure of pure bone, crowned with dark crystal; death itself seems to bend to its will."
+    },
+    "5-11": {
+        "west": "5-12",
+        "south": "5-10",
+        "item": "mana potion",
+        "description": "Fog banks move with purpose. You see a potion from which tiny sparks dance within its depths, sitting atop the pile of ancient scrolls."
+    },
+    "5-12": {
+        "east": "5-11",
+        "south": "5-13",
+        "item": "health potion",
+        "description": "Metallic scraping tracks movement. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "5-13": {
+        "south": "5-14",
+        "north": "5-12",
+        "monster": "normal",
+        "description": "The air grows colder as an unseen presence draws near."
+    },
+    "5-14": {
+        "north": "5-13",
+        "west": "5-15",
+        "monster": "normal",
+        "description": "Eyes reflect the torchlight from multiple impossible angles."
+    },
+    "5-15": {
+        "south": "5-16",
+        "east": "5-14",
+        "item": "wooden sword",
+        "description": "Ripples disturb the air like water. You notice a sword whose wood has been treated with protective oils, hanging from the leather strap."
+    },
+    "5-16": {
+        "west": "4-16",
+        "south": "5-59",
+        "north": "5-15",
+        "east": "5-17",
+        "monster": "normal",
+        "description": "Something massive shifts in the darkness, its full form unseen."
+    },
+    "5-17": {
+        "north": "5-18",
+        "west": "5-16",
+        "monster": "normal",
+        "description": "A creature that seems to be made of living shadow moves closer."
+    },
+    "5-18": {
+        "south": "5-17",
+        "east": "5-19",
+        "monster": "normal",
+        "description": "The air seems to ripple with malevolent presence."
+    },
+    "5-19": {
+        "north": "5-18",
+        "west": "5-20",
+        "item": "health potion",
+        "description": "Colors seem more vivid in certain chambers. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
+    },
+    "5-20": {
+        "east": "5-19",
+        "south": "5-21",
+        "monster": "boss",
+        "description": "Amidst swirling necromantic energies stands a figure of pure bone, crowned with dark crystal; death itself seems to bend to its will."
+    },
+    "5-21": {
+        "north": "5-20",
+        "east": "5-22",
+        "west": "5-23",
+        "monster": "normal",
+        "description": "A creature that defies mortal comprehension moves through the darkness."
+    },
+    "5-22": {
+        "south": "5-33",
+        "north": "5-32",
+        "east": "5-31",
+        "west": "5-21",
+        "description": "Mana pools collect in low areas."
+    },
+    "5-23": {
+        "east": "5-21",
+        "west": "5-24",
+        "monster": "normal",
+        "description": "A twisted abomination emerges from the darkness."
+    },
+    "5-24": {
+        "east": "5-23",
+        "south": "5-25",
+        "description": "Salt deposits crystallize in delicate patterns."
+    },
+    "5-26": {
+        "west": "5-25",
+        "east": "5-27",
+        "monster": "normal",
+        "description": "Something ancient and evil stirs in the depths of the room."
+    },
+    "5-27": {
+        "west": "5-26",
+        "south": "5-28",
+        "monster": "normal",
+        "description": "The air seems to ripple with malevolent presence."
+    },
+    "5-28": {
+        "north": "5-27",
+        "east": "5-29",
+        "monster": "normal",
+        "description": "The sound of wet flesh slapping against stone echoes through the chamber."
+    },
+    "5-29": {
+        "west": "5-28",
+        "south": "5-30",
+        "item": "mana potion",
+        "description": "Vaulted ceilings disappear into darkness. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "5-30": {
+        "east": "5-29",
+        "monster": "boss",
+        "lore": "you feel sick.",
+        "description": "Amidst swirling necromantic energies stands a figure of pure bone, crowned with dark crystal; death itself seems to bend to its will."
+    },
+    "5-31": {
+        "west": "5-32",
+        "item": "health potion",
+        "description": "Calendar pages turn themselves. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "5-32": {
+        "east": "5-31",
+        "south": "5-22",
+        "north": "5-33",
+        "item": "health potion",
+        "description": "Time flows at varying rates. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
+    },
+    "5-33": {
+        "south": "5-32",
+        "east": "5-34",
+        "north": "5-22",
+        "monster": "normal",
+        "description": "The ground shudders beneath the approach of something massive."
+    },
+    "5-34": {
+        "south": "4-33",
+        "west": "4-35",
+        "monster": "normal",
+        "description": "A creature that defies nature watches you from the darkness."
+    },
+    "5-35": {
+        "east": "5-34",
+        "west": "5-36",
+        "monster": "boss",
+        "description": "Reality tears apart as a deity of darkness manifests, its true form hidden behind veils of madness-inducing horror."
+    },
+    "5-36": {
+        "south": "5-45",
+        "north": "5-37",
+        "item": "health potion",
+        "description": "Clockwork mechanisms mark impossible hours. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "5-37": {
+        "east": "5-38",
+        "south": "5-36",
+        "item": "health potion",
+        "description": "Messages scrawled in blood remain legible. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "5-38": {
+        "east": "5-39",
+        "west": "5-37",
+        "item": "health potion",
+        "description": "Vaulted ceilings disappear into darkness. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "5-39": {
+        "east": "5-40",
+        "west": "5-38",
+        "item": "health potion",
+        "description": "Ripples disturb the air like water. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
+    },
+    "5-40": {
+        "east": "5-41",
+        "west": "5-39",
+        "monster": "boss",
+        "item": "spell book",
+        "lore": "NOTHING IN THIS WORLD IS RIGHT",
+        "description": "The fabric of reality screams as the emergence occurs, dimensions bleeding at its presence."
+    },
+    "5-41": {
+        "east": "5-40",
+        "west": "5-42",
+        "item": "mana potion",
+        "lore": "And you must right those wrongs.",
+        "description": "Books whisper contents to nearby listeners. You notice a vial whose liquid shifts between colors like a sunset in miniature, reflecting off the potion that sits in the beam of light."
+    },
+    "5-42": {
+        "east": "4-41",
+        "west": "4-43",
+        "item": "mana potion",
+        "description": "Whispers seem to come from just behind you. Before you sits a potion that pulses with an inner rhythm matching your heartbeat, perched precariously on the edge of the broken table."
+    },
+    "5-43": {
+        "east": "4-42",
+        "north": "5-44",
+        "item": "health potion",
+        "description": "Arcane energies swirl like visible currents. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "5-44": {
+        "east": "5-45",
+        "west": "5-43",
+        "monster": "normal",
+        "description": "A twisted form writhes in the corner, its eyes glowing with unnatural hunger."
+    },
+    "5-45": {
+        "south": "5-46",
+        "west": "5-44",
+        "monster": "boss",
+        "lore": "ALL YOUR EFFORTS ARE FOR NOTHING.",
+        "description": "Where light never reached, a terrible divinity awakens, its power warping the laws of existence."
+    },
+    "5-46": {
+        "east": "5-47",
+        "north": "5-45",
+        "lore": "Turn back now.",
+        "description": "Magical mirrors show paths yet untaken."
+    },
+    "5-47": {
+        "east": "5-48",
+        "north": "5-46",
+        "monster": "normal",
+        "lore": "You have no place with the gods.",
+        "description": "Something moves with unnatural grace, its form unclear."
+    },
+    "5-48": {
+        "west": "5-47",
+        "south": "5-49",
+        "monster": "normal",
+        "description": "A creature that defies nature watches you from the darkness."
+    },
+    "5-49": {
+        "north": "4-48",
+        "south": "4-50",
+        "item": "health potion",
+        "description": "Ancient calendars display impossible dates. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "5-50": {
+        "north": "5-49",
+        "south": "5-51",
+        "monster": "boss",
+        "lore": "ITS NOT FAIR",
+        "description": "The throne of skulls creaks as a skeletal form rises, its very presence causing time to unravel; its voice is the whisper of forgotten graves."
+    },
+    "5-51": {
+        "north": "5-50",
+        "east": "5-52",
+        "monster": "normal",
+        "lore": "It never was.",
+        "description": "The ground shudders beneath the approach of something massive."
+    },
+    "5-52": {
+        "west": "5-51",
+        "east": "5-53",
+        "north": "5-59",
+        "monster": "normal",
+        "lore": "A N D  Y O U  K N O W  I T.",
+        "description": "A creature that seems to be made of pure malevolence watches you."
+    },
+    "5-53": {
+        "west": "5-52",
+        "south": "5-54",
+        "item": "health potion",
+        "description": "Stone tablets bear eroding inscriptions. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
+    },
+    "5-54": {
+        "north": "5-53",
+        "west": "5-55",
+        "item": "health potion",
+        "description": "Mosaic floors depict scenes of ancient battles. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "5-55": {
+        "east": "5-54",
+        "west": "5-56",
+        "monster": "boss",
+        "description": "Between realms of life and death stands the master of undeath, its cold calculation weighing the worth of all souls."
+    },
+    "5-56": {
+        "east": "5-55",
+        "west": "5-57",
+        "monster": "normal",
+        "description": "A creature that defies nature watches you from the darkness."
+    },
+    "5-57": {
+        "east": "5-56",
+        "west": "5-58",
+        "item": "health potion",
+        "description": "Transparent figures study ancient texts. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "5-58": {
+        "west": "5-57",
+        "item": "health potion",
+        "description": "Diaries written in invisible ink. On the floor lies a potion surrounded by a protective circle of ash."
+    },
+    "5-59": {
+        "north": "5-52",
+        "west": "5-60",
+        "item": "health potion",
+        "description": "Timepieces run in reverse. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
+    },
+    "5-60": {
+        "east": "5-59",
+        "monster": "boss",
+        "description": "The air distorts around a serpentine form of impossible scale; dragonfire crackles between teeth older than mountains."
+    },
+    "1~1": {
+        "north": "1~2",
+        "item": "health potion",
+        "lore": "hehe, lol jk",
+        "description": "Mushrooms grow in concentric circles, their caps pulsing gently. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
+    },
+    "1~2": {
+        "west": "1~3",
+        "south": "1~1",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
+    },
+    "1~3": {
+        "west": "1~4",
+        "east": "1~2",
+        "south": "1~8",
+        "item": "mythril pants",
+        "description": "Lightning flashes within rooms. You find pants whose ancient runes pulse with faint light along the seams, sitting atop the magical platform."
+    },
+    "1~4": {
+        "west": "1~5",
+        "east": "1~3",
+        "south": "1~7",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
+    },
+    "1~5": {
+        "south": "1~6",
+        "east": "1~4",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
+    },
+    "1~6": {
+        "east": "1~7",
+        "north": "1~5",
+        "item": "health potion",
+        "description": "Raw magical force seeps from cracks. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
+    },
+    "1~7": {
+        "east": "1~8",
+        "west": "1~6",
+        "north": "1~4",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
+    },
+    "1~8": {
+        "south": "1~9",
+        "west": "1~7",
+        "north": "1~3",
+        "item": "mythril boots",
+        "description": "The floor tiles are uneven, shifting subtly underfoot as if alive. You see boots that leave no footprints in the dust, standing on the ancient floor."
+    },
+    "1~9": {
+        "south": "1~10",
+        "north": "1~8",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
+    },
+    "1~10": {
         "east": "1~13",
-        'monster': 'demon'
+        "north": "1~9",
+        "south": "1~11",
+        "item": "health potion",
+        "description": "Mechanical devices count backward. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
     },
-    '1~15': {
-        'west': '1~15',
-        'north': '1~14',
-        "item": "health potion"
+    "1~11": {
+        "north": "1~10",
+        "south": "1~12",
+        "item": "mythril sword",
+        "description": "Rooms exist in multiple places simultaneously. You find a sword that feels alive in your hand, sitting atop the treasure pile."
     },
-    '1~16': {
-        'east': '1~15',
-        'south': '1~18',
-        'north': '1~17',
-        "item": "mythril helmet"
+    "1~12": {
+        "north": "1~11",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '1~17': {
-        'south': '1~16',
-        "item": "health potion"
+    "1~13": {
+        "west": "1~14",
+        "east": "1~10",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '1~18': {
-        'north': '1~16',
-        'south': '1~19',
-        'monster': 'demon'
+    "1~14": {
+        "south": "1~15",
+        "east": "1~13",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '1~19': {
-        'north': '1~18',
-        'south': '1~20',
-        'item': 'mythril chestplate',
-        'lore': "You feel an evil presence watching you..."
+    "1~15": {
+        "west": "1~15",
+        "north": "1~14",
+        "item": "health potion",
+        "description": "Arcane energies swirl like visible currents. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
     },
-    '1~20': {
-        'north': '1~19',
-        'up': '2~1',
-        'monster': 'demon king lucifer'
+    "1~16": {
+        "east": "1~15",
+        "south": "1~18",
+        "north": "1~17",
+        "item": "mythril helmet",
+        "description": "Living vines snake through ancient stonework. You see a helmet that feels strangely light, sitting atop the treasure pile."
     },
-    '2~1': {
-        'down': '1~20',
-        'west': '2~2',
-        'item': 'health potion',
+    "1~17": {
+        "south": "1~16",
+        "item": "health potion",
+        "description": "Musical instruments play themselves. On the floor lies a potion surrounded by a protective circle of ash."
     },
-    '2~2': {
-        'east': '2~1',
-        'north': '2~3',
-        'monster': 'demon'
+    "1~18": {
+        "north": "1~16",
+        "south": "1~19",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '2~3': {
-        'west': '2~4',
-        'south': '2~2',
-        'monster': 'demon'
+    "1~19": {
+        "north": "1~18",
+        "south": "1~20",
+        "item": "mythril chestplate",
+        "lore": "You feel an evil presence watching you...",
+        "description": "Ancient stonework bears the marks of long-forgotten construction techniques. You see a chestplate whose protective glyphs pulse with inner light, resting on the magical platform."
     },
-    '2~4': {
-        'west': '2~8',
-        'east': '2~3',
-        'north': '2~5',
-        'monster': 'demon'
+    "1~20": {
+        "north": "1~19",
+        "up": "2~1",
+        "monster": "demon king lucifer",
+        "description": "Dark flames dance across the floor\u2014Lucifer himself awaits."
     },
-    '2~5': {
-        'south': '2~4',
-        'east': '2~6',
-        'monster': 'demon'
+    "2~1": {
+        "down": "1~20",
+        "west": "2~2",
+        "item": "health potion",
+        "description": "Sand timers flow upward. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
     },
-    '2~6': {
-        'west': '2~5',
-        'north': '2~7',
-        "item": "health potion"
+    "2~2": {
+        "east": "2~1",
+        "north": "2~3",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '2~7': {
-        'south': '2~6',
-        'monster': 'demon'
+    "2~3": {
+        "west": "2~4",
+        "south": "2~2",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '2~8': {
-        'south': '2~9',
-        'east': '2~4',
-        'north': '2~14',
-        'monster': 'demon'
+    "2~4": {
+        "west": "2~8",
+        "east": "2~3",
+        "north": "2~5",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '2~9': {
-        'east': '2~10',
-        'north': '2~8',
-        'monster': 'demon'
+    "2~5": {
+        "south": "2~4",
+        "east": "2~6",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '2~10': {
-        'east': '2~13',
-        'west': '2~9',
-        'north': '2~11',
-        'monster': 'demon'
+    "2~6": {
+        "west": "2~5",
+        "north": "2~7",
+        "item": "health potion",
+        "description": "Ice formations defy the dungeon's temperature. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
     },
-    '2~11': {
-        'east': '2~12',
-        'south': '2~10',
-        'warp 1': '2~20',
-        'warp 2': '4~20',
-        'warp 3': '6~20',
-        'item': 'health potion'
+    "2~7": {
+        "south": "2~6",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '2~12': {
-      'south': '2~13',
-      'monster': 'demon'
+    "2~8": {
+        "south": "2~9",
+        "east": "2~4",
+        "north": "2~14",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '2~13': {
-        'west': '2~10',
-        'north': '2~12',
-        'monster': 'demon'
+    "2~9": {
+        "east": "2~10",
+        "north": "2~8",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '2~14': {
-        'south': '2~8',
+    "2~10": {
+        "east": "2~13",
+        "west": "2~9",
+        "north": "2~11",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
+    },
+    "2~11": {
+        "east": "2~12",
+        "south": "2~10",
+        "warp 1": "2~20",
+        "warp 2": "4~20",
+        "warp 3": "6~20",
+        "item": "health potion",
+        "description": "Abandoned armor stands vigil in corners. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
+    },
+    "2~12": {
+        "south": "2~13",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
+    },
+    "2~13": {
+        "west": "2~10",
+        "north": "2~12",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
+    },
+    "2~14": {
+        "south": "2~8",
         "east": "2~15",
-        'monster': 'demon'
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '2~15': {
-        'west': '2~14',
-        'north': '2~16',
-        'monster': 'demon'
+    "2~15": {
+        "west": "2~14",
+        "north": "2~16",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '2~16': {
-        'north': '2~18',
-        'south': '2~15',
-        'west': '2~17',
-        'item': 'health potion'
+    "2~16": {
+        "north": "2~18",
+        "south": "2~15",
+        "west": "2~17",
+        "item": "health potion",
+        "description": "Residual magic crackles in the air. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
     },
-    '2~17': {
-        'west': '2~16',
-        'north': '2~19',
-        'monster': 'demon'
+    "2~17": {
+        "west": "2~16",
+        "north": "2~19",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '2~18': {
-        'east': '2~20',
-        'south': '2~16',
-        'item': 'health potion',
-        'lore': "You feel vibrations from deep below..."
+    "2~18": {
+        "east": "2~20",
+        "south": "2~16",
+        "item": "health potion",
+        "lore": "You feel vibrations from deep below...",
+        "description": "Messages scrawled in blood remain legible. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
     },
-    '2~19': {
-        'south': '2~17',
-        'monster': 'demon'
+    "2~19": {
+        "south": "2~17",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '2~20': {
-        'west': '2~18',
-        'up': '3~3',
-        'warp 1': '2~11',
-        'monster': 'demon king asmodeus'
+    "2~20": {
+        "west": "2~18",
+        "up": "3~3",
+        "warp 1": "2~11",
+        "monster": "demon king asmodeus",
+        "description": "Everything seems to rot and decay in Asmodeus's presence."
     },
-    '3~1': {
-        'north': '3~2',
-        'monster': 'demon'
+    "3~1": {
+        "north": "3~2",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '3~2': {
-        'south': '3~1',
-        'east': '3~3',
-        'monster': 'demon'
+    "3~2": {
+        "south": "3~1",
+        "east": "3~3",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '3~3': {
-        'west': '3~2',
-        'down': '2~20',
-        'north': '3~4',
-        'east': '3~8',
-        'south': '3~16',
-        'monster': 'demon'
+    "3~3": {
+        "west": "3~2",
+        "down": "2~20",
+        "north": "3~4",
+        "east": "3~8",
+        "south": "3~16",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '3~4': {
-        'south': '3~3',
-        'east': '3~5',
-        'monster': 'demon'
+    "3~4": {
+        "south": "3~3",
+        "east": "3~5",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '3~5': {
-        'south': '3~6',
-        'west': '3~4',
-        'monster': 'demon'
+    "3~5": {
+        "south": "3~6",
+        "west": "3~4",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '3~6': {
-        'east': '3~7',
-        'north': '3~5',
-        'monster': 'demon'
+    "3~6": {
+        "east": "3~7",
+        "north": "3~5",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '3~7': {
-        'west': '3~6',
-        'monster': 'demon'
+    "3~7": {
+        "west": "3~6",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '3~8': {
-        'east': '3~7',
-        'west': '3~7',
-        'monster': 'demon'
+    "3~8": {
+        "east": "3~7",
+        "west": "3~7",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '3~9': {
-        'west': '3~10',
-        'monster': 'demon'
+    "3~9": {
+        "west": "3~10",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '3~10': {
-        'east': '3~16',
-        'north': '3~9',
-        'west': '3~11',
-        'monster': 'demon'
+    "3~10": {
+        "east": "3~16",
+        "north": "3~9",
+        "west": "3~11",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '3~11': {
-        'east': '3~10',
-        'item': 'health potion'
+    "3~11": {
+        "east": "3~10",
+        "item": "health potion",
+        "description": "Clouds form and dissipate indoors. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
     },
-    '3~12': {
-      'south': '3~18',
-      'north': '3~16',
-      'monster': 'demon'
+    "3~12": {
+        "south": "3~18",
+        "north": "3~16",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '3~13': {
-        'west': '3~14',
-        'north': '3~19',
-        'monster': 'demon'
+    "3~13": {
+        "west": "3~14",
+        "north": "3~19",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '3~14': {
-        'south': '3~15',
+    "3~14": {
+        "south": "3~15",
         "east": "3~13",
-        'monster': 'demon'
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '3~15': {
-        'north': '3~15',
-        'item': 'health potion'
+    "3~15": {
+        "north": "3~15",
+        "item": "health potion",
+        "description": "Spell residue crackles in the air. You find a vial with a delicate silver cap sealing in its precious contents, leaning against the stone pillar."
     },
-    '3~16': {
-        'north': '3~3',
-        'south': '3~12',
-        'west': '3~10',
-        'monster': 'demon'
+    "3~16": {
+        "north": "3~3",
+        "south": "3~12",
+        "west": "3~10",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '3~17': {
-        'west': '3~19',
-        'south': '3~20',
-        'item': 'health potion',
-        'lore': "This is going to be a terrible night..."
+    "3~17": {
+        "west": "3~19",
+        "south": "3~20",
+        "item": "health potion",
+        "lore": "This is going to be a terrible night...",
+        "description": "Timepieces run in reverse. You notice a vial whose liquid inside seems to breathe with its own rhythm, visible in the partially filled container that rests against the wall."
     },
-    '3~18': {
-        'north': '3~12',
-        'monster': 'demon'
+    "3~18": {
+        "north": "3~12",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '3~19': {
-        'east': '3~17',
-        'south': '1~13',
-        'monster': 'demon'
+    "3~19": {
+        "east": "3~17",
+        "south": "1~13",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '3~20': {
-        'north': '3~17',
-        'up': '4~1',
-        'monster': 'demon king leviathan'
+    "3~20": {
+        "north": "3~17",
+        "up": "4~1",
+        "monster": "demon king leviathan",
+        "description": "A deep rumble echoes\u2014Leviathan stirs in his watery tomb."
     },
-    '4~1': {
-        'east': '4~2',
-        'south': '4~10',
-        'monster': 'demon'
+    "4~1": {
+        "east": "4~2",
+        "south": "4~10",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '4~2': {
-        'south': '4~9',
-        'west': '4~1',
-        'east': '4~3',
-        'monster': 'demon'
+    "4~2": {
+        "south": "4~9",
+        "west": "4~1",
+        "east": "4~3",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '4~3': {
-        'south': '4~8',
-        'west': '4~2',
-        'east': '4~4',
-        'monster': 'demon'
+    "4~3": {
+        "south": "4~8",
+        "west": "4~2",
+        "east": "4~4",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '4~4': {
-        'south': '4~7',
-        'west': '4~3',
-        'east': '4~5',
-        'monster': 'demon'
+    "4~4": {
+        "south": "4~7",
+        "west": "4~3",
+        "east": "4~5",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '4~5': {
-        'south': '4~6',
-        'west': '4~4',
-        'monster': 'demon'
+    "4~5": {
+        "south": "4~6",
+        "west": "4~4",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '4~6': {
-        'south': '4~15',
-        'west': '4~7',
-        'north': '4~5',
-        'monster': 'demon'
+    "4~6": {
+        "south": "4~15",
+        "west": "4~7",
+        "north": "4~5",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '4~7': {
-        'west': '4~8',
-        'north': '4~4',
-        'east': '4~6',
-        'south': '4~14',
-        'monster': 'demon'
+    "4~7": {
+        "west": "4~8",
+        "north": "4~4",
+        "east": "4~6",
+        "south": "4~14",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '4~8': {
-        'west': '4~9',
-        'north': '4~3',
-        'east': '4~7',
-        'south': '4~13',
-        'monster': 'demon'
+    "4~8": {
+        "west": "4~9",
+        "north": "4~3",
+        "east": "4~7",
+        "south": "4~13",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '4~9': {
-        'west': '4~10',
-        'north': '4~2',
-        'east': '4~8',
-        'south': '4~12',
-        'monster': 'demon'
+    "4~9": {
+        "west": "4~10",
+        "north": "4~2",
+        "east": "4~8",
+        "south": "4~12",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '4~10': {
-        'north': '4~1',
-        'east': '4~9',
-        'south': '4~11',
-        'monster': 'demon'
+    "4~10": {
+        "north": "4~1",
+        "east": "4~9",
+        "south": "4~11",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '4~11': {
-        'north': '4~10',
-        'east': '4~8',
-        'south': '4~20',
-        'monster': 'demon'
+    "4~11": {
+        "north": "4~10",
+        "east": "4~8",
+        "south": "4~20",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '4~12': {
-        'west': '4~11',
-        'north': '4~9',
-        'east': '4~13',
-        'south': '4~19',
-        'monster': 'demon'
+    "4~12": {
+        "west": "4~11",
+        "north": "4~9",
+        "east": "4~13",
+        "south": "4~19",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '4~13': {
-        'west': '4~12',
-        'north': '4~8',
-        'east': '4~14',
-        'south': '4~18',
-        'monster': 'demon'
+    "4~13": {
+        "west": "4~12",
+        "north": "4~8",
+        "east": "4~14",
+        "south": "4~18",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '4~14': {
-        'west': '4~13',
-        'north': '4~7',
-        'east': '4~15',
-        'south': '4~17',
-        'monster': 'demon'
+    "4~14": {
+        "west": "4~13",
+        "north": "4~7",
+        "east": "4~15",
+        "south": "4~17",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '4~15': {
-        'west': '4~14',
-        'north': '4~6',
-        'south': '4~16',
-        'monster': 'demon'
+    "4~15": {
+        "west": "4~14",
+        "north": "4~6",
+        "south": "4~16",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '4~16': {
-        'north': '4~15',
-        'west': '4~17',
-        'monster': 'demon'
+    "4~16": {
+        "north": "4~15",
+        "west": "4~17",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '4~17': {
-        'west': '4~18',
-        'north': '4~14',
-        'east': '4~16',
-        'item': 'health potion'
+    "4~17": {
+        "west": "4~18",
+        "north": "4~14",
+        "east": "4~16",
+        "item": "health potion",
+        "description": "Natural phenomena defy physics. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
     },
-    '4~18': {
-        'west': '4~19',
-        'north': '4~13',
-        'east': '4~17',
-        'monster': 'demon'
+    "4~18": {
+        "west": "4~19",
+        "north": "4~13",
+        "east": "4~17",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '4~19': {
-        'west': '4~20',
-        'north': '4~12',
-        'east': '4~18',
-        'warp 2': '2~11',
-        'item': 'health potion',
-        'lore': "The air is getting colder around you..."
+    "4~19": {
+        "west": "4~20",
+        "north": "4~12",
+        "east": "4~18",
+        "warp 2": "2~11",
+        "item": "health potion",
+        "lore": "The air is getting colder around you...",
+        "description": "Windows show impossible views. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
     },
-    '4~20': {
-        'north': '4~11',
-        'east': '4~19',
-        'up': '5~5',
-        'monster': 'demon king belphegor'
+    "4~20": {
+        "north": "4~11",
+        "east": "4~19",
+        "up": "5~5",
+        "monster": "demon king belphegor",
+        "description": "Everything here sags under invisible weight\u2014Belphegor dreams."
     },
-    '5~1': {
-        'east': '5~5',
-        'north': '5~7',
-        'south': '5~16',
-        'monster': 'demon'
+    "5~1": {
+        "east": "5~5",
+        "north": "5~7",
+        "south": "5~16",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '5~2': {
-        'west': '5~18',
-        'monster': 'demon'
+    "5~2": {
+        "west": "5~18",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '5~3': {
-        'north': '5~17',
-        'south': '5~13',
-        'monster': 'demon'
+    "5~3": {
+        "north": "5~17",
+        "south": "5~13",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '5~4': {
-        'south': '5~11',
-        'monster': 'demon'
+    "5~4": {
+        "south": "5~11",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '5~5': {
-        'west': '5~1',
-        'down': '4~20',
-        'north': '5~6',
-        'east': '5~11',
-        'south': '5~18',
-        'monster': 'demon'
+    "5~5": {
+        "west": "5~1",
+        "down": "4~20",
+        "north": "5~6",
+        "east": "5~11",
+        "south": "5~18",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '5~6': {
-        'west': '5~7',
-        'south': '5~5',
-        'monster': 'demon'
+    "5~6": {
+        "west": "5~7",
+        "south": "5~5",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '5~7': {
-        'east': '5~6',
-        'west': '5~10',
-        'south': '5~1',
-        'monster': 'demon'
+    "5~7": {
+        "east": "5~6",
+        "west": "5~10",
+        "south": "5~1",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '5~8': {
-        'north': '5~19',
-        'monster': 'demon'
+    "5~8": {
+        "north": "5~19",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '5~9': {
-        'east': '5~16',
-        'monster': 'demon'
+    "5~9": {
+        "east": "5~16",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '5~10': {
-        'east': '5~7',
-        'south': '5~15',
-        'west': '5~14',
-        'monster': 'demon'
+    "5~10": {
+        "east": "5~7",
+        "south": "5~15",
+        "west": "5~14",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '5~11': {
-        'west': '5~5',
-        'north': '5~4',
-        'item': 'health potion'
+    "5~11": {
+        "west": "5~5",
+        "north": "5~4",
+        "item": "health potion",
+        "description": "Chalk drawings of runes and figures cover one wall, still smudged with fresh marks. You see a glass vial filled with swirling crimson liquid that pulses gently on the nearby pedestal."
     },
-    '5~12': {
-      'north': '5~18',
-      'east': '5~17',
-      'west': '5~19',
-      'monster': 'demon'
+    "5~12": {
+        "north": "5~18",
+        "east": "5~17",
+        "west": "5~19",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '5~13': {
-        'north': '5~3',
-        'monster': 'demon'
+    "5~13": {
+        "north": "5~3",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '5~14': {
+    "5~14": {
         "east": "5~10",
-        'monster': 'demon'
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '5~15': {
-        'north': '5~10',
-        'item': 'health potion'
+    "5~15": {
+        "north": "5~10",
+        "item": "health potion",
+        "description": "Storms rage within single chambers. On the floor lies a potion surrounded by a protective circle of ash."
     },
-    '5~16': {
-        'north': '5~1',
-        'west': '5~9',
-        'monster': 'demon'
+    "5~16": {
+        "north": "5~1",
+        "west": "5~9",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '5~17': {
-        'west': '5~12',
-        'south': '5~3',
-        'item': 'health potion'
+    "5~17": {
+        "west": "5~12",
+        "south": "5~3",
+        "item": "health potion",
+        "description": "A withered banner hangs limply from the ceiling, its emblem unrecognizable. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
     },
-    '5~18': {
-        'north': '5~5',
-        'east': '5~2',
-        'south': '5~12',
-        'monster': 'demon'
+    "5~18": {
+        "north": "5~5",
+        "east": "5~2",
+        "south": "5~12",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '5~19': {
-        'west': '5~20',
-        'south': '5~8',
-        'east': '5~12',
-        'monster': 'demon',
-        'lore': 'What a horrible night to have a curse...'
+    "5~19": {
+        "west": "5~20",
+        "south": "5~8",
+        "east": "5~12",
+        "monster": "demon",
+        "lore": "What a horrible night to have a curse...",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '5~20': {
-        'east': '5~19',
-        'up': '6~1',
-        'monster': 'demon king beelzebub'
+    "5~20": {
+        "east": "5~19",
+        "up": "6~1",
+        "monster": "demon king beelzebub",
+        "description": "Insects skitter at the edges of your vision\u2014Beelzebub watches."
     },
-    '6~1': {
-        'east': '6~13',
-        'north': '6~2',
-        'south': '6~19',
-        'monster': 'demon'
+    "6~1": {
+        "east": "6~13",
+        "north": "6~2",
+        "south": "6~19",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '6~2': {
-        'west': '6~3',
-        'south': '6~1',
-        'monster': 'demon'
+    "6~2": {
+        "west": "6~3",
+        "south": "6~1",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '6~3': {
-        'west': '6~4',
-        'east': '6~2',
-        'monster': 'demon'
+    "6~3": {
+        "west": "6~4",
+        "east": "6~2",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '6~4': {
-        'south': '6~5',
-        'east': '6~3',
-        'monster': 'demon'
+    "6~4": {
+        "south": "6~5",
+        "east": "6~3",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '6~5': {
-        'west': '6~6',
-        'north': '6~4',
-        'monster': 'demon'
+    "6~5": {
+        "west": "6~6",
+        "north": "6~4",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '6~6': {
-        'south': '6~7',
-        'east': '6~5',
-        'north': '6~8',
-        'monster': 'demon'
+    "6~6": {
+        "south": "6~7",
+        "east": "6~5",
+        "north": "6~8",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '6~7': {
-        'north': '6~6',
-        'monster': 'demon'
+    "6~7": {
+        "north": "6~6",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '6~8': {
-        'north': '6~9',
-        'south': '6~6',
-        'monster': 'demon'
+    "6~8": {
+        "north": "6~9",
+        "south": "6~6",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '6~9': {
-        'south': '6~8',
-        'monster': 'demon'
+    "6~9": {
+        "south": "6~8",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '6~10': {
-        'south': '6~12',
-        'west': '6~11',
-        'monster': 'demon'
+    "6~10": {
+        "south": "6~12",
+        "west": "6~11",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '6~11': {
-        'east': '6~10',
-        'item': 'health potion'
+    "6~11": {
+        "east": "6~10",
+        "item": "health potion",
+        "description": "Residual magic crackles in the air. You see a potion from which small bubbles rise and pop in perfect synchronization, sitting atop the ancient crate."
     },
-    '6~12': {
-      'north': '6~10',
-      'south': '6~15',
-      'monster': 'demon'
+    "6~12": {
+        "north": "6~10",
+        "south": "6~15",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '6~13': {
-        'west': '6~1',
-        'east': '6~15',
-        'monster': 'demon'
+    "6~13": {
+        "west": "6~1",
+        "east": "6~15",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '6~14': {
+    "6~14": {
         "west": "6~17",
-        'monster': 'demon'
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '6~15': {
-        'north': '6~12',
-        'west': '6~13',
-        'south': '6~16',
-        'item': 'health potion'
+    "6~15": {
+        "north": "6~12",
+        "west": "6~13",
+        "south": "6~16",
+        "item": "health potion",
+        "description": "Ethereal dancers perform endless routines. Before you sits a potion that glows with a soft light, as if imbued with a heartbeat, resting alone on the dusty shelf."
     },
-    '6~16': {
-        'north': '6~17',
-        'monster': 'demon'
+    "6~16": {
+        "north": "6~17",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '6~17': {
-        'east': '6~14',
-        'south': '6~16',
-        'north': '6~15',
-        'monster': 'demon'
+    "6~17": {
+        "east": "6~14",
+        "south": "6~16",
+        "north": "6~15",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '6~18': {
-        'east': '6~1',
-        'monster': 'demon'
+    "6~18": {
+        "east": "6~1",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '6~19': {
-        'north': '6~1',
-        'south': '6~20',
-        'monster': 'demon',
-        'lore': 'Otherworldly voices linger around you...'
+    "6~19": {
+        "north": "6~1",
+        "south": "6~20",
+        "monster": "demon",
+        "lore": "Otherworldly voices linger around you...",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '6~20': {
-        'north': '6~19',
-        'up': '7~1',
-        'monster': 'demon king beelzebub'
+    "6~20": {
+        "north": "6~19",
+        "up": "7~1",
+        "monster": "demon king beelzebub",
+        "description": "Insects skitter at the edges of your vision\u2014Beelzebub watches."
     },
-    '7~1': {
-        'west': '7~2',
-        'monster': 'demon'
+    "7~1": {
+        "west": "7~2",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '7~2': {
-        'south': '7~3',
-        'east': '7~1',
-        'monster': 'demon'
+    "7~2": {
+        "south": "7~3",
+        "east": "7~1",
+        "monster": "demon",
+        "description": "Rustling cloth whispers ancient tales; footsteps echo where none walk."
     },
-    '7~3': {
-        'west': '7~4',
-        'north': '7~2',
-        'monster': 'demon'
+    "7~3": {
+        "west": "7~4",
+        "north": "7~2",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '7~4': {
-        'south': '7~5',
-        'east': '7~3',
-        'monster': 'demon'
+    "7~4": {
+        "south": "7~5",
+        "east": "7~3",
+        "monster": "demon",
+        "description": "The air is thick with malice; something snarls from the shadows."
     },
-    '7~5': {
-        'north': '7~4',
-        'west': '7~6',
-        'monster': 'demon'
+    "7~5": {
+        "north": "7~4",
+        "west": "7~6",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '7~6': {
-        'south': '7~7',
-        'north': '7~5',
-        'monster': 'demon'
+    "7~6": {
+        "south": "7~7",
+        "north": "7~5",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '7~7': {
-        'north': '7~6',
-        'west': '7~8',
-        'monster': 'demon'
+    "7~7": {
+        "north": "7~6",
+        "west": "7~8",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '7~8': {
-        'east': '7~7',
-        'west': '7~9',
-        'monster': 'demon'
+    "7~8": {
+        "east": "7~7",
+        "west": "7~9",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '7~9': {
-        'west': '7~10',
-        'east': '7~8',
-        'monster': 'demon'
+    "7~9": {
+        "west": "7~10",
+        "east": "7~8",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '7~10': {
-        'east': '7~9',
-        'north': '7~11',
-        'monster': 'demon'
+    "7~10": {
+        "east": "7~9",
+        "north": "7~11",
+        "monster": "demon",
+        "description": "A chill wind stirs dust of ages; whispers echo through forgotten chambers."
     },
-    '7~11': {
-        'east': '7~12',
-        'south': '7~10',
-        'monster': 'demon'
+    "7~11": {
+        "east": "7~12",
+        "south": "7~10",
+        "monster": "demon",
+        "description": "Damp earth smells of decay; distant growling grows louder still."
     },
-    '7~12': {
-      'south': '7~13',
-      'west': '7~11',
-      'monster': 'demon'
+    "7~12": {
+        "south": "7~13",
+        "west": "7~11",
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '7~13': {
-        'west': '7~14',
-        'north': '7~12',
-        'monster': 'demon'
+    "7~13": {
+        "west": "7~14",
+        "north": "7~12",
+        "monster": "demon",
+        "description": "Shadows writhe across ancient stone; malevolent eyes gleam in darkness."
     },
-    '7~14': {
-        'west': '7~15',
+    "7~14": {
+        "west": "7~15",
         "east": "7~13",
-        'monster': 'demon'
+        "monster": "demon",
+        "description": "Flickering shadows dance upon walls; the sound of scuttling grows near."
     },
-    '7~15': {
-        'north': '7~16',
-        'east': '7~14',
-        'monster': 'demon'
+    "7~15": {
+        "north": "7~16",
+        "east": "7~14",
+        "monster": "demon",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '7~16': {
-        'south': '7~15',
-        'east': '7~17',
-        'monster': 'demon'
+    "7~16": {
+        "south": "7~15",
+        "east": "7~17",
+        "monster": "demon",
+        "description": "Icy drafts carry forgotten screams; darkness pulses with hungry life."
     },
-    '7~17': {
-        'west': '7~16',
-        'south': '7~18',
-        'monster': 'demon',
+    "7~17": {
+        "west": "7~16",
+        "south": "7~18",
+        "monster": "demon",
+        "description": "Torchlight flickers wildly; something massive shifts beyond the flame's reach."
     },
-    '7~18': {
-        'west': '7~19',
-        'north': '7~17',
-        'monster': 'demon'
+    "7~18": {
+        "west": "7~19",
+        "north": "7~17",
+        "monster": "demon",
+        "description": "Cobwebs hang heavy with secrets; unseen wings flutter in darkness."
     },
-    '7~19': {
-        'east': '7~19',
-        'south': '7~20',
-        'monster': 'demon',
-        'lore': "Impending doom approaches..."
+    "7~19": {
+        "east": "7~19",
+        "south": "7~20",
+        "monster": "demon",
+        "lore": "Impending doom approaches...",
+        "description": "Mold-covered walls seem to breathe; faint scratching echoes through corridors."
     },
-    '7~20': {
-        'north': '7~19',
-        'up': '?~??',
-        'monster': 'demon king satan'
+    "7~20": {
+        "north": "7~19",
+        "up": "?~??",
+        "monster": "demon king satan",
+        "description": "The very fabric of reality seems to tear apart\u2014Satan awaits."
     },
-    '?~??': {}
+    "?~??": {
+        "description": "Seasons cycle within single rooms."
+    }
 }
 
 BLACKSMITH_RECIPES = {
@@ -3529,10 +3715,48 @@ UPGRADED_BLACKSMITH_RECIPES = {
         'description': 'Restores 30 health'
     }
 }
-
-# Game setup
+print(GREEN)
 clear_screen()
+
+print_slow(r"""
+ _____         _      _   _
+|_   _|____  _| |_   | | | | ___ _ __ ___
+  | |/ _ \ \/ / __|  | |_| |/ _ \ '__/ _ \
+  | |  __/>  <| |_   |  _  |  __/ | | (_) |
+  |_|\___/_/\_\\__|  |_| |_|\___|_|  \___/
+            Salvation Edition
+""")
+def print_intro():
+    print_slow_intro(f"\n{GREEN}Long ago, the Island of Rhyvannar fell to darkness.\n")
+    time.sleep(1)
+    print_slow_intro("Count Dracula’s army of demons swept across the land.\n")
+    time.sleep(1)
+    print_slow_intro("The war lasted thousands of years, costing trillions of lives. \n")
+    time.sleep(1)
+    print_slow_intro("Until one man, Xyron of Varyndor, turned the tide with a single act: ")
+    time.sleep(1)
+    print_slow_intro("\nHe tore the Cloak of Kadulom from Dracula’s shoulders, sealing his power.\n")
+    time.sleep(1)
+    print_slow_intro("In victory, Xyron was crowned Great Hari and built Castle Archmoltry atop the battlefield.\n")
+    time.sleep(1)
+    print_slow_intro("But victory bred pride. Pride bred corruption.\n")
+    time.sleep(1)
+    print_slow_intro("The Cloak’s curse took root, consuming Xyron and the castle.\n")
+    time.sleep(1)
+    print_slow_intro("Now, darkness stirs beneath the ruins.\n")
+    time.sleep(1)
+    print_slow_intro("The spirits of the fallen haunt the crypts.")
+    time.sleep(1)
+    print_slow_intro("\nThe Cloak beats with unnatural life.\n")
+    time.sleep(1)
+    print_slow_intro("And you, the lone survivor, are trapped within.\n")
+    time.sleep(1)
+    print_slow_intro(f"{BLUE}Press enter to continue")
+    input("")
+# Game setup
+print_intro()
 print_slow(GREEN)
+clear_screen()
 print_slow(r"""
  _____         _      _   _
 |_   _|____  _| |_   | | | | ___ _ __ ___
@@ -3558,33 +3782,55 @@ class keyboard_handler(object):
             self.key_press(event)
     def key_press(self, event):
         tag = str(event.name).lower()
-        if tag.startswith('Shift'): tag = 'Shift'
-        elif tag.startswith('Alt'): tag = 'Alt'
-        elif tag.startswith('Control'): tag = 'Control'
-        elif tag == '\t': tag = 'Tab'
-        elif tag == '\b': tag = 'BackSpace'
-        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
-        elif tag == 'Escape': tag = "Esc"
-        elif tag == '\x1b': tag = 'Esc'
-        elif tag == ' ': tag = 'Space'
-        if not tag in self.clicked:
+        if tag.startswith('Shift'):
+            tag = 'Shift'
+        elif tag.startswith('Alt'):
+            tag = 'Alt'
+        elif tag.startswith('Control'):
+            tag = 'Control'
+        elif tag == '\t':
+            tag = 'Tab'
+        elif tag == '\b':
+            tag = 'BackSpace'
+        elif tag in ['\r', '\n', '\r\n']:
+            tag = 'Enter'
+        elif tag == 'Escape':
+            tag = "Esc"
+        elif tag == '\x1b':
+            tag = 'Esc'
+        elif tag == ' ':
+            tag = 'Space'
+        if tag not in self.clicked:
             self.clicked.append(tag)
     def key_release(self, event):
         tag = str(event.name).lower()
-        if tag.startswith('Shift'): tag = 'Shift'
-        elif tag.startswith('Alt'): tag = 'Alt'
-        elif tag.startswith('Control'): tag = 'Control'
-        elif tag == '\t': tag = 'Tab'
-        elif tag == '\b': tag = 'BackSpace'
-        elif tag in ['\r', '\n', '\r\n']: tag = 'Enter'
-        elif tag == 'Escape': tag = "Esc"
-        elif tag == '\x1b': tag = 'Esc'
-        elif tag == ' ': tag = 'Space'
-        try: self.clicked.remove(tag)
-        except ValueError: pass
+        if tag.startswith('Shift'):
+            tag = 'Shift'
+        elif tag.startswith('Alt'):
+            tag = 'Alt'
+        elif tag.startswith('Control'):
+            tag = 'Control'
+        elif tag == '\t':
+            tag = 'Tab'
+        elif tag == '\b':
+            tag = 'BackSpace'
+        elif tag in ['\r', '\n', '\r\n']:
+            tag = 'Enter'
+        elif tag == 'Escape':
+            tag = "Esc"
+        elif tag == '\x1b':
+            tag = 'Esc'
+        elif tag == ' ':
+            tag = 'Space'
+        try:
+            self.clicked.remove(tag)
+        except ValueError:
+            pass
     def is_pressed(self, char):
-        if char in self.clicked: return True
-        else: return False
+        if char in self.clicked:
+            return True
+        else:
+            return False
 
 class selection_menu(object):
     def __init__(self, *items, indent_size = 2):
@@ -3602,7 +3848,7 @@ class selection_menu(object):
             self.states = []
             self.print_order = []
             for item in items:
-                if item[0] == 'text': self.print_order.append(item)
+                if item[0] == 'text': self.print_order.append(item)  # noqa: E701
                 elif item[0] == 'option':
                     self.print_order.append(['option', '{0}' + item[1]])
                     self.states.append(0)
@@ -3618,10 +3864,12 @@ class selection_menu(object):
             for item in self.print_order:
                 if item[0] == 'text':
                     to_print += item[1] + '\n'
-                    if len(item[1]) > clear_len: clear_len = len(item[1])
+                    if len(item[1]) > clear_len:
+                        clear_len = len(item[1])
                 elif item[0] == 'option':
                     tmp = len((item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)]) + '\n'))
-                    if tmp > clear_len: clear_len = tmp
+                    if tmp > clear_len:
+                        clear_len = tmp
                     to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
                     selected += 1
             print("\n" + to_print, end='')
@@ -3631,19 +3879,23 @@ class selection_menu(object):
                 if Input.is_pressed('down') and was_going != 'down':
                     to_print = "\n"
                     cursor_pos += 1
-                    if cursor_pos > self.max_cursor_pos - 1: cursor_pos = 0
+                    if cursor_pos > self.max_cursor_pos - 1:
+                        cursor_pos = 0
                     was_going = 'down'
                 elif Input.is_pressed('up') and was_going != 'up':
                     to_print = "\n"
                     cursor_pos -= 1
-                    if cursor_pos < 0: cursor_pos = self.max_cursor_pos - 1
+                    if cursor_pos < 0:
+                        cursor_pos = self.max_cursor_pos - 1
                     was_going = 'up'
-                elif not Input.is_pressed('up') and not Input.is_pressed('down'): was_going = None
+                elif not Input.is_pressed('up') and not Input.is_pressed('down'):
+                    was_going = None
                 if to_print:
                     clear_lines(len(self.print_order) + 1, clear_len)
                     selected = 0
                     for item in self.print_order:
-                        if item[0] == 'text': to_print += item[1] + '\n'
+                        if item[0] == 'text':
+                            to_print += item[1] + '\n'
                         elif item[0] == 'option': 
                             to_print += (item[1].format(['[ ]', '[*]'][int(selected == cursor_pos)])) + '\n'
                             selected += 1
@@ -3654,10 +3906,10 @@ class selection_menu(object):
                     self.cursor_pos = cursor_pos
                     break
 
-Input = keyboard_handler() # Keep and use this variable. Input.is_pessed("w") for example.
+Input = keyboard_handler() # Keep and use this variable. Input.is_pressed("w") for example.
 
 print("To start choose a class:")
-menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Archer'], ['option', 'Load']) # Formated [type, text_content], [type, text_content]
+menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ['option', 'Mage'], ['option', 'Archer'], ['option', 'Load']) # Formatted [type, text_content], [type, text_content]
 # menu = selection_menu(['option', 'Warrior'], ['option', 'Rogue'], ["text", "Random text in the middle. :)"], ['option', 'Mage'], ['option', 'Ranger'], ['option', 'Load']) # An example, uncomment and run to see how it works.
 chosen_class = ['Warrior', 'Rogue', 'Mage', 'Archer', 'Load'][menu.run()]
 
@@ -3687,7 +3939,7 @@ else:
         "exp": 0,
         "key_fragment_chance": 0.7  # Starting chance for key fragments
     }
-    currentRoom = '3-3'
+    currentRoom = '1-1'
     BASE_STATS = {
         "health": classes[chosen_class]["health"],
         "armor": classes[chosen_class]["armor"],
@@ -3736,7 +3988,6 @@ player_equipment = {
 inventory = []
 
 # Track defeated bosses
-defeated_bosses = set()
 
 def display_table(title, items, columns=None):
     """Display a formatted table with consistent spacing
@@ -3904,7 +4155,7 @@ help_system = HelpSystem()
 
 def display_spell_book(player_class, player_class_2):
     """Display a formatted spellbook with all available spells for the class"""
-    if player_class_2 == None:
+    if player_class_2 is None:
         print_slow(f"\n{GREEN}==== {player_class}'s Spell Book ====")
     else:
         print_slow(f"\n{GREEN}==== {player_class} {player_class_2}'s Spell Book ====")
@@ -3920,7 +4171,7 @@ def display_spell_book(player_class, player_class_2):
         cost = values[1]
         special = get_spell_description(spell)
         print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │")
-    if player_class_2 != None:
+    if player_class_2 is not None:
         for spell, values in locked_spells[player_class_2].items():
             effect = values[0]
             cost = values[1]
@@ -3945,7 +4196,7 @@ def display_spell_book(player_class, player_class_2):
             special = get_spell_description(spell) 
             
             print_slow(f"│ {spell:<14} │ {effect:<11} │ {cost:<10} │ {special:<42} │") 
-        if player_class_2 != None:
+        if player_class_2 is not None:
             for spell, values in locked_spells[player_class_2].items(): 
                 effect = values[0] 
                 cost = values[1] 
@@ -3983,7 +4234,7 @@ def get_spell_description(spell_name):
         f"{GREEN}holy cleansing": "Heals a minor amount of HP",
         f"{GREEN}arrow of light": "Fire a holy arrow, blinding enemies",
         f"{GREEN}marksman": "Bounce an arrow off of a coin",
-        f"{GREEN}mordshlang": "Attack with the pommel of the sword",
+        f"{GREEN}mordschlang": "Attack with the pommel of the sword",
         f"{GREEN}boulder": "Throw a boulder at the enemy",
         f"{GREEN}knife throw": "Throw a knife",
         f"{GREEN}divine retribution": "The wrath of the gods will aid you in battle",
@@ -4103,7 +4354,7 @@ while True:
                 enemies.append(enemy)
                 print_slow(f"{enemy['name']} appears!")
             elif monster_type == 'demon king lucifer':
-                enemy_type = MONSTER_TYPES['demon king lucife']
+                enemy_type = MONSTER_TYPES['demon king lucifer']
                 enemy = {
                     "health": enemy_type['health'],
                     "name": enemy_type['name'],
@@ -4481,10 +4732,9 @@ while True:
                             print_slow(f"{GREEN}you defeated the boss!\n You have earned {ITEM_COLOR}{gold_dropped} gold{GREEN} and {ITEM_COLOR}{exp_earned} exp{GREEN}!")
                             player["gold"] += gold_dropped
                             player["exp"] += exp_earned
-                            defeated_bosses.append(currentRoom)
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4502,7 +4752,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 15 and player["class 2"] == None:
+                            if player["level"] >= 15 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4523,10 +4773,9 @@ while True:
                             
                             player["gold"] += gold_dropped
                             player["exp"] += exp_earned
-                            defeated_bosses.append("Vampire")
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4544,7 +4793,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4566,10 +4815,9 @@ while True:
                             
                             player["gold"] += 1000
                             player["exp"] += 500
-                            defeated_bosses.append("Demon King Lucifer")
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4587,7 +4835,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4599,14 +4847,13 @@ while True:
                             # Boss rewards
                             for i in range(5):
                                 inventory.append("adamantite bar")
-                            print_slow(f"{GREEN}Demon King Asmodeus dropped 5 {ITEM_COLOR}Adamanmtite bars{GREEN}!")
+                            print_slow(f"{GREEN}Demon King Asmodeus dropped 5 {ITEM_COLOR}Adamantite bars{GREEN}!")
                             print_slow(f"{GREEN}you defeated Demon King Asmodeus!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 500
-                            defeated_bosses.append("Demon King Asmodeus")
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4624,7 +4871,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4646,10 +4893,9 @@ while True:
                             
                             player["gold"] += 1000
                             player["exp"] += 500
-                            defeated_bosses.append("Demon King Levianthan")
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4667,7 +4913,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4683,10 +4929,8 @@ while True:
                             print_slow(f"{GREEN}you defeated Demon King Belphegor!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 500
-                            defeated_bosses.append("Demon King Belphegor")
-
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4704,7 +4948,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4717,10 +4961,9 @@ while True:
                             
                             player["gold"] += 1000
                             player["exp"] += 500
-                            defeated_bosses.append("Demon King Beelzebub")
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4738,7 +4981,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4754,10 +4997,8 @@ while True:
                             print_slow(f"{GREEN}you defeated Demon King Mammon!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}500 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 500
-                            defeated_bosses.append("Demon King Mammon")
-
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4775,7 +5016,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4787,10 +5028,10 @@ while True:
                             print_slow(f"{GREEN}you defeated Demon King Satan!\n You have earned {ITEM_COLOR}1000 gold{GREEN} and {ITEM_COLOR}1000 exp{GREEN}!")
                             player["gold"] += 1000
                             player["exp"] += 1000
-                            defeated_bosses.append("Demon King Satan")
+
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4808,7 +5049,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4844,7 +5085,7 @@ while True:
                             player["exp"] += exp_earned * num_monsters
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4862,7 +5103,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -4875,11 +5116,16 @@ while True:
                                 MONSTER_TYPES['normal']['gold_drop_range'][0],
                                 MONSTER_TYPES['normal']['gold_drop_range'][1]
                             )
-                            exp_earned = random.randint(
-                                MONSTER_TYPES['normal']['exp_drop_range'][0],
-                                MONSTER_TYPES['normal']['exp_drop_range'][1]
-                            )* int(currentRoom[0])
-                            
+                            try:
+                                exp_earned = random.randint(
+                                    MONSTER_TYPES['normal']['exp_drop_range'][0],
+                                    MONSTER_TYPES['normal']['exp_drop_range'][1]
+                                )* int(currentRoom[0])
+                            except ValueError:
+                                exp_earned = random.randint(
+                                    MONSTER_TYPES['normal']['exp_drop_range'][0],
+                                    MONSTER_TYPES['normal']['exp_drop_range'][1]
+                                )* 10
                             
                             # Chance for armor drops
                             if random.random() < MONSTER_TYPES['normal']['item_drop_chance']:
@@ -4890,7 +5136,7 @@ while True:
                                 print_slow(f"{GREEN}A monster dropped {ITEM_COLOR}{dropped_item}{GREEN}!")
                             
                             # Key fragment drop chance
-                            if random.random() < player['key_fragment_chance'] and not "bleeding key" in inventory and not inventory.count('key fragment') > 2:
+                            if random.random() < player['key_fragment_chance'] and "bleeding key" not in inventory and not inventory.count('key fragment') > 2:
                                 inventory.append("key fragment")
                                 print_slow(f"{GREEN}A monster dropped a {ITEM_COLOR}key fragment{GREEN}!")
 
@@ -4899,7 +5145,7 @@ while True:
                             player["exp"] += exp_earned * num_monsters
 
                             for i in range(2, 51):
-                                if player["exp"] >= EXP_TO_GET_TO_LEVEL2[i] and i > player["level"]:
+                                if player["exp"] >= EXP_TO_LEVEL[i] and i > player["level"]:
                                     player["level"] = i
                                     player["health"] = math.ceil(BASE_STATS["health"] * LEVEL_IMPROVEMENTS[i])
                                     player["attack"] = math.ceil(BASE_STATS["attack"] * LEVEL_IMPROVEMENTS[i])
@@ -4917,7 +5163,7 @@ while True:
                                         print_slow(f"{ITEM_COLOR}Armor{GREEN}: {ITEM_COLOR}{player['armor']}{GREEN}")
                                 else:
                                     pass
-                            if player["level"] >= 20 and player["class 2"] == None:
+                            if player["level"] >= 20 and player["class 2"] is None:
                                 player["class 2"] = class_to_get_to_tier_2[player["class"]]
                                 player["spells"] = spells_tier_2[player["class 2"]]
                                 if player["class"] == "Rogue" or player["class"] == "Mage":
@@ -5027,7 +5273,7 @@ while True:
         print_slow("Type 'forge [item]' to craft items")
     showStatus()
 
-
+    
     move = input(GREEN + "> ").lower().split()
     clear_screen()
     if len(move) > 0:
@@ -5041,6 +5287,9 @@ while True:
         # Add to the main game loop command handling
         elif move[0] in ['save']:
             save_game()
+            continue
+        elif move[0] in ['look']:
+            print_slow(f'{rooms[currentRoom]["description"]}\n')
             continue
         elif move[0] in ['load', 'l']:
             load_game()
@@ -5223,9 +5472,6 @@ while True:
                 print("".join(move[1:]))
                 print_slow("Invalid game choice!")
             continue
-
-            
-
         elif move[0] in ['drop']:
             if len(move) == 1:
                 # Drop all items
